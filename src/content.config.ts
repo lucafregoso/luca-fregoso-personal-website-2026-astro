@@ -12,10 +12,31 @@ const now = defineCollection({
     title: z.string(),
     kind: z.enum(['speaking', 'writing', 'milestone', 'building', 'note']),
     blurb: z.string().optional(),
+    // Generic outbound link (LinkedIn post, article, event page…).
     url: z.string().url().optional(),
+    // How prominently to surface the outbound link:
+    //   'subtle' → small "Read on LinkedIn ↗" under the text (default when url present)
+    //   'strong' → bigger "Read the full post ↗", for entries that are excerpts
+    urlStyle: z.enum(['subtle', 'strong']).default('subtle'),
+    // Optional custom label for the outbound link.
+    urlLabel: z.string().optional(),
     location: z.string().optional(),
-    image: z.string().optional(),
-    imageAlt: z.string().optional(),
+    // Media: zero, one, or many items, mixed types.
+    //   - { type: 'image', src, alt }
+    //   - { type: 'video', src, poster? }   (self-hosted file in /public)
+    //   - { type: 'link',  url, label? }    (clean card, e.g. a LinkedIn post)
+    media: z
+      .array(
+        z.discriminatedUnion('type', [
+          z.object({ type: z.literal('image'), src: z.string(), alt: z.string().optional() }),
+          z.object({ type: z.literal('video'), src: z.string(), poster: z.string().optional() }),
+          z.object({ type: z.literal('link'), url: z.string().url(), label: z.string().optional() }),
+        ])
+      )
+      .default([]),
+    // Media prominence, decided per entry: 'full' = large, 'compact' = thumb row.
+    // Defaults: featured → full, others → compact (overridable here).
+    layout: z.enum(['full', 'compact']).optional(),
     featured: z.boolean().default(false),
   }),
 });

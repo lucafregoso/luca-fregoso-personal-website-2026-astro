@@ -1,0 +1,93 @@
+---
+import { withBase } from '../lib/url';
+
+interface MediaImage { type: 'image'; src: string; alt?: string }
+interface MediaVideo { type: 'video'; src: string; poster?: string }
+interface MediaLink  { type: 'link';  url: string; label?: string }
+type MediaItem = MediaImage | MediaVideo | MediaLink;
+
+interface Props {
+  media: MediaItem[];
+  layout?: 'full' | 'compact';
+}
+const { media, layout = 'full' } = Astro.props;
+
+const images = media.filter((m): m is MediaImage => m.type === 'image');
+const videos = media.filter((m): m is MediaVideo => m.type === 'video');
+const links  = media.filter((m): m is MediaLink  => m.type === 'link');
+const galleryClass = images.length > 1 ? 'is-gallery' : 'is-single';
+---
+
+{media.length > 0 && (
+  <div class={`media media-${layout}`}>
+    {/* IMAGES — single shows large; multiple becomes a grid */}
+    {images.length > 0 && (
+      <div class={`media-images ${galleryClass}`}>
+        {images.map((img) => (
+          <a class="media-img-wrap" href={withBase(img.src)} target="_blank" rel="noopener">
+            <img class="media-img" src={withBase(img.src)} alt={img.alt ?? ''} loading="lazy" />
+          </a>
+        ))}
+      </div>
+    )}
+
+    {/* VIDEOS — self-hosted, native controls, no third-party tracking */}
+    {videos.map((v) => (
+      <video class="media-video" controls preload="metadata"
+             poster={v.poster ? withBase(v.poster) : undefined}>
+        <source src={withBase(v.src)} />
+      </video>
+    ))}
+
+    {/* LINKS — clean cards (e.g. a LinkedIn post); no iframe, no cookies */}
+    {links.map((l) => (
+      <a class="media-link" href={l.url}>
+        <span class="media-link-arrow mono" aria-hidden="true">↗</span>
+        <span class="media-link-label">{l.label ?? 'Read the full post'}</span>
+      </a>
+    ))}
+  </div>
+)}
+
+<style>
+  .media { margin-top: 1rem; }
+  .media-compact { margin-top: 0.7rem; }
+
+  /* Single image: large, rounded, bordered */
+  .media-images.is-single .media-img-wrap {
+    display: block; border-radius: 12px; overflow: hidden; border: 1px solid var(--border);
+  }
+  .media-compact .media-images.is-single .media-img-wrap { border-radius: 9px; }
+  .media-images.is-single .media-img-wrap:hover { border-color: var(--lime); }
+
+  /* Multiple images: responsive grid */
+  .media-images.is-gallery {
+    display: grid; gap: 8px;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  }
+  .media-images.is-gallery .media-img-wrap {
+    display: block; border-radius: 9px; overflow: hidden; border: 1px solid var(--border);
+    aspect-ratio: 4 / 3;
+  }
+  .media-images.is-gallery .media-img-wrap:hover { border-color: var(--lime); }
+  .media-images.is-gallery .media-img { height: 100%; object-fit: cover; }
+  /* compact gallery = smaller thumbs */
+  .media-compact .media-images.is-gallery {
+    grid-template-columns: repeat(auto-fit, minmax(96px, 1fr));
+  }
+
+  .media-img { display: block; width: 100%; height: auto; }
+
+  .media-video {
+    display: block; width: 100%; height: auto; margin-top: 8px;
+    border-radius: 12px; border: 1px solid var(--border); background: #000;
+  }
+
+  .media-link {
+    display: inline-flex; align-items: center; gap: 0.5rem; margin-top: 0.6rem;
+    font-family: var(--font-mono); font-size: 0.82rem;
+    border: 1px solid var(--border-strong); border-radius: 8px; padding: 0.45rem 0.85rem;
+  }
+  .media-link:hover { border-color: var(--lime); background: var(--surface-2); }
+  .media-link-arrow { color: var(--accent-text); }
+</style>
