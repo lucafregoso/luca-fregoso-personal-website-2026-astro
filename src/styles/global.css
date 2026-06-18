@@ -16,7 +16,7 @@
   /* Light theme (default) */
   --bg: #fbfbf7;
   --surface: #ffffff;
-  --surface-2: #f3f3ec;
+  --surface-2: #f0f0ee;
   --text: #1a1a1a;
   --text-muted: #5f5f5a;
   --text-faint: #6a6a63;
@@ -34,7 +34,7 @@
 :root[data-theme="dark"] {
   --bg: #0d1117;
   --surface: #161b22;
-  --surface-2: #1c222b;
+  --surface-2: #171c24;
   --text: #e6edf3;
   --text-muted: #9aa4b1;
   --text-faint: #8a93a0;
@@ -59,6 +59,9 @@ html {
   }
 }
 
+html {
+  background: var(--bg);
+}
 body {
   margin: 0;
   background: var(--bg);
@@ -152,18 +155,22 @@ h1, h2, h3 { font-weight: 600; letter-spacing: -0.02em; line-height: 1.2; }
 }
 .skip-link:focus { left: 0; }
 
-/* ---- Reveal on scroll ---- */
-[data-reveal] {
+/* ---- Reveal on scroll ----
+   Robust by default: content is ALWAYS visible. The hidden-then-reveal
+   behaviour only applies when JS has confirmed it's ready by adding the
+   `js-reveal` class to <html>. If JS is off or fails, nothing hides —
+   the content never depends on JS to be seen. */
+.js-reveal [data-reveal] {
   opacity: 0;
   transform: translateY(14px);
   transition: opacity 0.5s ease, transform 0.5s ease;
 }
-[data-reveal].is-in {
+.js-reveal [data-reveal].is-in {
   opacity: 1;
   transform: none;
 }
 @media (prefers-reduced-motion: reduce) {
-  [data-reveal] { opacity: 1; transform: none; transition: none; }
+  .js-reveal [data-reveal] { opacity: 1; transform: none; transition: none; }
 }
 
 /* ---- Live badge: pulsing lime dot ---- */

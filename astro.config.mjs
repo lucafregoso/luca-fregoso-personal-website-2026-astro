@@ -20,7 +20,7 @@ import sitemap from '@astrojs/sitemap';
 // ─────────────────────────────────────────────────────────────
 
 export default defineConfig({
-  site: 'https://USERNAME.github.io',
-  base: '/REPO',
+  site: 'https://lucafregoso.github.io',
+  base: '/luca-fregoso-personal-website-2026-astro',
   integrations: [sitemap()],
 });

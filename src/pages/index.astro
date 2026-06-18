@@ -175,7 +175,7 @@ function outlink(entry: { url?: string; urlLabel?: string; urlStyle?: string }) 
           <article data-reveal class="arch-item">
             <h3>
               {t.data.sessionizeUrl
-                ? <a href={t.data.sessionizeUrl}>{t.data.title}</a>
+                ? <a href={t.data.sessionizeUrl} target="_blank" rel="noopener noreferrer">{t.data.title}</a>
                 : t.data.title}
             </h3>
             <p class="arch-blurb">{t.data.abstract}</p>
@@ -212,7 +212,7 @@ function outlink(entry: { url?: string; urlLabel?: string; urlStyle?: string }) 
       <div class="socials">
         {site.socials.map((s) => (
           <a
-            class={`social ${s.primary ? 'is-primary' : ''}`}
+            class="social"
             href={s.url}
             target="_blank"
             rel="noopener noreferrer"
@@ -220,7 +220,6 @@ function outlink(entry: { url?: string; urlLabel?: string; urlStyle?: string }) 
             title={s.name}
           >
             <SocialIcon name={s.name} class="social-ico" />
-            {s.primary && <span class="social-label">{s.name}</span>}
           </a>
         ))}
       </div>
@@ -278,12 +277,13 @@ function outlink(entry: { url?: string; urlLabel?: string; urlStyle?: string }) 
      The tint spans the viewport while content stays in .wrap. */
   .tinted { position: relative; }
   .tinted::before {
-    content: ''; position: absolute; z-index: -1;
+    content: ''; position: absolute; z-index: 0;
     top: 0; bottom: 0; left: 50%; transform: translateX(-50%);
     width: 100vw; background: var(--surface-2);
   }
+  .tinted > * { position: relative; z-index: 1; }
 
-  .stream { padding: 2.5rem 0; border-top: 1px solid var(--border); }
+  .stream { padding: 3rem 0; }
   .stream-head { display: flex; align-items: center; gap: 0.8rem; margin-bottom: 1.6rem; }
   .pulse { font-size: 0.7rem; color: var(--accent-text);
            border: 1px solid var(--border-strong); border-radius: 20px; padding: 1px 9px; }
@@ -353,6 +353,10 @@ function outlink(entry: { url?: string; urlLabel?: string; urlStyle?: string }) 
   }
   .hero-meta .hero-kind { color: var(--accent-text); }
   .hero-title { font-size: clamp(1.4rem, 4vw, 1.9rem); margin: 0; line-height: 1.25; }
+  /* featured hero: same lime edge as featured list items */
+  .hero-entry.is-feat .hero-title {
+    padding-left: 0.9rem; border-left: 3px solid var(--lime);
+  }
   .hero-loc { font-size: 0.82rem; color: var(--text-faint); margin: 0.4rem 0 0; }
   .hero-blurb { font-size: 1.08rem; line-height: 1.6; color: var(--text); margin: 0.8rem 0 0; max-width: 60ch; }
 
@@ -368,15 +372,20 @@ function outlink(entry: { url?: string; urlLabel?: string; urlStyle?: string }) 
     margin: 0.5rem 0 0; letter-spacing: 0.03em;
   }
 
-  /* featured stream items: a soft tinted card, not a colored edge */
+  /* featured stream items: the lime left edge is the site's signature accent.
+     No background tint — that fought with the section bands. The "★ featured"
+     tag carries the meaning, so the edge stays purely decorative. */
   .feed-item.is-feat {
-    padding-left: 1rem; padding-right: 1rem;
-    background: color-mix(in srgb, var(--lime) 6%, transparent);
-    border-radius: 10px;
+    padding-left: 1rem;
+    position: relative;
+  }
+  .feed-item.is-feat::after {
+    content: ''; position: absolute; left: 0; top: 1.1rem; bottom: 1.1rem;
+    width: 3px; background: var(--lime); border-radius: 2px;
   }
 
   /* ARCHIVES */
-  .archive { padding: 2.5rem 0; border-top: 1px solid var(--border); }
+  .archive { padding: 3rem 0; }
   .arch-list { margin-top: 1.5rem; display: flex; flex-direction: column; gap: 1.5rem; }
   .arch-item h3 { font-size: 1.08rem; margin: 0 0 0.4rem; }
   .arch-item.compact h3 { font-size: 1rem; margin: 0; }
@@ -387,23 +396,17 @@ function outlink(entry: { url?: string; urlLabel?: string; urlStyle?: string }) 
   .more { display: inline-block; margin-top: 1.4rem; font-size: 0.82rem; }
 
   /* FOOT */
-  .foot { padding: 2.5rem 0 3.5rem; border-top: 1px solid var(--border); }
+  .foot { padding: 2.5rem 0 3.5rem; }
   .foot p { max-width: 58ch; color: var(--text-muted); }
 
-  .socials { display: flex; align-items: center; gap: 0.9rem; margin: 1.4rem 0 0.4rem; flex-wrap: wrap; }
+  .socials { display: flex; align-items: center; gap: 1.2rem; margin: 1.4rem 0 0.4rem; flex-wrap: wrap; }
   .social {
-    display: inline-flex; align-items: center; gap: 0.5rem;
+    display: inline-flex; align-items: center;
     color: var(--text-muted); border-bottom: none;
     transition: color 0.15s ease, transform 0.15s ease;
   }
-  .social :global(.social-ico) { width: 20px; height: 20px; display: block; }
+  .social :global(.social-ico) { width: 22px; height: 22px; display: block; }
   .social:hover { color: var(--text); transform: translateY(-1px); }
-  .social.is-primary {
-    color: var(--text); font-family: var(--font-mono); font-size: 0.85rem;
-    border: 1px solid var(--border-strong); border-radius: 8px;
-    padding: 0.45rem 0.8rem; margin-right: 0.4rem;
-  }
-  .social.is-primary:hover { border-color: var(--lime); }
 
   .foot-links { display: flex; gap: 1.2rem; margin: 1.4rem 0 0; flex-wrap: wrap; align-items: center; }
   .foot-links a { font-family: var(--font-mono); font-size: 0.85rem; }
