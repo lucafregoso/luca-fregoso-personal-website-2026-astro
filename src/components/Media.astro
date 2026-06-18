@@ -9,8 +9,9 @@ type MediaItem = MediaImage | MediaVideo | MediaLink;
 interface Props {
   media: MediaItem[];
   layout?: 'full' | 'compact';
+  galleryId: string; // unique per entry, groups images into one lightbox gallery
 }
-const { media, layout = 'full' } = Astro.props;
+const { media, layout = 'full', galleryId } = Astro.props;
 
 const images = media.filter((m): m is MediaImage => m.type === 'image');
 const videos = media.filter((m): m is MediaVideo => m.type === 'video');
@@ -20,13 +21,21 @@ const galleryClass = images.length > 1 ? 'is-gallery' : 'is-single';
 
 {media.length > 0 && (
   <div class={`media media-${layout}`}>
-    {/* IMAGES — single shows large; multiple becomes a grid */}
+    {/* IMAGES — open in an in-page lightbox (no new tab, no raw .jpg) */}
     {images.length > 0 && (
       <div class={`media-images ${galleryClass}`}>
-        {images.map((img) => (
-          <a class="media-img-wrap" href={withBase(img.src)} target="_blank" rel="noopener">
+        {images.map((img, i) => (
+          <button
+            type="button"
+            class="media-img-wrap"
+            data-lightbox={galleryId}
+            data-index={i}
+            data-src={withBase(img.src)}
+            data-alt={img.alt ?? ''}
+            aria-label={`Open image${img.alt ? `: ${img.alt}` : ''}`}
+          >
             <img class="media-img" src={withBase(img.src)} alt={img.alt ?? ''} loading="lazy" />
-          </a>
+          </button>
         ))}
       </div>
     )}
@@ -41,7 +50,7 @@ const galleryClass = images.length > 1 ? 'is-gallery' : 'is-single';
 
     {/* LINKS — clean cards (e.g. a LinkedIn post); no iframe, no cookies */}
     {links.map((l) => (
-      <a class="media-link" href={l.url}>
+      <a class="media-link" href={l.url} target="_blank" rel="noopener noreferrer">
         <span class="media-link-arrow mono" aria-hidden="true">↗</span>
         <span class="media-link-label">{l.label ?? 'Read the full post'}</span>
       </a>
@@ -53,23 +62,23 @@ const galleryClass = images.length > 1 ? 'is-gallery' : 'is-single';
   .media { margin-top: 1rem; }
   .media-compact { margin-top: 0.7rem; }
 
-  /* Single image: large, rounded, bordered */
-  .media-images.is-single .media-img-wrap {
-    display: block; border-radius: 12px; overflow: hidden; border: 1px solid var(--border);
+  /* image triggers are <button>s — reset native styling */
+  .media-img-wrap {
+    appearance: none; border: 1px solid var(--border); background: none;
+    padding: 0; margin: 0; cursor: zoom-in; display: block; width: 100%;
+    border-radius: 12px; overflow: hidden;
   }
+  .media-img-wrap:hover { border-color: var(--lime); }
+
+  /* Single image: large */
   .media-compact .media-images.is-single .media-img-wrap { border-radius: 9px; }
-  .media-images.is-single .media-img-wrap:hover { border-color: var(--lime); }
 
   /* Multiple images: responsive grid */
   .media-images.is-gallery {
     display: grid; gap: 8px;
     grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
   }
-  .media-images.is-gallery .media-img-wrap {
-    display: block; border-radius: 9px; overflow: hidden; border: 1px solid var(--border);
-    aspect-ratio: 4 / 3;
-  }
-  .media-images.is-gallery .media-img-wrap:hover { border-color: var(--lime); }
+  .media-images.is-gallery .media-img-wrap { border-radius: 9px; aspect-ratio: 4 / 3; }
   .media-images.is-gallery .media-img { height: 100%; object-fit: cover; }
   /* compact gallery = smaller thumbs */
   .media-compact .media-images.is-gallery {

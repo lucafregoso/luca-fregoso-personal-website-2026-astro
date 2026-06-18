@@ -7,18 +7,22 @@ interface Props {
   title?: string;
   description?: string;
 }
+const m = site.meta;
 const {
-  title = `${site.name} — ${site.role}`,
-  description = site.bioShort,
+  title = m.titlePattern.replace('{name}', site.name).replace('{tagline}', site.tagline),
+  description = m.description,
 } = Astro.props;
 const canonical = new URL(Astro.url.pathname, Astro.site);
+const ogImageUrl = m.ogImage ? new URL(withBase(m.ogImage), Astro.site).toString() : null;
 ---
 
 <!doctype html>
-<html lang="en" data-theme="light">
+<html lang={m.lang} data-theme="light">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content={m.themeColor} />
+    <meta name="author" content={m.author} />
     <link rel="icon" href={withBase('/favicon.svg')} type="image/svg+xml" />
     <title>{title}</title>
     <meta name="description" content={description} />
@@ -26,22 +30,24 @@ const canonical = new URL(Astro.url.pathname, Astro.site);
 
     <!-- Open Graph / Twitter -->
     <meta property="og:type" content="website" />
+    <meta property="og:locale" content={m.ogLocale} />
     <meta property="og:title" content={title} />
     <meta property="og:description" content={description} />
     <meta property="og:url" content={canonical} />
-    <meta name="twitter:card" content="summary" />
+    {ogImageUrl && <meta property="og:image" content={ogImageUrl} />}
+    <meta name="twitter:card" content={ogImageUrl ? 'summary_large_image' : 'summary'} />
     <meta name="twitter:title" content={title} />
     <meta name="twitter:description" content={description} />
+    {ogImageUrl && <meta name="twitter:image" content={ogImageUrl} />}
 
     <!-- JSON-LD: helps Google show you as a Person entity -->
     <script type="application/ld+json" set:html={JSON.stringify({
       '@context': 'https://schema.org',
       '@type': 'Person',
       name: site.name,
-      jobTitle: site.role,
-      email: `mailto:${site.email}`,
+      jobTitle: site.tagline,
       url: Astro.site?.toString(),
-      sameAs: [site.links.linkedin, site.links.sessionize, site.links.codemotion],
+      sameAs: site.socials.map((s) => s.url),
     })} />
 
     <!-- Set theme before paint to avoid a flash -->
@@ -63,10 +69,28 @@ const canonical = new URL(Astro.url.pathname, Astro.site);
     <!-- A little something for those who open the devtools -->
     <script is:inline>
       console.log(
-        '%cYou opened the devtools. Of course you did.%c\nLuca Fregoso · luca.fregoso@gmail.com',
+        '%cYou opened the devtools. Of course you did.%c\nBuilt by hand with Astro. Say hi via the contact section.',
         'color:#d0db02;font-family:monospace;font-weight:bold;',
         'color:#9aa4b1;font-family:monospace;'
       );
+    </script>
+    <!-- Reveal-on-scroll: subtle fade+rise as elements enter the viewport.
+         Fully disabled when the user prefers reduced motion. -->
+    <script is:inline>
+      (function () {
+        var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+        var els = document.querySelectorAll('[data-reveal]');
+        if (reduce || !('IntersectionObserver' in window)) {
+          els.forEach(function (el) { el.classList.add('is-in'); });
+          return;
+        }
+        var io = new IntersectionObserver(function (entries) {
+          entries.forEach(function (e) {
+            if (e.isIntersecting) { e.target.classList.add('is-in'); io.unobserve(e.target); }
+          });
+        }, { rootMargin: '0px 0px -8% 0px', threshold: 0.08 });
+        els.forEach(function (el) { io.observe(el); });
+      })();
     </script>
   </body>
 </html>

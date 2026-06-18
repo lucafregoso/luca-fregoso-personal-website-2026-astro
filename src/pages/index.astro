@@ -3,6 +3,9 @@ import { getCollection } from 'astro:content';
 import BaseLayout from '../layouts/BaseLayout.astro';
 import ThemeToggle from '../components/ThemeToggle.astro';
 import Media from '../components/Media.astro';
+import Lightbox from '../components/Lightbox.astro';
+import SocialIcon from '../components/SocialIcon.astro';
+import ContactEmail from '../components/ContactEmail.astro';
 import { site } from '../data/site';
 import { withBase } from '../lib/url';
 
@@ -74,15 +77,15 @@ function outlink(entry: { url?: string; urlLabel?: string; urlStyle?: string }) 
         {site.intro.map((p) => <p>{p}</p>)}
       </div>
       <nav class="intro-links">
-        <a href={site.links.linkedin}>LinkedIn</a>
-        <a href={site.links.sessionize}>Sessionize</a>
-        <a href={site.links.codemotion}>Writing</a>
+        <a href={site.links.linkedin} target="_blank" rel="noopener noreferrer">LinkedIn</a>
+        <a href={site.links.sessionize} target="_blank" rel="noopener noreferrer">Sessionize</a>
+        <a href="#writing">Writing</a>
         <a href={withBase("/cv.pdf")}>CV</a>
       </nav>
     </header>
 
     <!-- THE STREAM -->
-    <section class="stream" id="now" aria-label="What I'm up to">
+    <section class="stream tinted" id="now" aria-label="What I'm up to">
       <div class="stream-head">
         <h2><span class="lime-bar"></span>Lately</h2>
         {!stale && <span class="pulse mono" title="Recently updated">live</span>}
@@ -106,10 +109,11 @@ function outlink(entry: { url?: string; urlLabel?: string; urlStyle?: string }) 
 
       {/* HERO — most recent past entry, in full */}
       {heroEntry && (
-        <article class={`hero-entry ${heroEntry.data.featured ? 'is-feat' : ''}`}>
+        <article data-reveal class={`hero-entry ${heroEntry.data.featured ? 'is-feat' : ''}`}>
           <div class="hero-meta mono">
             <span class="hero-kind">{kindLabel[heroEntry.data.kind] ?? heroEntry.data.kind}</span>
             <time datetime={heroEntry.data.date.toISOString()}>{fullDate(heroEntry.data.date)}</time>
+            {heroEntry.data.featured && <span class="feat-tag mono">★ featured</span>}
           </div>
           <h3 class="hero-title">{heroEntry.data.title}</h3>
           {heroEntry.data.location && <p class="hero-loc mono">{heroEntry.data.location}</p>}
@@ -117,6 +121,7 @@ function outlink(entry: { url?: string; urlLabel?: string; urlStyle?: string }) 
           <Media
             media={heroEntry.data.media}
             layout={heroEntry.data.layout ?? 'full'}
+            galleryId={`g-${heroEntry.id}`}
           />
           {outlink(heroEntry.data) && (
             <a class={`outlink mono ${outlink(heroEntry.data)!.strong ? 'is-strong' : ''}`}
@@ -130,12 +135,15 @@ function outlink(entry: { url?: string; urlLabel?: string; urlStyle?: string }) 
       {/* THE REST — tight list */}
       <ol class="feed">
         {restEntries.map((e) => (
-          <li class={`feed-item ${e.data.featured ? 'is-feat' : ''}`}>
+          <li data-reveal class={`feed-item ${e.data.featured ? 'is-feat' : ''}`}>
             <time class="feed-date mono" datetime={e.data.date.toISOString()}>
               {dayMonth(e.data.date)}<span class="yr">{e.data.date.getFullYear()}</span>
             </time>
             <div class="feed-body">
-              <span class="feed-kind mono">{kindLabel[e.data.kind] ?? e.data.kind}</span>
+              <span class="feed-kind mono">
+                {kindLabel[e.data.kind] ?? e.data.kind}
+                {e.data.featured && <span class="feat-tag mono">★ featured</span>}
+              </span>
               <h3 class="feed-title">
                 {e.data.title}
                 {e.data.location && <span class="feed-loc mono"> · {e.data.location}</span>}
@@ -144,6 +152,7 @@ function outlink(entry: { url?: string; urlLabel?: string; urlStyle?: string }) 
               <Media
                 media={e.data.media}
                 layout={e.data.layout ?? 'compact'}
+                galleryId={`g-${e.id}`}
               />
               {outlink(e.data) && (
                 <a class={`outlink mono ${outlink(e.data)!.strong ? 'is-strong' : ''}`}
@@ -163,7 +172,7 @@ function outlink(entry: { url?: string; urlLabel?: string; urlStyle?: string }) 
       <p class="arch-intro mono">selected sessions · an ongoing archive</p>
       <div class="arch-list">
         {talks.map((t) => (
-          <article class="arch-item">
+          <article data-reveal class="arch-item">
             <h3>
               {t.data.sessionizeUrl
                 ? <a href={t.data.sessionizeUrl}>{t.data.title}</a>
@@ -174,39 +183,57 @@ function outlink(entry: { url?: string; urlLabel?: string; urlStyle?: string }) 
           </article>
         ))}
       </div>
-      <a class="more mono" href={site.links.sessionize}>full speaker profile &rarr;</a>
+      <a class="more mono" href={site.links.sessionize} target="_blank" rel="noopener noreferrer">full speaker profile &rarr;</a>
     </section>
 
     <!-- WRITING ARCHIVE -->
-    <section class="archive" id="writing">
+    <section class="archive tinted" id="writing">
       <h2><span class="lime-bar"></span>Writing</h2>
-      <p class="arch-intro mono">selected articles · an ongoing archive</p>
+      <p class="arch-intro mono">articles across publications · an ongoing archive</p>
       <div class="arch-list">
         {writing.map((w) => (
-          <article class="arch-item compact">
+          <article data-reveal class="arch-item compact">
             <div class="arch-row">
-              <h3><a href={w.data.url}>{w.data.title}</a></h3>
+              <h3><a href={w.data.url} target="_blank" rel="noopener noreferrer">{w.data.title}</a></h3>
               <span class="arch-date mono">{monthYear(w.data.date)}</span>
             </div>
             <p class="arch-blurb">{w.data.summary}</p>
+            <span class="pub-badge mono">{w.data.publication}</span>
           </article>
         ))}
       </div>
-      <a class="more mono" href={site.links.codemotion}>all articles &rarr;</a>
     </section>
 
     <!-- CONTACT -->
     <footer class="foot" id="contact">
       <h2><span class="lime-bar"></span>Get in touch</h2>
       <p>Open to senior roles in developer programs, technical content and presales — full remote, international included.</p>
+
+      <div class="socials">
+        {site.socials.map((s) => (
+          <a
+            class={`social ${s.primary ? 'is-primary' : ''}`}
+            href={s.url}
+            target="_blank"
+            rel="noopener noreferrer"
+            aria-label={s.name}
+            title={s.name}
+          >
+            <SocialIcon name={s.name} class="social-ico" />
+            {s.primary && <span class="social-label">{s.name}</span>}
+          </a>
+        ))}
+      </div>
+
       <div class="foot-links">
-        <a href={site.links.email}>{site.email}</a>
-        <a href={site.links.linkedin}>LinkedIn</a>
+        <ContactEmail />
         <a href={withBase("/cv.pdf")}>CV (PDF)</a>
       </div>
       <p class="colophon mono">Built with Astro. Updated by hand, on purpose.</p>
     </footer>
   </div>
+
+  <Lightbox />
 </BaseLayout>
 
 <style>
@@ -216,9 +243,11 @@ function outlink(entry: { url?: string; urlLabel?: string; urlStyle?: string }) 
   /* INTRO */
   .intro { padding: 2rem 0 3rem; }
   .name {
-    font-size: clamp(2.4rem, 7vw, 3.6rem);
-    margin: 0 0 0.4rem;
-    letter-spacing: -0.03em;
+    font-family: var(--font-mono);
+    font-size: clamp(2rem, 6vw, 3.1rem);
+    font-weight: 700;
+    margin: 0 0 0.5rem;
+    letter-spacing: -0.02em;
   }
   .currently {
     font-family: var(--font-mono);
@@ -245,6 +274,15 @@ function outlink(entry: { url?: string; urlLabel?: string; urlStyle?: string }) 
               margin-right: 10px; border-radius: 2px; }
 
   /* STREAM */
+  /* Full-bleed tinted sections (alternating rhythm).
+     The tint spans the viewport while content stays in .wrap. */
+  .tinted { position: relative; }
+  .tinted::before {
+    content: ''; position: absolute; z-index: -1;
+    top: 0; bottom: 0; left: 50%; transform: translateX(-50%);
+    width: 100vw; background: var(--surface-2);
+  }
+
   .stream { padding: 2.5rem 0; border-top: 1px solid var(--border); }
   .stream-head { display: flex; align-items: center; gap: 0.8rem; margin-bottom: 1.6rem; }
   .pulse { font-size: 0.7rem; color: var(--accent-text);
@@ -317,9 +355,12 @@ function outlink(entry: { url?: string; urlLabel?: string; urlStyle?: string }) 
   .hero-title { font-size: clamp(1.4rem, 4vw, 1.9rem); margin: 0; line-height: 1.25; }
   .hero-loc { font-size: 0.82rem; color: var(--text-faint); margin: 0.4rem 0 0; }
   .hero-blurb { font-size: 1.08rem; line-height: 1.6; color: var(--text); margin: 0.8rem 0 0; max-width: 60ch; }
-  /* a slim lime accent on the featured hero */
-  .hero-entry.is-feat .hero-title {
-    padding-left: 0.9rem; border-left: 3px solid var(--lime);
+
+  /* "featured" label — reads as a tag, not a link */
+  .feat-tag {
+    display: inline-block; margin-left: 0.6rem;
+    font-size: 0.62rem; letter-spacing: 0.1em; text-transform: uppercase;
+    color: var(--accent-text);
   }
 
   .arch-intro {
@@ -327,13 +368,12 @@ function outlink(entry: { url?: string; urlLabel?: string; urlStyle?: string }) 
     margin: 0.5rem 0 0; letter-spacing: 0.03em;
   }
 
-  /* featured stream items: a lime left edge, slightly heavier */
-  .feed-item.is-feat { padding-left: 1rem; }
-  .feed-item.is-feat::before {
-    content: ''; position: absolute; left: 0; top: 1.1rem; bottom: 1.1rem;
-    width: 3px; background: var(--lime); border-radius: 2px;
+  /* featured stream items: a soft tinted card, not a colored edge */
+  .feed-item.is-feat {
+    padding-left: 1rem; padding-right: 1rem;
+    background: color-mix(in srgb, var(--lime) 6%, transparent);
+    border-radius: 10px;
   }
-  .feed-item.is-feat .feed-title { font-size: 1.18rem; }
 
   /* ARCHIVES */
   .archive { padding: 2.5rem 0; border-top: 1px solid var(--border); }
@@ -349,9 +389,31 @@ function outlink(entry: { url?: string; urlLabel?: string; urlStyle?: string }) 
   /* FOOT */
   .foot { padding: 2.5rem 0 3.5rem; border-top: 1px solid var(--border); }
   .foot p { max-width: 58ch; color: var(--text-muted); }
-  .foot-links { display: flex; gap: 1.2rem; margin: 1.2rem 0; flex-wrap: wrap; }
+
+  .socials { display: flex; align-items: center; gap: 0.9rem; margin: 1.4rem 0 0.4rem; flex-wrap: wrap; }
+  .social {
+    display: inline-flex; align-items: center; gap: 0.5rem;
+    color: var(--text-muted); border-bottom: none;
+    transition: color 0.15s ease, transform 0.15s ease;
+  }
+  .social :global(.social-ico) { width: 20px; height: 20px; display: block; }
+  .social:hover { color: var(--text); transform: translateY(-1px); }
+  .social.is-primary {
+    color: var(--text); font-family: var(--font-mono); font-size: 0.85rem;
+    border: 1px solid var(--border-strong); border-radius: 8px;
+    padding: 0.45rem 0.8rem; margin-right: 0.4rem;
+  }
+  .social.is-primary:hover { border-color: var(--lime); }
+
+  .foot-links { display: flex; gap: 1.2rem; margin: 1.4rem 0 0; flex-wrap: wrap; align-items: center; }
   .foot-links a { font-family: var(--font-mono); font-size: 0.85rem; }
   .colophon { font-size: 0.74rem; color: var(--text-faint); margin-top: 2rem; }
+
+  .pub-badge {
+    display: inline-block; margin-top: 0.5rem;
+    font-size: 0.7rem; letter-spacing: 0.04em; color: var(--text-faint);
+    border: 1px solid var(--border); border-radius: 5px; padding: 2px 7px;
+  }
 
   @media (max-width: 520px) {
     .feed-item { grid-template-columns: 60px 1fr; gap: 0.8rem; }
