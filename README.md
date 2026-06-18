@@ -119,3 +119,42 @@ urlLabel: "Read the recap"  # optional — overrides the auto label
 The platform name is detected from the URL (LinkedIn, etc.), and tracking
 parameters (`?utm_...`, `rcm=...`) should be stripped before pasting — they
 leak your session/member id and add nothing.
+
+## Site metadata (one place)
+
+All site-wide metadata lives in `src/data/site.ts` under the `meta` object —
+not in markdown, and not hard-coded in components. It's a `.ts` file so the
+editor autocompletes fields and the build catches typos.
+
+`meta` controls: `lang`, `ogLocale`, the `<title>` pattern, the default
+`description`, `author`, `ogImage`, and `themeColor`. The `<head>` in
+`BaseLayout.astro` reads everything from here.
+
+To set the social share image: add `public/og-image.jpg` (recommended
+**1200×630 px**) and set `ogImage: '/og-image.jpg'` in `site.ts`. Until then
+it stays `null` and no image meta tag is emitted (nothing broken).
+
+Note: the `keywords` meta tag is intentionally omitted — search engines have
+ignored it since ~2009; title, description, semantic HTML and the JSON-LD
+`Person` block are what actually matter.
+
+## Socials, email, and the Writing archive
+
+**Socials** live in `site.socials` (in `src/data/site.ts`), in priority order.
+The first entry with `primary: true` renders with an icon + label and a border;
+the rest are icon-only. Replace the `REPLACE_ME` placeholder URLs with your real
+profiles, reorder freely, or remove any you don't want shown. Icons live in
+`src/components/SocialIcon.astro` (recognisable brand shapes, uniform style).
+
+**Email** is never written as a plain string in the HTML. It's stored split
+(`emailUser` + `emailDomain`) and reassembled by JS on hover/click via
+`ContactEmail.astro`, so spam harvesters scraping the static source get nothing.
+To change it, edit the two fields in `site.ts`.
+
+**Writing** is a multi-source archive: each entry in `src/content/writing/`
+declares a `publication` (e.g. "Codemotion Magazine", "Medium") shown as a badge,
+and an external `url`. When you start publishing on Medium, just add a markdown
+file with `publication: Medium` and its URL — the site becomes the hub that
+points to your articles wherever they live. Internal article pages (hosted on the
+site itself) can be added later under `src/pages/writing/` and will open in the
+same tab; external links open in a new tab automatically.

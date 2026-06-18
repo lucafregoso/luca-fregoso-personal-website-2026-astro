@@ -1,0 +1,6 @@
+# robots.txt — allow everything, point to the sitemap.
+User-agent: *
+Allow: /
+
+# Update the host/path to your final domain before publishing.
+Sitemap: https://USERNAME.github.io/REPO/sitemap-index.xml

@@ -1,4 +1,5 @@
 import { defineConfig } from 'astro/config';
+import sitemap from '@astrojs/sitemap';
 
 // ─────────────────────────────────────────────────────────────
 // DEPLOY CONFIG — read this before publishing.
@@ -19,6 +20,7 @@ import { defineConfig } from 'astro/config';
 // ─────────────────────────────────────────────────────────────
 
 export default defineConfig({
-  site: 'https://lucafregoso.github.io',
-  base: '/luca-fregoso-personal-website-2026-astro',
+  site: 'https://USERNAME.github.io',
+  base: '/REPO',
+  integrations: [sitemap()],
 });

@@ -1,0 +1,159 @@
+---
+// Self-contained, zero-dependency lightbox.
+// Triggered by any <button data-lightbox="GALLERY_ID" data-index data-src data-alt>.
+// Buttons sharing a data-lightbox value form one navigable gallery.
+---
+
+<div class="lb" id="lightbox" role="dialog" aria-modal="true" aria-label="Image viewer" hidden>
+  <button class="lb-close" type="button" aria-label="Close (Esc)">✕</button>
+  <button class="lb-nav lb-prev" type="button" aria-label="Previous image">‹</button>
+  <figure class="lb-stage">
+    <img class="lb-img" src="" alt="" />
+    <figcaption class="lb-cap mono"></figcaption>
+  </figure>
+  <button class="lb-nav lb-next" type="button" aria-label="Next image">›</button>
+  <div class="lb-count mono" aria-hidden="true"></div>
+</div>
+
+<style>
+  .lb {
+    position: fixed; inset: 0; z-index: 1000;
+    display: flex; align-items: center; justify-content: center;
+    background: rgba(8, 10, 14, 0.92);
+    padding: 4vh 4vw;
+  }
+  .lb[hidden] { display: none; }
+  @media (prefers-reduced-motion: no-preference) {
+    .lb { animation: lb-fade 0.18s ease; }
+    @keyframes lb-fade { from { opacity: 0; } to { opacity: 1; } }
+  }
+
+  .lb-stage { margin: 0; max-width: 100%; max-height: 100%;
+              display: flex; flex-direction: column; align-items: center; gap: 0.8rem; }
+  .lb-img {
+    max-width: 100%; max-height: 84vh; width: auto; height: auto;
+    border-radius: 8px; box-shadow: 0 8px 40px rgba(0,0,0,0.5);
+    object-fit: contain; touch-action: pan-y;
+  }
+  .lb-cap { color: rgba(230,237,243,0.7); font-size: 0.8rem; text-align: center; max-width: 60ch; }
+
+  .lb-close, .lb-nav {
+    position: absolute; background: rgba(255,255,255,0.08); color: #e6edf3;
+    border: 1px solid rgba(255,255,255,0.15); cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    border-radius: 50%; transition: background 0.15s, border-color 0.15s;
+  }
+  .lb-close:hover, .lb-nav:hover { background: rgba(208,219,2,0.2); border-color: var(--lime); }
+  .lb-close { top: 3vh; right: 3vw; width: 44px; height: 44px; font-size: 1.1rem; }
+  .lb-nav { top: 50%; transform: translateY(-50%); width: 52px; height: 52px; font-size: 2rem; line-height: 1; }
+  .lb-prev { left: 2vw; }
+  .lb-next { right: 2vw; }
+  .lb-nav[disabled] { opacity: 0.25; cursor: default; }
+  .lb-nav[hidden] { display: none; }
+
+  .lb-count { position: absolute; bottom: 3vh; left: 50%; transform: translateX(-50%);
+              color: rgba(230,237,243,0.6); font-size: 0.8rem; }
+
+  @media (max-width: 600px) {
+    .lb-nav { width: 42px; height: 42px; font-size: 1.5rem; }
+    .lb-close { top: 2vh; right: 4vw; }
+  }
+</style>
+
+<script>
+  (function () {
+    const lb = document.getElementById('lightbox');
+    if (!lb) return;
+    const imgEl = lb.querySelector('.lb-img') as HTMLImageElement;
+    const capEl = lb.querySelector('.lb-cap') as HTMLElement;
+    const countEl = lb.querySelector('.lb-count') as HTMLElement;
+    const btnClose = lb.querySelector('.lb-close') as HTMLButtonElement;
+    const btnPrev = lb.querySelector('.lb-prev') as HTMLButtonElement;
+    const btnNext = lb.querySelector('.lb-next') as HTMLButtonElement;
+
+    let gallery: { src: string; alt: string }[] = [];
+    let index = 0;
+    let lastFocused: HTMLElement | null = null;
+
+    function render() {
+      const item = gallery[index];
+      if (!item) return;
+      imgEl.src = item.src;
+      imgEl.alt = item.alt;
+      capEl.textContent = item.alt || '';
+      capEl.style.display = item.alt ? '' : 'none';
+      const multi = gallery.length > 1;
+      btnPrev.hidden = !multi;
+      btnNext.hidden = !multi;
+      countEl.textContent = multi ? `${index + 1} / ${gallery.length}` : '';
+      btnPrev.disabled = index === 0;
+      btnNext.disabled = index === gallery.length - 1;
+    }
+
+    function open(galleryId: string, startIndex: number, trigger: HTMLElement) {
+      lastFocused = trigger;
+      const nodes = Array.from(
+        document.querySelectorAll(`[data-lightbox="${galleryId}"]`)
+      ) as HTMLElement[];
+      gallery = nodes
+        .sort((a, b) => Number(a.dataset.index) - Number(b.dataset.index))
+        .map((n) => ({ src: n.dataset.src || '', alt: n.dataset.alt || '' }));
+      index = startIndex;
+      render();
+      lb.hidden = false;
+      document.body.style.overflow = 'hidden';
+      btnClose.focus();
+      document.addEventListener('keydown', onKey);
+    }
+
+    function close() {
+      lb.hidden = true;
+      document.body.style.overflow = '';
+      document.removeEventListener('keydown', onKey);
+      if (lastFocused) lastFocused.focus();
+    }
+
+    function next() { if (index < gallery.length - 1) { index++; render(); } }
+    function prev() { if (index > 0) { index--; render(); } }
+
+    function onKey(e: KeyboardEvent) {
+      if (e.key === 'Escape') close();
+      else if (e.key === 'ArrowRight') next();
+      else if (e.key === 'ArrowLeft') prev();
+      else if (e.key === 'Tab') {
+        // simple focus trap: keep focus on the close button
+        e.preventDefault();
+        btnClose.focus();
+      }
+    }
+
+    // Wire up all triggers
+    document.querySelectorAll('[data-lightbox]').forEach((el) => {
+      el.addEventListener('click', () => {
+        const t = el as HTMLElement;
+        open(t.dataset.lightbox || '', Number(t.dataset.index) || 0, t);
+      });
+    });
+
+    btnClose.addEventListener('click', close);
+    btnNext.addEventListener('click', next);
+    btnPrev.addEventListener('click', prev);
+    // click on backdrop (not the image) closes
+    lb.addEventListener('click', (e) => {
+      if (e.target === lb || (e.target as HTMLElement).classList.contains('lb-stage')) close();
+    });
+
+    // Touch swipe on mobile
+    let startX = 0, startY = 0;
+    imgEl.addEventListener('touchstart', (e) => {
+      startX = e.touches[0].clientX; startY = e.touches[0].clientY;
+    }, { passive: true });
+    imgEl.addEventListener('touchend', (e) => {
+      const dx = e.changedTouches[0].clientX - startX;
+      const dy = e.changedTouches[0].clientY - startY;
+      if (Math.abs(dx) > 50 && Math.abs(dx) > Math.abs(dy)) {
+        if (dx < 0) next(); else prev();
+      }
+    }, { passive: true });
+  })();
+</script>

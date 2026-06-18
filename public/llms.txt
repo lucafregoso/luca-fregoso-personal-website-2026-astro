@@ -1,0 +1,22 @@
+# Luca Fregoso
+
+> Developer Programs & Content Lead and Technical Presales at Codemotion.
+> Fifteen years as a full-stack developer, now leading content and speaker
+> curation for Europe's developer conferences and defining technical solutions
+> with enterprise clients. Bilingual (Italian/English), based in La Spezia,
+> Italy, open to full-remote roles internationally.
+
+## About
+- Leads content, speaker curation (CFP) and technical presales at Codemotion.
+- Curates ~90-session agendas from ~600 proposals per edition across Rome,
+  Madrid and Milan, for audiences of 2,000-3,000 developers.
+- Built a technical academy from zero (~200 people trained) at HRM Group.
+- Experienced MC at European developer events (DevFest, Cloud Native Days, etc.).
+
+## Links
+- LinkedIn: https://www.linkedin.com/in/lucafregoso
+- Speaker profile (Sessionize): https://sessionize.com/luca-fregoso/
+- Writing (Codemotion Magazine): https://www.codemotion.com/magazine/it/author/luca-fregoso/
+
+## Contact
+- Email: luca.fregoso@gmail.com
