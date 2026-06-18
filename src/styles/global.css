@@ -1,0 +1,153 @@
+/* ============================================================
+   Design tokens
+   Lime #D0DB02 is used ONLY as a structural accent (borders,
+   prompts, underlines, the cursor) — never as body text, where
+   its contrast is too low to be readable.
+   For readable accent text we use a darker derived green.
+   ============================================================ */
+
+:root {
+  /* Brand */
+  --lime: #d0db02;            /* structural accent only */
+  --lime-dim: #aab300;        /* slightly muted lime for hover fills */
+  --accent-text-light: #5b6300; /* readable green text on light bg */
+  --accent-text-dark: #c3ce4a;  /* readable green text on dark bg */
+
+  /* Light theme (default) */
+  --bg: #fbfbf7;
+  --surface: #ffffff;
+  --surface-2: #f3f3ec;
+  --text: #1a1a1a;
+  --text-muted: #5f5f5a;
+  --text-faint: #8a8a82;
+  --border: #e3e3d8;
+  --border-strong: #cfcfc2;
+  --accent-text: var(--accent-text-light);
+
+  --font-sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  --font-mono: ui-monospace, "SF Mono", "JetBrains Mono", "Fira Code", Menlo, Consolas, monospace;
+
+  --maxw: 760px;
+  --radius: 10px;
+}
+
+:root[data-theme="dark"] {
+  --bg: #0d1117;
+  --surface: #161b22;
+  --surface-2: #1c222b;
+  --text: #e6edf3;
+  --text-muted: #9aa4b1;
+  --text-faint: #6e7681;
+  --border: #2a313c;
+  --border-strong: #3a424e;
+  --accent-text: var(--accent-text-dark);
+}
+
+/* Respect OS preference on first load when no choice stored.
+   (The inline script in BaseLayout sets data-theme before paint.) */
+
+* { box-sizing: border-box; }
+
+html {
+  scroll-behavior: smooth;
+}
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-sans);
+  font-size: 17px;
+  line-height: 1.7;
+  -webkit-font-smoothing: antialiased;
+  transition: background 0.25s ease, color 0.25s ease;
+}
+
+.wrap {
+  max-width: var(--maxw);
+  margin: 0 auto;
+  padding: 0 1.5rem;
+}
+
+a {
+  color: var(--accent-text);
+  text-decoration: none;
+  border-bottom: 1px solid transparent;
+  transition: border-color 0.15s ease;
+}
+a:hover { border-bottom-color: var(--lime); }
+
+h1, h2, h3 { font-weight: 600; letter-spacing: -0.02em; line-height: 1.2; }
+
+/* Mono accents for technical metadata */
+.mono { font-family: var(--font-mono); }
+.prompt { color: var(--accent-text); font-family: var(--font-mono); }
+
+/* Section header: $ ./section-name */
+.section { padding: 3.5rem 0; border-top: 1px solid var(--border); }
+.section:first-of-type { border-top: none; }
+.section-label {
+  font-family: var(--font-mono);
+  font-size: 0.85rem;
+  color: var(--text-faint);
+  margin-bottom: 1.5rem;
+}
+.section-label .dir { color: var(--accent-text); }
+.section h2 { font-size: 1.6rem; margin: 0 0 0.5rem; }
+
+/* Cards */
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 1.25rem 1.4rem;
+  transition: border-color 0.15s ease, transform 0.15s ease;
+}
+.card:hover { border-color: var(--border-strong); }
+
+.tag {
+  display: inline-block;
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  color: var(--text-muted);
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 2px 8px;
+  margin: 2px 4px 2px 0;
+}
+
+/* Focus visibility for keyboard users */
+:focus-visible {
+  outline: 2px solid var(--lime);
+  outline-offset: 2px;
+  border-radius: 2px;
+}
+
+/* Theme toggle button */
+.theme-toggle {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  color: var(--text-muted);
+  border-radius: 8px;
+  width: 38px; height: 38px;
+  cursor: pointer;
+  font-size: 1rem;
+  display: inline-flex; align-items: center; justify-content: center;
+  transition: border-color 0.15s ease, color 0.15s ease;
+}
+.theme-toggle:hover { border-color: var(--lime); color: var(--text); }
+
+.skip-link {
+  position: absolute; left: -999px; top: 0;
+  background: var(--lime); color: #1a1a1a;
+  padding: 0.5rem 1rem; font-weight: 600; z-index: 100;
+}
+.skip-link:focus { left: 0; }

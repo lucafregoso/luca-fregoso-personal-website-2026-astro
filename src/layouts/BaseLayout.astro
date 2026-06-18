@@ -1,0 +1,72 @@
+---
+import '../styles/global.css';
+import { site } from '../data/site';
+import { withBase } from '../lib/url';
+
+interface Props {
+  title?: string;
+  description?: string;
+}
+const {
+  title = `${site.name} — ${site.role}`,
+  description = site.bioShort,
+} = Astro.props;
+const canonical = new URL(Astro.url.pathname, Astro.site);
+---
+
+<!doctype html>
+<html lang="en" data-theme="light">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="icon" href={withBase('/favicon.svg')} type="image/svg+xml" />
+    <title>{title}</title>
+    <meta name="description" content={description} />
+    <link rel="canonical" href={canonical} />
+
+    <!-- Open Graph / Twitter -->
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={canonical} />
+    <meta name="twitter:card" content="summary" />
+    <meta name="twitter:title" content={title} />
+    <meta name="twitter:description" content={description} />
+
+    <!-- JSON-LD: helps Google show you as a Person entity -->
+    <script type="application/ld+json" set:html={JSON.stringify({
+      '@context': 'https://schema.org',
+      '@type': 'Person',
+      name: site.name,
+      jobTitle: site.role,
+      email: `mailto:${site.email}`,
+      url: Astro.site?.toString(),
+      sameAs: [site.links.linkedin, site.links.sessionize, site.links.codemotion],
+    })} />
+
+    <!-- Set theme before paint to avoid a flash -->
+    <script is:inline>
+      (function () {
+        try {
+          var stored = localStorage.getItem('theme');
+          var prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+          var theme = stored || (prefersDark ? 'dark' : 'light');
+          document.documentElement.setAttribute('data-theme', theme);
+        } catch (e) {}
+      })();
+    </script>
+  </head>
+  <body>
+    <a href="#main" class="skip-link">Skip to content</a>
+    <slot />
+
+    <!-- A little something for those who open the devtools -->
+    <script is:inline>
+      console.log(
+        '%cYou opened the devtools. Of course you did.%c\nLuca Fregoso · luca.fregoso@gmail.com',
+        'color:#d0db02;font-family:monospace;font-weight:bold;',
+        'color:#9aa4b1;font-family:monospace;'
+      );
+    </script>
+  </body>
+</html>
