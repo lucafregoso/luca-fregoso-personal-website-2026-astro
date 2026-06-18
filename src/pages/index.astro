@@ -2,6 +2,7 @@
 import { getCollection } from 'astro:content';
 import BaseLayout from '../layouts/BaseLayout.astro';
 import ThemeToggle from '../components/ThemeToggle.astro';
+import Media from '../components/Media.astro';
 import { site } from '../data/site';
 import { withBase } from '../lib/url';
 
@@ -42,6 +43,19 @@ const latest = past[0]?.data.date;
 const stale = latest
   ? (todayMs - latest.valueOf()) / 86400000 > 75
   : true;
+
+// Derive a human label + host for an outbound link.
+function outlink(entry: { url?: string; urlLabel?: string; urlStyle?: string }) {
+  if (!entry.url) return null;
+  let host = '';
+  try { host = new URL(entry.url).hostname.replace(/^www\./, ''); } catch {}
+  const isLinkedIn = host.includes('linkedin');
+  const platform = isLinkedIn ? 'LinkedIn' : host;
+  const label =
+    entry.urlLabel ??
+    (entry.urlStyle === 'strong' ? `Read the full post on ${platform}` : `Read it on ${platform}`);
+  return { href: entry.url, label, strong: entry.urlStyle === 'strong' };
+}
 ---
 
 <BaseLayout>
@@ -81,7 +95,7 @@ const stale = latest
             <li class="up-item">
               <span class="up-tag mono">upcoming</span>
               <span class="up-title">
-                {e.data.url ? <a href={e.data.url}>{e.data.title}</a> : e.data.title}
+                {e.data.title}
                 {e.data.location && <span class="up-loc mono"> · {e.data.location}</span>}
               </span>
               <time class="up-date mono" datetime={e.data.date.toISOString()}>{dayMonth(e.data.date)}</time>
@@ -97,16 +111,17 @@ const stale = latest
             <span class="hero-kind">{kindLabel[heroEntry.data.kind] ?? heroEntry.data.kind}</span>
             <time datetime={heroEntry.data.date.toISOString()}>{fullDate(heroEntry.data.date)}</time>
           </div>
-          <h3 class="hero-title">
-            {heroEntry.data.url
-              ? <a href={heroEntry.data.url}>{heroEntry.data.title}</a>
-              : heroEntry.data.title}
-          </h3>
+          <h3 class="hero-title">{heroEntry.data.title}</h3>
           {heroEntry.data.location && <p class="hero-loc mono">{heroEntry.data.location}</p>}
           {heroEntry.data.blurb && <p class="hero-blurb">{heroEntry.data.blurb}</p>}
-          {heroEntry.data.image && (
-            <a class="hero-img-wrap" href={heroEntry.data.url ?? withBase(heroEntry.data.image)}>
-              <img class="hero-img" src={withBase(heroEntry.data.image)} alt={heroEntry.data.imageAlt ?? heroEntry.data.title} loading="lazy" />
+          <Media
+            media={heroEntry.data.media}
+            layout={heroEntry.data.layout ?? 'full'}
+          />
+          {outlink(heroEntry.data) && (
+            <a class={`outlink mono ${outlink(heroEntry.data)!.strong ? 'is-strong' : ''}`}
+               href={outlink(heroEntry.data)!.href} target="_blank" rel="noopener noreferrer">
+              {outlink(heroEntry.data)!.label} <span class="arr" aria-hidden="true">↗</span>
             </a>
           )}
         </article>
@@ -122,10 +137,20 @@ const stale = latest
             <div class="feed-body">
               <span class="feed-kind mono">{kindLabel[e.data.kind] ?? e.data.kind}</span>
               <h3 class="feed-title">
-                {e.data.url ? <a href={e.data.url}>{e.data.title}</a> : e.data.title}
+                {e.data.title}
                 {e.data.location && <span class="feed-loc mono"> · {e.data.location}</span>}
               </h3>
               {e.data.blurb && <p class="feed-blurb">{e.data.blurb}</p>}
+              <Media
+                media={e.data.media}
+                layout={e.data.layout ?? 'compact'}
+              />
+              {outlink(e.data) && (
+                <a class={`outlink mono ${outlink(e.data)!.strong ? 'is-strong' : ''}`}
+                   href={outlink(e.data)!.href} target="_blank" rel="noopener noreferrer">
+                  {outlink(e.data)!.label} <span class="arr" aria-hidden="true">↗</span>
+                </a>
+              )}
             </div>
           </li>
         ))}
@@ -244,10 +269,21 @@ const stale = latest
   .feed-loc { font-weight: 400; font-size: 0.8rem; color: var(--text-faint); }
   .feed-blurb { margin: 0.4rem 0 0; color: var(--text-muted); font-size: 0.96rem; max-width: 58ch; }
 
-  .feed-img-wrap { display: block; margin-top: 0.9rem; border-radius: 10px; overflow: hidden;
-                   border: 1px solid var(--border); max-width: 100%; }
-  .feed-img-wrap:hover { border-color: var(--lime); }
-  .feed-img { display: block; width: 100%; height: auto; }
+  /* Outbound link — always opens a new tab, never the title */
+  .outlink {
+    display: inline-flex; align-items: center; gap: 0.35rem;
+    margin-top: 0.8rem; font-size: 0.8rem;
+    color: var(--text-muted);
+    border-bottom: 1px solid transparent;
+  }
+  .outlink .arr { color: var(--accent-text); }
+  .outlink:hover { color: var(--text); border-bottom-color: var(--lime); }
+  .outlink.is-strong {
+    font-size: 0.85rem; font-weight: 600; color: var(--accent-text);
+    border: 1px solid var(--border-strong); border-radius: 8px;
+    padding: 0.45rem 0.9rem; margin-top: 1rem;
+  }
+  .outlink.is-strong:hover { border-color: var(--lime); background: var(--surface-2); }
 
   /* UPCOMING — pinned future entries */
   .upcoming { list-style: none; margin: 0 0 2rem; padding: 0; }
@@ -281,12 +317,6 @@ const stale = latest
   .hero-title { font-size: clamp(1.4rem, 4vw, 1.9rem); margin: 0; line-height: 1.25; }
   .hero-loc { font-size: 0.82rem; color: var(--text-faint); margin: 0.4rem 0 0; }
   .hero-blurb { font-size: 1.08rem; line-height: 1.6; color: var(--text); margin: 0.8rem 0 0; max-width: 60ch; }
-  .hero-img-wrap {
-    display: block; margin-top: 1.3rem; border-radius: 12px; overflow: hidden;
-    border: 1px solid var(--border);
-  }
-  .hero-img-wrap:hover { border-color: var(--lime); }
-  .hero-img { display: block; width: 100%; height: auto; }
   /* a slim lime accent on the featured hero */
   .hero-entry.is-feat .hero-title {
     padding-left: 0.9rem; border-left: 3px solid var(--lime);

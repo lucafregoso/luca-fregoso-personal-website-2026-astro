@@ -65,3 +65,57 @@ The structure is ready for more:
 1. In `astro.config.mjs`, set `site` to your final domain.
 2. Replace `public/cv.pdf` with your latest CV.
 3. Review `src/data/site.ts` links (Twitter/Instagram are included — remove any you don't want public).
+
+## Adding media to a "Lately" entry
+
+Each entry in `src/content/now/` can carry any mix of media via a `media` list.
+Put image/video files in `public/` and reference them with a leading slash.
+
+```yaml
+media:
+  - type: image                 # one image → shown large
+    src: /my-photo.jpg
+    alt: "Description for accessibility."
+  - type: image                 # two or more images → automatic gallery
+    src: /another.jpg
+    alt: "..."
+  - type: video                 # self-hosted video, native player, no tracking
+    src: /clip.mp4
+    poster: /clip-thumb.jpg     # optional
+  - type: link                  # clean card to e.g. a LinkedIn post (no iframe)
+    url: https://www.linkedin.com/posts/...
+    label: "Read the recap on LinkedIn"
+
+# Optional: force media size regardless of featured state
+layout: full        # 'full' = large, 'compact' = smaller thumbs
+```
+
+Notes:
+- `url:` on the entry itself is the generic outbound link the title points to.
+- LinkedIn is linked, never embedded: no third-party cookies, no GDPR headache,
+  and the look stays consistent with the rest of the site.
+- A single image renders large; multiple images auto-arrange into a grid.
+
+## Linking out to LinkedIn (or anywhere) from a "Lately" entry
+
+By design, the **title of an entry is never an external link** — clicking it
+never throws the reader off your site unexpectedly. Instead, the outbound link
+is an explicit row beneath the text, and it always opens in a new tab.
+
+You choose, per entry, how prominent that link is:
+
+| You want… | Set in the entry | Result |
+|---|---|---|
+| No link — text is complete on your site | omit `url` | nothing extra shown |
+| A quiet pointer (text is self-sufficient) | `url:` + `urlStyle: subtle` | small "Read it on LinkedIn ↗" |
+| A strong pointer (text is an excerpt) | `url:` + `urlStyle: strong` | framed "Read the full post on LinkedIn ↗" |
+
+```yaml
+url: "https://www.linkedin.com/posts/..."
+urlStyle: strong          # or: subtle  (default is subtle when url is set)
+urlLabel: "Read the recap"  # optional — overrides the auto label
+```
+
+The platform name is detected from the URL (LinkedIn, etc.), and tracking
+parameters (`?utm_...`, `rcm=...`) should be stripped before pasting — they
+leak your session/member id and add nothing.
