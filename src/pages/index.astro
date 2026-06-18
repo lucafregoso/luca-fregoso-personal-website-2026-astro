@@ -1,0 +1,329 @@
+---
+import { getCollection } from 'astro:content';
+import BaseLayout from '../layouts/BaseLayout.astro';
+import ThemeToggle from '../components/ThemeToggle.astro';
+import { site } from '../data/site';
+import { withBase } from '../lib/url';
+
+const allNow = (await getCollection('now')).sort(
+  (a, b) => b.data.date.valueOf() - a.data.date.valueOf()
+);
+const todayMs = Date.now();
+const upcoming = allNow
+  .filter((e) => e.data.date.valueOf() > todayMs)
+  .sort((a, b) => a.data.date.valueOf() - b.data.date.valueOf()); // soonest first
+const past = allNow.filter((e) => e.data.date.valueOf() <= todayMs);
+const heroEntry = past[0];
+const restEntries = past.slice(1);
+
+const talks = (await getCollection('talks')).sort(
+  (a, b) => a.data.order - b.data.order
+);
+const writing = (await getCollection('writing')).sort(
+  (a, b) => b.data.date.valueOf() - a.data.date.valueOf()
+);
+
+const monthYear = (d: Date) =>
+  d.toLocaleDateString('en-GB', { year: 'numeric', month: 'short' });
+const dayMonth = (d: Date) =>
+  d.toLocaleDateString('en-GB', { day: '2-digit', month: 'short' });
+const fullDate = (d: Date) =>
+  d.toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
+
+const kindLabel: Record<string, string> = {
+  speaking: 'on stage',
+  writing: 'wrote',
+  milestone: 'milestone',
+  building: 'shipped',
+  note: 'note',
+};
+
+const latest = past[0]?.data.date;
+const stale = latest
+  ? (todayMs - latest.valueOf()) / 86400000 > 75
+  : true;
+---
+
+<BaseLayout>
+  <div class="wrap">
+    <!-- TOP -->
+    <div class="top">
+      <span class="brand mono">luca&middot;fregoso</span>
+      <ThemeToggle />
+    </div>
+
+    <!-- INTRO -->
+    <header class="intro">
+      <h1 class="name">Luca Fregoso</h1>
+      <p class="currently">{site.currently}</p>
+      <div class="intro-body">
+        {site.intro.map((p) => <p>{p}</p>)}
+      </div>
+      <nav class="intro-links">
+        <a href={site.links.linkedin}>LinkedIn</a>
+        <a href={site.links.sessionize}>Sessionize</a>
+        <a href={site.links.codemotion}>Writing</a>
+        <a href={withBase("/cv.pdf")}>CV</a>
+      </nav>
+    </header>
+
+    <!-- THE STREAM -->
+    <section class="stream" id="now" aria-label="What I'm up to">
+      <div class="stream-head">
+        <h2><span class="lime-bar"></span>Lately</h2>
+        {!stale && <span class="pulse mono" title="Recently updated">live</span>}
+      </div>
+
+      {/* UPCOMING — future-dated entries, pinned on top */}
+      {upcoming.length > 0 && (
+        <ul class="upcoming">
+          {upcoming.map((e) => (
+            <li class="up-item">
+              <span class="up-tag mono">upcoming</span>
+              <span class="up-title">
+                {e.data.url ? <a href={e.data.url}>{e.data.title}</a> : e.data.title}
+                {e.data.location && <span class="up-loc mono"> · {e.data.location}</span>}
+              </span>
+              <time class="up-date mono" datetime={e.data.date.toISOString()}>{dayMonth(e.data.date)}</time>
+            </li>
+          ))}
+        </ul>
+      )}
+
+      {/* HERO — most recent past entry, in full */}
+      {heroEntry && (
+        <article class={`hero-entry ${heroEntry.data.featured ? 'is-feat' : ''}`}>
+          <div class="hero-meta mono">
+            <span class="hero-kind">{kindLabel[heroEntry.data.kind] ?? heroEntry.data.kind}</span>
+            <time datetime={heroEntry.data.date.toISOString()}>{fullDate(heroEntry.data.date)}</time>
+          </div>
+          <h3 class="hero-title">
+            {heroEntry.data.url
+              ? <a href={heroEntry.data.url}>{heroEntry.data.title}</a>
+              : heroEntry.data.title}
+          </h3>
+          {heroEntry.data.location && <p class="hero-loc mono">{heroEntry.data.location}</p>}
+          {heroEntry.data.blurb && <p class="hero-blurb">{heroEntry.data.blurb}</p>}
+          {heroEntry.data.image && (
+            <a class="hero-img-wrap" href={heroEntry.data.url ?? withBase(heroEntry.data.image)}>
+              <img class="hero-img" src={withBase(heroEntry.data.image)} alt={heroEntry.data.imageAlt ?? heroEntry.data.title} loading="lazy" />
+            </a>
+          )}
+        </article>
+      )}
+
+      {/* THE REST — tight list */}
+      <ol class="feed">
+        {restEntries.map((e) => (
+          <li class={`feed-item ${e.data.featured ? 'is-feat' : ''}`}>
+            <time class="feed-date mono" datetime={e.data.date.toISOString()}>
+              {dayMonth(e.data.date)}<span class="yr">{e.data.date.getFullYear()}</span>
+            </time>
+            <div class="feed-body">
+              <span class="feed-kind mono">{kindLabel[e.data.kind] ?? e.data.kind}</span>
+              <h3 class="feed-title">
+                {e.data.url ? <a href={e.data.url}>{e.data.title}</a> : e.data.title}
+                {e.data.location && <span class="feed-loc mono"> · {e.data.location}</span>}
+              </h3>
+              {e.data.blurb && <p class="feed-blurb">{e.data.blurb}</p>}
+            </div>
+          </li>
+        ))}
+      </ol>
+    </section>
+
+    <!-- TALKS ARCHIVE -->
+    <section class="archive" id="talks">
+      <h2><span class="lime-bar"></span>Talks</h2>
+      <p class="arch-intro mono">selected sessions · an ongoing archive</p>
+      <div class="arch-list">
+        {talks.map((t) => (
+          <article class="arch-item">
+            <h3>
+              {t.data.sessionizeUrl
+                ? <a href={t.data.sessionizeUrl}>{t.data.title}</a>
+                : t.data.title}
+            </h3>
+            <p class="arch-blurb">{t.data.abstract}</p>
+            <p class="arch-meta mono">{t.data.events.join('  ·  ')}</p>
+          </article>
+        ))}
+      </div>
+      <a class="more mono" href={site.links.sessionize}>full speaker profile &rarr;</a>
+    </section>
+
+    <!-- WRITING ARCHIVE -->
+    <section class="archive" id="writing">
+      <h2><span class="lime-bar"></span>Writing</h2>
+      <p class="arch-intro mono">selected articles · an ongoing archive</p>
+      <div class="arch-list">
+        {writing.map((w) => (
+          <article class="arch-item compact">
+            <div class="arch-row">
+              <h3><a href={w.data.url}>{w.data.title}</a></h3>
+              <span class="arch-date mono">{monthYear(w.data.date)}</span>
+            </div>
+            <p class="arch-blurb">{w.data.summary}</p>
+          </article>
+        ))}
+      </div>
+      <a class="more mono" href={site.links.codemotion}>all articles &rarr;</a>
+    </section>
+
+    <!-- CONTACT -->
+    <footer class="foot" id="contact">
+      <h2><span class="lime-bar"></span>Get in touch</h2>
+      <p>Open to senior roles in developer programs, technical content and presales — full remote, international included.</p>
+      <div class="foot-links">
+        <a href={site.links.email}>{site.email}</a>
+        <a href={site.links.linkedin}>LinkedIn</a>
+        <a href={withBase("/cv.pdf")}>CV (PDF)</a>
+      </div>
+      <p class="colophon mono">Built with Astro. Updated by hand, on purpose.</p>
+    </footer>
+  </div>
+</BaseLayout>
+
+<style>
+  .top { display: flex; justify-content: space-between; align-items: center; padding: 1.4rem 0; }
+  .brand { font-size: 0.82rem; color: var(--text-faint); letter-spacing: 0.05em; }
+
+  /* INTRO */
+  .intro { padding: 2rem 0 3rem; }
+  .name {
+    font-size: clamp(2.4rem, 7vw, 3.6rem);
+    margin: 0 0 0.4rem;
+    letter-spacing: -0.03em;
+  }
+  .currently {
+    font-family: var(--font-mono);
+    font-size: 0.9rem;
+    color: var(--accent-text);
+    margin: 0 0 1.8rem;
+    line-height: 1.5;
+    max-width: 60ch;
+  }
+  .intro-body p {
+    font-size: 1.18rem;
+    line-height: 1.65;
+    margin: 0 0 1rem;
+    max-width: 60ch;
+    color: var(--text);
+  }
+  .intro-links { display: flex; gap: 1.3rem; margin-top: 1.6rem; flex-wrap: wrap; }
+  .intro-links a { font-family: var(--font-mono); font-size: 0.85rem; }
+
+  /* shared section headings with a lime tick */
+  h2 { font-size: 1.05rem; text-transform: lowercase; letter-spacing: 0.04em;
+       color: var(--text-muted); font-weight: 600; display: flex; align-items: center; }
+  .lime-bar { display: inline-block; width: 14px; height: 3px; background: var(--lime);
+              margin-right: 10px; border-radius: 2px; }
+
+  /* STREAM */
+  .stream { padding: 2.5rem 0; border-top: 1px solid var(--border); }
+  .stream-head { display: flex; align-items: center; gap: 0.8rem; margin-bottom: 1.6rem; }
+  .pulse { font-size: 0.7rem; color: var(--accent-text);
+           border: 1px solid var(--border-strong); border-radius: 20px; padding: 1px 9px; }
+
+  .feed { list-style: none; margin: 0; padding: 0; }
+  .feed-item {
+    display: grid; grid-template-columns: 76px 1fr; gap: 1.1rem;
+    padding: 1.1rem 0; border-bottom: 1px solid var(--border);
+    position: relative;
+  }
+  .feed-date {
+    font-size: 0.78rem; color: var(--text-faint); line-height: 1.3; text-align: right;
+    padding-top: 0.2rem;
+  }
+  .feed-date .yr { display: block; opacity: 0.6; }
+  .feed-kind {
+    font-size: 0.68rem; text-transform: uppercase; letter-spacing: 0.08em;
+    color: var(--accent-text); display: block; margin-bottom: 0.25rem;
+  }
+  .feed-title { font-size: 1.05rem; margin: 0; font-weight: 600; line-height: 1.35; }
+  .feed-loc { font-weight: 400; font-size: 0.8rem; color: var(--text-faint); }
+  .feed-blurb { margin: 0.4rem 0 0; color: var(--text-muted); font-size: 0.96rem; max-width: 58ch; }
+
+  .feed-img-wrap { display: block; margin-top: 0.9rem; border-radius: 10px; overflow: hidden;
+                   border: 1px solid var(--border); max-width: 100%; }
+  .feed-img-wrap:hover { border-color: var(--lime); }
+  .feed-img { display: block; width: 100%; height: auto; }
+
+  /* UPCOMING — pinned future entries */
+  .upcoming { list-style: none; margin: 0 0 2rem; padding: 0; }
+  .up-item {
+    display: flex; align-items: baseline; gap: 0.8rem;
+    padding: 0.7rem 0.9rem; margin-bottom: 0.5rem;
+    border: 1px dashed var(--border-strong); border-radius: 9px;
+    background: var(--surface);
+  }
+  .up-tag {
+    font-size: 0.62rem; text-transform: uppercase; letter-spacing: 0.1em;
+    color: #1a1a1a; background: var(--lime); border-radius: 4px;
+    padding: 2px 7px; white-space: nowrap; flex-shrink: 0;
+  }
+  .up-title { font-weight: 600; font-size: 1rem; flex: 1; }
+  .up-loc { font-weight: 400; font-size: 0.78rem; color: var(--text-faint); }
+  .up-date { font-size: 0.78rem; color: var(--text-muted); white-space: nowrap; flex-shrink: 0; }
+
+  /* HERO ENTRY — the most recent thing, in full */
+  .hero-entry {
+    padding: 1.6rem 0 2rem;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 1.5rem;
+  }
+  .hero-meta {
+    display: flex; gap: 1rem; align-items: center;
+    font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.08em;
+    color: var(--text-faint); margin-bottom: 0.5rem;
+  }
+  .hero-meta .hero-kind { color: var(--accent-text); }
+  .hero-title { font-size: clamp(1.4rem, 4vw, 1.9rem); margin: 0; line-height: 1.25; }
+  .hero-loc { font-size: 0.82rem; color: var(--text-faint); margin: 0.4rem 0 0; }
+  .hero-blurb { font-size: 1.08rem; line-height: 1.6; color: var(--text); margin: 0.8rem 0 0; max-width: 60ch; }
+  .hero-img-wrap {
+    display: block; margin-top: 1.3rem; border-radius: 12px; overflow: hidden;
+    border: 1px solid var(--border);
+  }
+  .hero-img-wrap:hover { border-color: var(--lime); }
+  .hero-img { display: block; width: 100%; height: auto; }
+  /* a slim lime accent on the featured hero */
+  .hero-entry.is-feat .hero-title {
+    padding-left: 0.9rem; border-left: 3px solid var(--lime);
+  }
+
+  .arch-intro {
+    font-size: 0.76rem; color: var(--text-faint);
+    margin: 0.5rem 0 0; letter-spacing: 0.03em;
+  }
+
+  /* featured stream items: a lime left edge, slightly heavier */
+  .feed-item.is-feat { padding-left: 1rem; }
+  .feed-item.is-feat::before {
+    content: ''; position: absolute; left: 0; top: 1.1rem; bottom: 1.1rem;
+    width: 3px; background: var(--lime); border-radius: 2px;
+  }
+  .feed-item.is-feat .feed-title { font-size: 1.18rem; }
+
+  /* ARCHIVES */
+  .archive { padding: 2.5rem 0; border-top: 1px solid var(--border); }
+  .arch-list { margin-top: 1.5rem; display: flex; flex-direction: column; gap: 1.5rem; }
+  .arch-item h3 { font-size: 1.08rem; margin: 0 0 0.4rem; }
+  .arch-item.compact h3 { font-size: 1rem; margin: 0; }
+  .arch-row { display: flex; justify-content: space-between; align-items: baseline; gap: 1rem; }
+  .arch-blurb { margin: 0.3rem 0 0.5rem; color: var(--text-muted); font-size: 0.96rem; max-width: 62ch; }
+  .arch-meta { font-size: 0.78rem; color: var(--text-faint); margin: 0; }
+  .arch-date { font-size: 0.76rem; color: var(--text-faint); white-space: nowrap; }
+  .more { display: inline-block; margin-top: 1.4rem; font-size: 0.82rem; }
+
+  /* FOOT */
+  .foot { padding: 2.5rem 0 3.5rem; border-top: 1px solid var(--border); }
+  .foot p { max-width: 58ch; color: var(--text-muted); }
+  .foot-links { display: flex; gap: 1.2rem; margin: 1.2rem 0; flex-wrap: wrap; }
+  .foot-links a { font-family: var(--font-mono); font-size: 0.85rem; }
+  .colophon { font-size: 0.74rem; color: var(--text-faint); margin-top: 2rem; }
+
+  @media (max-width: 520px) {
+    .feed-item { grid-template-columns: 60px 1fr; gap: 0.8rem; }
+  }
+</style>
