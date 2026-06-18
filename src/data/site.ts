@@ -52,7 +52,7 @@ export const site = {
   ],
 
   currently:
-    "Leading content & presales at Codemotion · MC across the European cloud-native and developer scene.",
+    "Leading content & presales at Codemotion · MC across the European scene.",
 
   links: {
     linkedin: 'https://www.linkedin.com/in/lucafregoso',

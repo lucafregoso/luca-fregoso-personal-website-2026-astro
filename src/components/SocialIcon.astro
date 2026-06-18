@@ -8,8 +8,12 @@ const n = name.toLowerCase();
 ---
 
 {n === 'linkedin' && (
-  <svg class={cls} viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
-    <path d="M4.5 6.5A1.5 1.5 0 1 0 4.5 3.5a1.5 1.5 0 0 0 0 3ZM3.3 7.8h2.4V17H3.3V7.8Zm4 0h2.3v1.25h.03c.32-.6 1.1-1.25 2.27-1.25 2.43 0 2.88 1.6 2.88 3.68V17h-2.4v-3.55c0-.85-.02-1.94-1.18-1.94-1.18 0-1.36.92-1.36 1.88V17H7.3V7.8Z"/>
+  <svg class={cls} viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
+    <rect x="2" y="2" width="16" height="16" rx="3"/>
+    <line x1="5.5" y1="8.5" x2="5.5" y2="14"/>
+    <circle cx="5.5" cy="5.7" r="0.9" fill="currentColor" stroke="none"/>
+    <path d="M9 14V8.5M9 11c0-1.5 1-2.5 2.4-2.5S14 9.4 14 11v3"/>
+  </svg>
   </svg>
 )}
 {n === 'x' && (
