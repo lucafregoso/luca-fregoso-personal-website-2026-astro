@@ -55,8 +55,15 @@ testing — your real deploy config in `astro.config.mjs` is untouched.
   clipboard success
 - skip-link focus, reduced motion and forced-colors focus indicators
 
+**`tests/header-i18n.spec.ts`** — bilingual navigation and responsive header:
+- English and Italian `lang`, canonical and `hreflang` metadata
+- locale switcher current-page state and navigation
+- mobile menu ARIA state, Escape/link close behavior and focus restoration
+- scroll-direction hide/show behavior and compact state
+- 44×44px mobile header and navigation targets
+
 **`tests/accessibility.spec.ts`** — axe-core, WCAG 2.2 AA, in **both themes**
-for the idle page and open image dialog.
+and **both locales** for the idle page and open image dialog.
 > Automated a11y tools catch ~30–50% of issues. A clean run is a strong
 > baseline, not a guarantee — a manual screen-reader pass is the next level.
 

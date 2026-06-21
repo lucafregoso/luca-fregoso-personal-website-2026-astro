@@ -1,16 +1,26 @@
 ---
 // Native modal dialog enhanced with gallery navigation, announcements and
 // reliable focus restoration.
+import { translations, type Locale } from '../i18n';
+
+interface Props { locale?: Locale }
+const { locale = 'en' } = Astro.props;
+const labels = translations[locale].lightbox;
 ---
 
-<dialog class="lb" id="lightbox" aria-label="Image viewer">
-  <button class="lb-close" type="button" aria-label="Close image viewer">✕</button>
-  <button class="lb-nav lb-prev" type="button" aria-label="Previous image">‹</button>
+<dialog
+  class="lb" id="lightbox" aria-label={labels.viewer}
+  data-image-word={locale === 'it' ? 'Immagine' : 'Image'}
+  data-of-word={locale === 'it' ? 'di' : 'of'}
+  data-opened-label={labels.opened}
+>
+  <button class="lb-close" type="button" aria-label={labels.close}>✕</button>
+  <button class="lb-nav lb-prev" type="button" aria-label={labels.previous}>‹</button>
   <figure class="lb-stage">
     <img class="lb-img" src="" alt="" />
     <figcaption class="lb-cap mono"></figcaption>
   </figure>
-  <button class="lb-nav lb-next" type="button" aria-label="Next image">›</button>
+  <button class="lb-nav lb-next" type="button" aria-label={labels.next}>›</button>
   <div class="lb-count mono" aria-hidden="true"></div>
   <p class="sr-only lb-status" role="status" aria-live="polite" aria-atomic="true"></p>
 </dialog>
@@ -86,6 +96,10 @@
       window.setTimeout(() => { statusEl.textContent = message; }, 20);
     }
 
+    function positionLabel(position: number, total: number) {
+      return `${dialog.dataset.imageWord} ${position} ${dialog.dataset.ofWord} ${total}`;
+    }
+
     function render(shouldAnnounce = true) {
       const item = gallery[index];
       if (!item) return;
@@ -100,7 +114,7 @@
       btnPrev.disabled = index === 0;
       btnNext.disabled = index === gallery.length - 1;
       if (shouldAnnounce) {
-        announce(`Image ${index + 1} of ${gallery.length}${item.alt ? `: ${item.alt}` : ''}`);
+        announce(`${positionLabel(index + 1, gallery.length)}${item.alt ? `: ${item.alt}` : ''}`);
       }
     }
 
@@ -115,7 +129,7 @@
       document.body.style.overflow = 'hidden';
       dialog.showModal();
       btnClose.focus();
-      announce(`Image viewer opened. Image ${index + 1} of ${gallery.length}${gallery[index]?.alt ? `: ${gallery[index].alt}` : ''}`);
+      announce(`${dialog.dataset.openedLabel} ${positionLabel(index + 1, gallery.length)}${gallery[index]?.alt ? `: ${gallery[index].alt}` : ''}`);
     }
 
     function close() {

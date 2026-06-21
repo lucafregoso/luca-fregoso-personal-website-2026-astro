@@ -1,23 +1,35 @@
 ---
 import '../styles/global.css';
 import { site } from '../data/site';
+import { isLocale, translations, type Locale } from '../i18n';
+import { getLocaleAlternates } from '../lib/i18n';
 import { withBase } from '../lib/url';
 
 interface Props {
   title?: string;
   description?: string;
+  locale?: Locale;
+  canonicalPath?: string;
+  alternatePaths?: Partial<Record<Locale, string>>;
 }
 const m = site.meta;
+const requestedLocale = Astro.props.locale;
+const locale = requestedLocale ?? (isLocale(Astro.currentLocale) ? Astro.currentLocale : 'en');
+const t = translations[locale];
 const {
-  title = m.titlePattern.replace('{name}', site.name).replace('{tagline}', site.tagline),
-  description = m.description,
+  title = t.meta.title,
+  description = t.meta.description,
+  canonicalPath,
+  alternatePaths,
 } = Astro.props;
-const canonical = new URL(Astro.url.pathname, Astro.site);
+const canonical = new URL(canonicalPath ? withBase(canonicalPath) : Astro.url.pathname, Astro.site);
+const localeAlternates = getLocaleAlternates(Astro.url.pathname, alternatePaths);
 const ogImageUrl = m.ogImage ? new URL(withBase(m.ogImage), Astro.site).toString() : null;
+const alternateOgLocale = translations[locale === 'en' ? 'it' : 'en'].meta.ogLocale;
 ---
 
 <!doctype html>
-<html lang={m.lang} data-theme="light">
+<html lang={t.meta.lang} data-theme="light">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -27,10 +39,19 @@ const ogImageUrl = m.ogImage ? new URL(withBase(m.ogImage), Astro.site).toString
     <title>{title}</title>
     <meta name="description" content={description} />
     <link rel="canonical" href={canonical} />
+    {localeAlternates.map(({ locale: alternateLocale, href }) => (
+      <link rel="alternate" hreflang={alternateLocale} href={new URL(href, Astro.site)} />
+    ))}
+    <link
+      rel="alternate"
+      hreflang="x-default"
+      href={new URL(localeAlternates.find((entry) => entry.locale === 'en')!.href, Astro.site)}
+    />
 
     <!-- Open Graph / Twitter -->
     <meta property="og:type" content="website" />
-    <meta property="og:locale" content={m.ogLocale} />
+    <meta property="og:locale" content={t.meta.ogLocale} />
+    <meta property="og:locale:alternate" content={alternateOgLocale} />
     <meta property="og:title" content={title} />
     <meta property="og:description" content={description} />
     <meta property="og:url" content={canonical} />
@@ -62,16 +83,15 @@ const ogImageUrl = m.ogImage ? new URL(withBase(m.ogImage), Astro.site).toString
       })();
     </script>
   </head>
-  <body>
-    <a href="#main" class="skip-link">Skip to content</a>
+  <body data-devtools-message={t.devtools}>
+    <a href="#main" class="skip-link">{t.skip}</a>
     <slot />
 
     <!-- A little something for those who open the devtools -->
     <script is:inline>
       console.log(
-        '%cYou opened the devtools. Of course you did.%c\nBuilt by hand with Astro. Say hi via the contact section.',
+        '%c' + (document.body.dataset.devtoolsMessage || ''),
         'color:#d0db02;font-family:monospace;font-weight:bold;',
-        'color:#9aa4b1;font-family:monospace;'
       );
     </script>
     <!-- Reveal-on-scroll: subtle fade+rise as elements enter the viewport.

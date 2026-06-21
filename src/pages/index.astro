@@ -1,7 +1,7 @@
 ---
 import { getCollection } from 'astro:content';
 import BaseLayout from '../layouts/BaseLayout.astro';
-import ThemeToggle from '../components/ThemeToggle.astro';
+import SiteHeader from '../components/SiteHeader.astro';
 import Media from '../components/Media.astro';
 import Lightbox from '../components/Lightbox.astro';
 import ContactEmail from '../components/ContactEmail.astro';
@@ -9,8 +9,13 @@ import SocialIcon from '../components/SocialIcon.astro';
 import ExternalLink from '../components/ExternalLink.astro';
 import { site } from '../data/site';
 import { withBase } from '../lib/url';
+import { localize, translations, type Locale, type LocalizedText } from '../i18n';
 
-const allNow = (await getCollection('now')).sort(
+interface Props { locale?: Locale }
+const locale = Astro.props.locale ?? 'en';
+const t = translations[locale];
+
+const allNow = (await getCollection('now')).filter((entry) => entry.data.locales.includes(locale)).sort(
   (a, b) => b.data.date.valueOf() - a.data.date.valueOf()
 );
 const todayMs = Date.now();
@@ -22,27 +27,21 @@ const heroEntry = past[0];
 const recentEntries = past.slice(1, 4);
 const earlierEntries = past.slice(4);
 
-const talks = (await getCollection('talks')).sort((a, b) => a.data.order - b.data.order);
-const writing = (await getCollection('writing')).sort(
+const talks = (await getCollection('talks')).filter((entry) => entry.data.locales.includes(locale)).sort((a, b) => a.data.order - b.data.order);
+const writing = (await getCollection('writing')).filter((entry) => entry.data.locales.includes(locale)).sort(
   (a, b) => b.data.date.valueOf() - a.data.date.valueOf()
 );
 
 const monthYear = (date: Date) =>
-  date.toLocaleDateString('en-GB', { year: 'numeric', month: 'short' });
+  date.toLocaleDateString(locale === 'it' ? 'it-IT' : 'en-GB', { year: 'numeric', month: 'short' });
 const dayMonth = (date: Date) =>
-  date.toLocaleDateString('en-GB', { day: '2-digit', month: 'short' });
+  date.toLocaleDateString(locale === 'it' ? 'it-IT' : 'en-GB', { day: '2-digit', month: 'short' });
 const fullDate = (date: Date) =>
-  date.toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
+  date.toLocaleDateString(locale === 'it' ? 'it-IT' : 'en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
 
-const kindLabel: Record<string, string> = {
-  speaking: 'on stage',
-  writing: 'wrote',
-  milestone: 'milestone',
-  building: 'shipped',
-  note: 'note',
-};
+const kindLabel: Record<string, string> = t.lately.kinds;
 
-function outlink(entry: { url?: string; urlLabel?: string; urlStyle?: string }) {
+function outlink(entry: { url?: string; urlLabel?: LocalizedText; urlStyle?: string }) {
   if (!entry.url) return null;
   let host = '';
   try { host = new URL(entry.url).hostname.replace(/^www\./, ''); } catch {}
@@ -50,8 +49,8 @@ function outlink(entry: { url?: string; urlLabel?: string; urlStyle?: string }) 
   return {
     href: entry.url,
     label:
-      entry.urlLabel ??
-      (entry.urlStyle === 'strong' ? `Read the full post on ${platform}` : `Read it on ${platform}`),
+      (entry.urlLabel ? localize(entry.urlLabel, locale) : undefined) ??
+      (entry.urlStyle === 'strong' ? t.lately.readFull(platform) : t.lately.read(platform)),
     strong: entry.urlStyle === 'strong',
   };
 }
@@ -61,54 +60,52 @@ function caseHref(href: string) {
 }
 ---
 
-<BaseLayout>
+<BaseLayout locale={locale} title={t.meta.title} description={t.meta.description}>
+  <SiteHeader
+    locale={locale}
+    navItems={[
+      { href: '#work', label: t.nav.work },
+      { href: '#lately', label: t.nav.lately },
+      { href: '#talks', label: t.nav.talks },
+      { href: '#writing', label: t.nav.writing },
+      { href: '#contact', label: t.nav.contact },
+    ]}
+  />
   <div class="site-shell">
-    <header class="topbar" aria-label="Site header">
-      <a class="brand mono" href="#top" aria-label="Luca Fregoso, back to top">luca·fregoso</a>
-      <nav class="site-nav" aria-label="Primary navigation">
-        <a href="#work">Work</a>
-        <a href="#lately">Lately</a>
-        <a href="#talks">Talks</a>
-        <a href="#writing">Writing</a>
-        <a href="#contact">Contact</a>
-      </nav>
-      <ThemeToggle />
-    </header>
-
     <main id="main" tabindex="-1">
       <section class="hero" id="top" aria-labelledby="hero-title">
         <div class="hero-copy">
-          <p class="eyebrow mono"><span class="status-dot" aria-hidden="true"></span>{site.eyebrow}</p>
-          <h1 id="hero-title">{site.headline}</h1>
-          <p class="hero-intro">{site.intro}</p>
-          <p class="hero-proof">{site.proof}</p>
+          <p class="eyebrow mono"><span class="status-dot" aria-hidden="true"></span>{t.hero.eyebrow}</p>
+          <h1 id="hero-title">{t.hero.headline}</h1>
+          <p class="hero-intro">{t.hero.intro}</p>
+          <p class="hero-proof">{t.hero.proof}</p>
           <div class="hero-actions">
-            <a class="button button-primary" href="#contact">Discuss a leadership role</a>
-            <a class="button button-secondary" href="#work">See selected work</a>
+            <a class="button button-primary" href="#contact">{t.hero.primary}</a>
+            <a class="button button-secondary" href="#work">{t.hero.secondary}</a>
           </div>
-          <div class="utility-links mono" aria-label="Profile links">
+          <div class="utility-links mono" aria-label={t.hero.profileLinks}>
             <ExternalLink href={site.links.linkedin}>LinkedIn</ExternalLink>
             <ExternalLink href={site.links.sessionize}>Sessionize</ExternalLink>
-            <a href={withBase('/cv.pdf')}>CV (PDF)</a>
+            <a href={withBase('/cv.pdf')}>{t.hero.cv}</a>
           </div>
         </div>
 
         <figure class="hero-visual">
           <img
             src={withBase('/hackathon-2026.jpg')}
-            alt="Luca Fregoso hosting on stage at Docebo GAME UP! Product Power Up 2026."
+            alt={t.hero.imageAlt}
             width="1200"
             height="900"
           />
           <figcaption class="mono">
-            <span>On stage</span>
-            <span>Docebo · Milan · 2026</span>
+            <span>{t.hero.imageContext}</span>
+            <span>{t.hero.imagePlace}</span>
           </figcaption>
         </figure>
       </section>
 
-      <section class="metrics" aria-label="Impact in numbers">
-        {site.metrics.map((metric) => (
+      <section class="metrics" aria-label={locale === 'it' ? 'Impatto in numeri' : 'Impact in numbers'}>
+        {t.metrics.map((metric) => (
           <div class="metric">
             <strong>{metric.value}</strong>
             <span>{metric.label}</span>
@@ -118,13 +115,13 @@ function caseHref(href: string) {
 
       <section class="section work" id="work" aria-labelledby="work-title">
         <div class="section-heading">
-          <p class="section-number mono">01 / Selected impact</p>
-          <h2 id="work-title">Where strategy meets delivery.</h2>
-          <p>I work at the joins: between technology and people, editorial judgment and commercial reality, the stage and everything behind it.</p>
+          <p class="section-number mono">{t.work.number}</p>
+          <h2 id="work-title">{t.work.title}</h2>
+          <p>{t.work.intro}</p>
         </div>
 
         <div class="capability-grid">
-          {site.capabilities.map((capability) => (
+          {t.capabilities.map((capability) => (
             <article class="capability">
               <span class="capability-number mono">{capability.number}</span>
               <h3>{capability.title}</h3>
@@ -134,7 +131,7 @@ function caseHref(href: string) {
         </div>
 
         <div class="case-grid">
-          {site.caseStudies.map((caseStudy) => (
+          {t.caseStudies.map((caseStudy) => (
             <article class="case-card">
               <p class="case-label mono">{caseStudy.label}</p>
               <h3>{caseStudy.title}</h3>
@@ -153,21 +150,21 @@ function caseHref(href: string) {
 
       <section class="section stream tinted" id="lately" aria-labelledby="lately-title">
         <div class="section-heading compact">
-          <p class="section-number mono">02 / Field notes</p>
+          <p class="section-number mono">{t.lately.number}</p>
           <div class="heading-row">
-            <h2 id="lately-title">Lately</h2>
-            {heroEntry && <span class="updated mono">Updated {dayMonth(heroEntry.data.date)}</span>}
+            <h2 id="lately-title">{t.lately.title}</h2>
+            {heroEntry && <span class="updated mono">{t.lately.updated} {dayMonth(heroEntry.data.date)}</span>}
           </div>
-          <p>Recent work from programs, stages and the communities around them.</p>
+          <p>{t.lately.intro}</p>
         </div>
 
         {upcoming.length > 0 && (
           <ul class="upcoming">
             {upcoming.map((entry) => (
               <li>
-                <span class="up-tag mono">upcoming</span>
-                <span class="up-title">{entry.data.title}</span>
-                {entry.data.location && <span class="up-location mono">{entry.data.location}</span>}
+                <span class="up-tag mono">{t.lately.upcoming}</span>
+                <span class="up-title">{localize(entry.data.title, locale)}</span>
+                {entry.data.location && <span class="up-location mono">{localize(entry.data.location, locale)}</span>}
                 <time class="up-date mono" datetime={entry.data.date.toISOString()}>{dayMonth(entry.data.date)}</time>
               </li>
             ))}
@@ -180,10 +177,10 @@ function caseHref(href: string) {
               <span>{kindLabel[heroEntry.data.kind] ?? heroEntry.data.kind}</span>
               <time datetime={heroEntry.data.date.toISOString()}>{fullDate(heroEntry.data.date)}</time>
             </div>
-            <h3>{heroEntry.data.title}</h3>
-            {heroEntry.data.location && <p class="story-location mono">{heroEntry.data.location}</p>}
-            {heroEntry.data.blurb && <p class="story-copy">{heroEntry.data.blurb}</p>}
-            <Media media={heroEntry.data.media} layout={heroEntry.data.layout ?? 'full'} galleryId={`g-${heroEntry.id}`} />
+            <h3>{localize(heroEntry.data.title, locale)}</h3>
+            {heroEntry.data.location && <p class="story-location mono">{localize(heroEntry.data.location, locale)}</p>}
+            {heroEntry.data.blurb && <p class="story-copy">{localize(heroEntry.data.blurb, locale)}</p>}
+            <Media locale={locale} media={heroEntry.data.media} layout={heroEntry.data.layout ?? 'full'} galleryId={`g-${heroEntry.id}`} />
             {outlink(heroEntry.data) && (
               <ExternalLink class={`outlink mono ${outlink(heroEntry.data)!.strong ? 'is-strong' : ''}`} href={outlink(heroEntry.data)!.href}>
                 {outlink(heroEntry.data)!.label}
@@ -200,9 +197,9 @@ function caseHref(href: string) {
                 <span>{kindLabel[entry.data.kind] ?? entry.data.kind}</span>
               </div>
               <div class="feed-body">
-                <h3>{entry.data.title}</h3>
-                {entry.data.location && <p class="feed-location mono">{entry.data.location}</p>}
-                {entry.data.blurb && <p>{entry.data.blurb}</p>}
+                <h3>{localize(entry.data.title, locale)}</h3>
+                {entry.data.location && <p class="feed-location mono">{localize(entry.data.location, locale)}</p>}
+                {entry.data.blurb && <p>{localize(entry.data.blurb, locale)}</p>}
                 {outlink(entry.data) && (
                   <ExternalLink class={`outlink mono ${outlink(entry.data)!.strong ? 'is-strong' : ''}`} href={outlink(entry.data)!.href}>
                     {outlink(entry.data)!.label}
@@ -215,7 +212,7 @@ function caseHref(href: string) {
 
         {earlierEntries.length > 0 && (
           <details class="earlier">
-            <summary class="mono">Show {earlierEntries.length} earlier updates</summary>
+            <summary class="mono">{t.lately.showEarlier(earlierEntries.length)}</summary>
             <ol class="feed">
               {earlierEntries.map((entry) => (
                 <li class={`feed-item ${entry.data.featured ? 'is-featured' : ''}`}>
@@ -224,9 +221,9 @@ function caseHref(href: string) {
                     <span>{kindLabel[entry.data.kind] ?? entry.data.kind}</span>
                   </div>
                   <div class="feed-body">
-                    <h3>{entry.data.title}</h3>
-                    {entry.data.location && <p class="feed-location mono">{entry.data.location}</p>}
-                    {entry.data.blurb && <p>{entry.data.blurb}</p>}
+                    <h3>{localize(entry.data.title, locale)}</h3>
+                    {entry.data.location && <p class="feed-location mono">{localize(entry.data.location, locale)}</p>}
+                    {entry.data.blurb && <p>{localize(entry.data.blurb, locale)}</p>}
                     {outlink(entry.data) && (
                       <ExternalLink class="outlink mono" href={outlink(entry.data)!.href}>
                         {outlink(entry.data)!.label}
@@ -242,39 +239,39 @@ function caseHref(href: string) {
 
       <section class="section" id="talks" aria-labelledby="talks-title">
         <div class="section-heading compact">
-          <p class="section-number mono">03 / On stage</p>
-          <h2 id="talks-title">Talks for people navigating change.</h2>
-          <p>Selected sessions about technical careers, hiring and the tools we use to think.</p>
+          <p class="section-number mono">{t.talks.number}</p>
+          <h2 id="talks-title">{t.talks.title}</h2>
+          <p>{t.talks.intro}</p>
         </div>
         <div class="talk-grid">
           {talks.map((talk) => (
             <article class="talk-card">
-              <span class="talk-status mono">session</span>
-              <h3>{talk.data.title}</h3>
-              <p>{talk.data.abstract}</p>
+              <span class="talk-status mono">{t.talks.status}</span>
+              <h3>{localize(talk.data.title, locale)}</h3>
+              <p>{localize(talk.data.abstract, locale)}</p>
               <p class="talk-events mono">{talk.data.events.join(' · ')}</p>
               {talk.data.sessionizeUrl && (
-                <ExternalLink href={talk.data.sessionizeUrl}>View session</ExternalLink>
+                <ExternalLink href={talk.data.sessionizeUrl}>{t.talks.view}</ExternalLink>
               )}
             </article>
           ))}
         </div>
-        <ExternalLink class="section-link mono" href={site.links.sessionize}>Full speaker profile</ExternalLink>
+        <ExternalLink class="section-link mono" href={site.links.sessionize}>{t.talks.fullProfile}</ExternalLink>
       </section>
 
       <section class="section writing tinted" id="writing" aria-labelledby="writing-title">
         <div class="section-heading compact">
-          <p class="section-number mono">04 / In writing</p>
-          <h2 id="writing-title">Notes from the work.</h2>
-          <p>Articles about developer careers, technology and the decisions behind good programs.</p>
+          <p class="section-number mono">{t.writing.number}</p>
+          <h2 id="writing-title">{t.writing.title}</h2>
+          <p>{t.writing.intro}</p>
         </div>
         <div class="writing-list">
           {writing.map((article, index) => (
             <article class="writing-item">
               <span class="writing-index mono">{String(index + 1).padStart(2, '0')}</span>
               <div>
-                <h3><ExternalLink href={article.data.url}>{article.data.title}</ExternalLink></h3>
-                <p>{article.data.summary}</p>
+                <h3><ExternalLink href={article.data.url}>{localize(article.data.title, locale)}</ExternalLink></h3>
+                <p>{localize(article.data.summary, locale)}</p>
               </div>
               <div class="writing-meta mono">
                 <span>{article.data.publication}</span>
@@ -287,17 +284,17 @@ function caseHref(href: string) {
     </main>
 
     <footer class="contact" id="contact">
-      <p class="section-number mono">05 / Let’s talk</p>
+      <p class="section-number mono">{t.contact.number}</p>
       <div class="contact-grid">
         <div>
-          <h2>Bring me the complicated brief.</h2>
-          <p>I’m open to senior international roles in developer programs, technical content and presales—and to the right hosting, speaking or program collaboration.</p>
+          <h2>{t.contact.title}</h2>
+          <p>{t.contact.intro}</p>
         </div>
         <div class="contact-actions">
-          <ContactEmail />
-          <ExternalLink class="button button-secondary" href={site.links.linkedin}>Connect on LinkedIn</ExternalLink>
-          <a class="text-link mono" href={withBase('/cv.pdf')}>View CV (PDF)</a>
-          <nav class="social-links" aria-label="Social profiles">
+          <ContactEmail locale={locale} />
+          <ExternalLink class="button button-secondary" href={site.links.linkedin}>{t.contact.linkedin}</ExternalLink>
+          <a class="text-link mono" href={withBase('/cv.pdf')}>{t.contact.cv}</a>
+          <nav class="social-links" aria-label={t.contact.socials}>
             {site.socials.map((social) => (
               <ExternalLink href={social.url} ariaLabel={social.name} title={social.name} showArrow={false}>
                 <SocialIcon name={social.name} class="social-icon" />
@@ -306,19 +303,16 @@ function caseHref(href: string) {
           </nav>
         </div>
       </div>
-      <p class="colophon mono">Built with Astro. Updated by hand, on purpose.</p>
+      <p class="colophon mono">{t.contact.colophon}</p>
     </footer>
   </div>
 
-  <Lightbox />
+  <Lightbox locale={locale} />
 </BaseLayout>
 
 <style>
   .site-shell { width: min(calc(100% - 3rem), var(--shell)); margin: 0 auto; }
-  .topbar { min-height: 76px; display: grid; grid-template-columns: 1fr auto auto; align-items: center; gap: 2rem; }
-  .brand { color: var(--text); font-size: .8rem; letter-spacing: .05em; border: 0; }
-  .site-nav { display: flex; gap: 1.35rem; align-items: center; }
-  .site-nav a { min-height: 44px; display: inline-flex; align-items: center; font: 500 .78rem/1 var(--font-mono); color: var(--text-muted); }
+  :is(#top, #work, #lately, #talks, #writing, #contact) { scroll-margin-top: 5.5rem; }
 
   .hero { min-height: min(760px, calc(100svh - 76px)); padding: 5rem 0 6rem; display: grid; grid-template-columns: minmax(0, 7fr) minmax(280px, 5fr); align-items: center; gap: clamp(3rem, 8vw, 7rem); }
   .eyebrow, .section-number { margin: 0 0 1.25rem; color: var(--accent-text); font-size: .72rem; letter-spacing: .08em; text-transform: uppercase; }
@@ -437,8 +431,6 @@ function caseHref(href: string) {
   .colophon { margin: 2rem 0 0; color: var(--text-faint); font-size: .7rem; }
 
   @media (max-width: 900px) {
-    .site-nav { display: none; }
-    .topbar { grid-template-columns: 1fr auto; }
     .hero { grid-template-columns: 1fr; padding: 4rem 0; }
     .hero-visual { min-height: 420px; }
     .metrics { grid-template-columns: repeat(3, 1fr); }
@@ -453,7 +445,6 @@ function caseHref(href: string) {
 
   @media (max-width: 620px) {
     .site-shell { width: min(calc(100% - 2rem), var(--shell)); }
-    .topbar { min-height: 64px; }
     .hero { min-height: auto; padding: 3.5rem 0 4rem; gap: 2.5rem; }
     .hero h1 { font-size: clamp(2.8rem, 14vw, 4.25rem); }
     .hero-actions { align-items: stretch; flex-direction: column; }

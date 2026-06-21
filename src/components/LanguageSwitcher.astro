@@ -1,0 +1,41 @@
+---
+import { localePath, type Locale } from '../lib/i18n';
+import { translations } from '../i18n';
+
+interface Props {
+  locale: Locale;
+  pathname?: string;
+}
+
+const { locale, pathname = Astro.url.pathname } = Astro.props;
+const label = translations[locale].nav.language;
+---
+
+<nav class="language-switcher" aria-label={label}>
+  <ul>
+    {(['en', 'it'] as const).map((itemLocale) => (
+      <li>
+        <a
+          lang={itemLocale}
+          hreflang={itemLocale}
+          href={localePath(pathname, itemLocale)}
+          aria-current={itemLocale === locale ? 'page' : undefined}
+        >
+          {itemLocale.toUpperCase()}
+        </a>
+      </li>
+    ))}
+  </ul>
+</nav>
+
+<style>
+  .language-switcher ul { display: flex; align-items: center; gap: .15rem; margin: 0; padding: 0; list-style: none; }
+  .language-switcher a {
+    min-width: 44px; min-height: 44px; padding: 0 .55rem;
+    display: inline-flex; align-items: center; justify-content: center;
+    border-radius: 999px; font: 600 .7rem/1 var(--font-mono); letter-spacing: .04em;
+  }
+  .language-switcher a { color: var(--text-muted); }
+  .language-switcher a:hover { color: var(--text); background: var(--surface-2); }
+  .language-switcher a[aria-current='page'] { color: var(--text); background: var(--surface-2); }
+</style>

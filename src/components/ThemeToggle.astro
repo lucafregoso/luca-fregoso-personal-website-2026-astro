@@ -1,6 +1,22 @@
 ---
+import { translations, type Locale } from '../i18n';
+
+interface Props {
+  locale?: Locale;
+}
+
+const { locale = 'en' } = Astro.props;
+const labels = translations[locale].theme;
 ---
-<button class="theme-toggle" id="theme-toggle" aria-label="Switch to dark mode" title="Switch to dark mode">
+<button
+  class="theme-toggle"
+  id="theme-toggle"
+  type="button"
+  aria-label={labels.dark}
+  title={labels.dark}
+  data-label-dark={labels.dark}
+  data-label-light={labels.light}
+>
   <span id="theme-icon" aria-hidden="true">◐</span>
 </button>
 
@@ -12,7 +28,8 @@
       var t = document.documentElement.getAttribute('data-theme');
       if (icon) icon.textContent = t === 'dark' ? '☾' : '☀';
       if (btn) {
-        var label = t === 'dark' ? 'Switch to light mode' : 'Switch to dark mode';
+        var label = t === 'dark' ? btn.dataset.labelLight : btn.dataset.labelDark;
+        if (!label) return;
         btn.setAttribute('aria-label', label);
         btn.setAttribute('title', label);
       }
