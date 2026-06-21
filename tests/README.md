@@ -35,7 +35,15 @@ testing — your real deploy config in `astro.config.mjs` is untouched.
 - no `undefined` anywhere in `<head>` (meta tags / JSON-LD)
 - talks & writing content is visible **even with JavaScript disabled**
 - the email address never appears as plain text in the HTML source
-- no stray short divider lines on tinted sections
+- full-width tinted section bands do not collapse to the content width
+- placeholder profiles never reach published links
+- featured updates retain their lime marker without a card fill
+
+**`tests/homepage.spec.ts`** — protects the homepage's core product contract:
+- positioning, proof and section hierarchy remain present
+- LinkedIn, Sessionize, CV and contact conversion paths remain valid
+- landmark and heading structure stays navigable
+- 320px mobile and tablet layouts do not overflow horizontally
 
 **`tests/functional.spec.ts`** — the interactive pieces:
 - lightbox opens, navigates between images, closes (Esc + backdrop)

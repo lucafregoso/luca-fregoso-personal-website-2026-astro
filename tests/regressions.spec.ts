@@ -30,11 +30,11 @@ test.describe('regressions', () => {
     const page = await context.newPage();
     await page.goto('/');
 
-    const talks = page.locator('#talks .arch-item').first();
+    const talks = page.locator('#talks .talk-card').first();
     await expect(talks).toBeVisible();
     expect(await talks.evaluate((el) => getComputedStyle(el).opacity)).toBe('1');
 
-    const writing = page.locator('#writing .arch-item').first();
+    const writing = page.locator('#writing .writing-item').first();
     await expect(writing).toBeVisible();
     expect(await writing.evaluate((el) => getComputedStyle(el).opacity)).toBe('1');
 
@@ -49,37 +49,23 @@ test.describe('regressions', () => {
     expect(html).not.toContain('luca.fregoso@gmail.com');
   });
 
-  test('section dividers are not stray short lines (no border-top on tinted sections)', async ({ page }) => {
-    // Bug history: a 760px-wide rule floated inside a full-width tinted band.
-    await page.goto('/');
-    const streamBorder = await page
-      .locator('.stream')
-      .evaluate((el) => getComputedStyle(el).borderTopWidth);
-    expect(streamBorder).toBe('0px');
-  });
-
   test('tinted sections render a visible full-width background band', async ({ page }) => {
-    // Bug history: z-index:-1 pushed the band behind the body, hiding it.
+    // Bug history: the background band collapsed to the content width.
     await page.goto('/');
     const band = await page.locator('.stream.tinted').evaluate((el) => {
       const b = getComputedStyle(el, '::before');
-      return { z: b.zIndex, bg: b.backgroundColor };
+      return { width: Number.parseFloat(b.width), viewport: window.innerWidth, bg: b.backgroundColor };
     });
-    expect(Number(band.z)).toBeGreaterThanOrEqual(0);
+    expect(band.width).toBeGreaterThanOrEqual(band.viewport);
     expect(band.bg).not.toBe('rgba(0, 0, 0, 0)');
   });
 
-  test('all social icons render at the same size', async ({ page }) => {
-    // Bug history: the LinkedIn glyph was smaller than the others.
+  test('published links never expose placeholder profiles', async ({ page }) => {
     await page.goto('/');
-    const sizes = await page.locator('.social .social-ico').evaluateAll((els) =>
-      els.map((el) => {
-        const r = el.getBoundingClientRect();
-        return `${Math.round(r.width)}x${Math.round(r.height)}`;
-      })
+    const hrefs = await page.locator('a[href]').evaluateAll((links) =>
+      links.map((link) => link.getAttribute('href') ?? '')
     );
-    expect(sizes.length).toBeGreaterThan(1);
-    expect(new Set(sizes).size).toBe(1);
+    expect(hrefs.join('\n')).not.toMatch(/REPLACE_ME|REPLACE_INSTANCE|example\.com/i);
   });
 
   test('featured items use the lime left bar, not a background tint', async ({ page }) => {
@@ -88,16 +74,16 @@ test.describe('regressions', () => {
     // bar (a ::after pseudo-element), and the item background must stay
     // transparent / match the section — never a tinted card.
     await page.goto('/');
-    const item = page.locator('.feed-item.is-feat').first();
+    const item = page.locator('.feed-item.is-featured').first();
     await expect(item).toBeVisible();
 
     // the item itself has no opaque background fill
     const bg = await item.evaluate((el) => getComputedStyle(el).backgroundColor);
     expect(['rgba(0, 0, 0, 0)', 'transparent']).toContain(bg);
 
-    // the lime bar exists as a ::after pseudo-element with a visible width
+    // the lime bar exists as a ::before pseudo-element with a visible width
     const barWidth = await item.evaluate(
-      (el) => getComputedStyle(el, '::after').width
+      (el) => getComputedStyle(el, '::before').width
     );
     expect(barWidth).not.toBe('auto');
     expect(barWidth).not.toBe('0px');

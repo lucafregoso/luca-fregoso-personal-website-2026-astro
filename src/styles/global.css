@@ -28,7 +28,13 @@
   --font-mono: ui-monospace, "SF Mono", "JetBrains Mono", "Fira Code", Menlo, Consolas, monospace;
 
   --maxw: 760px;
+  --shell: 70rem;
+  --measure: 64ch;
   --radius: 10px;
+  --radius-sm: 4px;
+  --radius-md: 12px;
+  --radius-pill: 999px;
+  --ease-out: cubic-bezier(.2, .8, .2, 1);
 }
 
 :root[data-theme="dark"] {

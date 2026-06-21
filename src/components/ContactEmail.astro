@@ -4,8 +4,8 @@
 // first interaction, so spam harvesters that scrape static HTML get nothing,
 // while humans get a normal mailto link.
 import { site } from '../data/site';
-interface Props { class?: string }
-const { class: cls = '' } = Astro.props;
+interface Props { class?: string; label?: string }
+const { class: cls = '', label = 'Email me' } = Astro.props;
 ---
 
 <button
@@ -15,7 +15,7 @@ const { class: cls = '' } = Astro.props;
   data-d={site.emailDomain}
   aria-label="Reveal email address"
 >
-  <span class="email-text">email me</span>
+  <span class="email-text">{label}</span>
 </button>
 
 <script is:inline>

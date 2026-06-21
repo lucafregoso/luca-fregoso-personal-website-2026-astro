@@ -62,8 +62,10 @@
 
 <script>
   (function () {
-    const lb = document.getElementById('lightbox');
-    if (!lb) return;
+    const lbElement = document.getElementById('lightbox');
+    if (!lbElement) return;
+    // Preserve the non-null DOM type inside the event-handler closures below.
+    const lb: HTMLElement = lbElement;
     const imgEl = lb.querySelector('.lb-img') as HTMLImageElement;
     const capEl = lb.querySelector('.lb-cap') as HTMLElement;
     const countEl = lb.querySelector('.lb-count') as HTMLElement;

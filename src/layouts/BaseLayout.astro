@@ -41,12 +41,12 @@ const ogImageUrl = m.ogImage ? new URL(withBase(m.ogImage), Astro.site).toString
     {ogImageUrl && <meta name="twitter:image" content={ogImageUrl} />}
 
     <!-- JSON-LD: helps Google show you as a Person entity -->
-    <script type="application/ld+json" set:html={JSON.stringify({
+    <script is:inline type="application/ld+json" set:html={JSON.stringify({
       '@context': 'https://schema.org',
       '@type': 'Person',
       name: site.name,
       jobTitle: site.tagline,
-      url: Astro.site?.toString(),
+      url: canonical.toString(),
       sameAs: site.socials.map((s) => s.url),
     })} />
 
