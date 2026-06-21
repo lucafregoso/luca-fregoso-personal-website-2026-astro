@@ -2,5 +2,4 @@
 User-agent: *
 Allow: /
 
-# Update the host/path to your final domain before publishing.
-Sitemap: https://USERNAME.github.io/REPO/sitemap-index.xml
+Sitemap: https://lucafregoso.github.io/luca-fregoso-personal-website-2026-astro/sitemap-index.xml

@@ -23,12 +23,19 @@
   --border: #e3e3d8;
   --border-strong: #cfcfc2;
   --accent-text: var(--accent-text-light);
+  --focus-ring: #5b6300;
 
   --font-sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
   --font-mono: ui-monospace, "SF Mono", "JetBrains Mono", "Fira Code", Menlo, Consolas, monospace;
 
   --maxw: 760px;
+  --shell: 70rem;
+  --measure: 64ch;
   --radius: 10px;
+  --radius-sm: 4px;
+  --radius-md: 12px;
+  --radius-pill: 999px;
+  --ease-out: cubic-bezier(.2, .8, .2, 1);
 }
 
 :root[data-theme="dark"] {
@@ -41,6 +48,7 @@
   --border: #2a313c;
   --border-strong: #3a424e;
   --accent-text: var(--accent-text-dark);
+  --focus-ring: #d0db02;
 }
 
 /* Respect OS preference on first load when no choice stored.
@@ -129,9 +137,21 @@ h1, h2, h3 { font-weight: 600; letter-spacing: -0.02em; line-height: 1.2; }
 
 /* Focus visibility for keyboard users */
 :focus-visible {
-  outline: 2px solid var(--lime);
-  outline-offset: 2px;
+  outline: 3px solid var(--focus-ring);
+  outline-offset: 3px;
   border-radius: 2px;
+}
+
+.sr-only {
+  position: absolute !important;
+  width: 1px !important;
+  height: 1px !important;
+  padding: 0 !important;
+  margin: -1px !important;
+  overflow: hidden !important;
+  clip: rect(0, 0, 0, 0) !important;
+  white-space: nowrap !important;
+  border: 0 !important;
 }
 
 /* Theme toggle button */
@@ -140,7 +160,7 @@ h1, h2, h3 { font-weight: 600; letter-spacing: -0.02em; line-height: 1.2; }
   border: 1px solid var(--border);
   color: var(--text-muted);
   border-radius: 8px;
-  width: 38px; height: 38px;
+  width: 44px; height: 44px;
   cursor: pointer;
   font-size: 1rem;
   display: inline-flex; align-items: center; justify-content: center;
@@ -149,11 +169,19 @@ h1, h2, h3 { font-weight: 600; letter-spacing: -0.02em; line-height: 1.2; }
 .theme-toggle:hover { border-color: var(--lime); color: var(--text); }
 
 .skip-link {
-  position: absolute; left: -999px; top: 0;
+  position: fixed; left: 1rem; top: 1rem;
+  transform: translateY(-200%);
   background: var(--lime); color: #1a1a1a;
-  padding: 0.5rem 1rem; font-weight: 600; z-index: 100;
+  padding: 0.65rem 1rem; font-weight: 700; z-index: 2000;
+  border: 2px solid #1a1a1a; border-radius: var(--radius-sm);
 }
-.skip-link:focus { left: 0; }
+.skip-link:focus { transform: translateY(0); }
+
+@media (forced-colors: active) {
+  :focus-visible { outline: 3px solid Highlight; }
+  .skip-link, .theme-toggle, button, .button { forced-color-adjust: auto; }
+  .skip-link { color: CanvasText; background: Canvas; border-color: CanvasText; }
+}
 
 /* ---- Reveal on scroll ----
    Robust by default: content is ALWAYS visible. The hidden-then-reveal

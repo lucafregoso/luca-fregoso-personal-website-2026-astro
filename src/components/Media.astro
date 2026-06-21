@@ -1,5 +1,6 @@
 ---
 import { withBase } from '../lib/url';
+import ExternalLink from './ExternalLink.astro';
 
 interface MediaImage { type: 'image'; src: string; alt?: string }
 interface MediaVideo { type: 'video'; src: string; poster?: string }
@@ -50,10 +51,9 @@ const galleryClass = images.length > 1 ? 'is-gallery' : 'is-single';
 
     {/* LINKS — clean cards (e.g. a LinkedIn post); no iframe, no cookies */}
     {links.map((l) => (
-      <a class="media-link" href={l.url} target="_blank" rel="noopener noreferrer">
-        <span class="media-link-arrow mono" aria-hidden="true">↗</span>
+      <ExternalLink class="media-link" href={l.url}>
         <span class="media-link-label">{l.label ?? 'Read the full post'}</span>
-      </a>
+      </ExternalLink>
     ))}
   </div>
 )}
@@ -92,11 +92,11 @@ const galleryClass = images.length > 1 ? 'is-gallery' : 'is-single';
     border-radius: 12px; border: 1px solid var(--border); background: #000;
   }
 
-  .media-link {
+  :global(.media-link) {
     display: inline-flex; align-items: center; gap: 0.5rem; margin-top: 0.6rem;
     font-family: var(--font-mono); font-size: 0.82rem;
     border: 1px solid var(--border-strong); border-radius: 8px; padding: 0.45rem 0.85rem;
   }
-  .media-link:hover { border-color: var(--lime); background: var(--surface-2); }
-  .media-link-arrow { color: var(--accent-text); }
+  :global(.media-link:hover) { border-color: var(--lime); background: var(--surface-2); }
+  :global(.media-link .external-arrow) { color: var(--accent-text); }
 </style>
