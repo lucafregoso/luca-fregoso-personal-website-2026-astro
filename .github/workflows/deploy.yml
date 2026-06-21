@@ -1,40 +1,76 @@
-name: Deploy to GitHub Pages
+name: CI and deploy to GitHub Pages
 
 on:
-  # Run on every push to the main branch
   push:
-    branches: [develop]
-  # Allow manual runs from the Actions tab
+    branches:
+      - develop
+  pull_request:
   workflow_dispatch:
 
-# Permissions the GITHUB_TOKEN needs to deploy to Pages
+# Validation only needs repository read access. Deployment permissions are
+# granted to the deploy job below, after all quality checks pass.
 permissions:
   contents: read
-  pages: write
-  id-token: write
 
-# Allow one concurrent deploy; don't cancel in-progress production runs
 concurrency:
-  group: pages
-  cancel-in-progress: false
+  group: pages-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
-  build:
+  build-and-test:
+    name: Build and test
     runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      SITE_URL: ${{ vars.SITE_URL || 'https://lucafregoso.github.io' }}
+      BASE_PATH: ${{ vars.BASE_PATH || '/luca-fregoso-personal-website-2026-astro/' }}
+
     steps:
-      - name: Checkout
+      - name: Checkout repository
         uses: actions/checkout@v4
-      - name: Install, build, and upload your site
-        uses: withastro/action@v3
-        # If your repo's default branch is "master" not "main",
-        # change the trigger above. Node 20 is used by default.
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Playwright browser
+        run: npx playwright install --with-deps chromium
+
+      - name: Check Astro and TypeScript
+        run: npm run check
+
+      - name: Run end-to-end tests
+        run: npm test
+
+      # Playwright builds with a root base path for local tests. Build again
+      # with the production GitHub Pages base path before uploading dist/.
+      - name: Build production site
+        run: npm run build
+
+      - name: Upload GitHub Pages artifact
+        if: github.ref == 'refs/heads/develop' && github.event_name != 'pull_request'
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: dist
 
   deploy:
-    needs: build
+    name: Deploy
+    if: github.ref == 'refs/heads/develop' && github.event_name != 'pull_request'
+    needs: build-and-test
     runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      pages: write
+      id-token: write
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
+
     steps:
       - name: Deploy to GitHub Pages
         id: deployment

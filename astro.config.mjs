@@ -1,5 +1,6 @@
 import { defineConfig } from 'astro/config';
 import sitemap from '@astrojs/sitemap';
+import { loadEnv } from 'vite';
 
 // ─────────────────────────────────────────────────────────────
 // DEPLOY CONFIG — read this before publishing.
@@ -19,8 +20,19 @@ import sitemap from '@astrojs/sitemap';
 //     (Also add a CNAME file — see README.)
 // ─────────────────────────────────────────────────────────────
 
+// Public deployment configuration can come from an untracked local .env
+// file or GitHub Actions repository variables. Public identity and content
+// stay in the typed, reviewable src/data/site.ts file.
+const env = { ...loadEnv(process.env.NODE_ENV || 'production', process.cwd(), ''), ...process.env };
+const isPlaywright = env.PLAYWRIGHT_TEST === '1';
+
 export default defineConfig({
-  site: 'https://lucafregoso.github.io',
-  base: '/luca-fregoso-personal-website-2026-astro',
+  site: isPlaywright
+    ? 'http://127.0.0.1:4399'
+    : env.SITE_URL || 'https://lucafregoso.github.io',
+  // Keep base directory-like to avoid slash/no-slash sitemap duplicates.
+  base: isPlaywright
+    ? '/'
+    : env.BASE_PATH || '/luca-fregoso-personal-website-2026-astro/',
   integrations: [sitemap()],
 });

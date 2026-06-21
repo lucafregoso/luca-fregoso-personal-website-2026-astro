@@ -19,4 +19,4 @@
 - Writing (Codemotion Magazine): https://www.codemotion.com/magazine/it/author/luca-fregoso/
 
 ## Contact
-- Email: luca.fregoso@gmail.com
+- Contact page: https://lucafregoso.github.io/luca-fregoso-personal-website-2026-astro/#contact
