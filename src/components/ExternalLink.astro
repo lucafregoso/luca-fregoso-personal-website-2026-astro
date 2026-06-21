@@ -5,6 +5,7 @@ interface Props {
   ariaLabel?: string;
   title?: string;
   showArrow?: boolean;
+  newTabLabel?: string;
 }
 
 const {
@@ -13,9 +14,10 @@ const {
   ariaLabel,
   title,
   showArrow = true,
+  newTabLabel = Astro.currentLocale === 'it' ? 'si apre in una nuova scheda' : 'opens in a new tab',
 } = Astro.props;
 
-const accessibleLabel = ariaLabel ? `${ariaLabel} (opens in a new tab)` : undefined;
+const accessibleLabel = ariaLabel ? `${ariaLabel} (${newTabLabel})` : undefined;
 ---
 
 <a
@@ -28,5 +30,5 @@ const accessibleLabel = ariaLabel ? `${ariaLabel} (opens in a new tab)` : undefi
 >
   <slot />
   {showArrow && <span class="external-arrow" aria-hidden="true">↗</span>}
-  {!ariaLabel && <span class="sr-only"> (opens in a new tab)</span>}
+  {!ariaLabel && <span class="sr-only"> ({newTabLabel})</span>}
 </a>

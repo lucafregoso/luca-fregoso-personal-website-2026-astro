@@ -1,18 +1,21 @@
 ---
 import { withBase } from '../lib/url';
 import ExternalLink from './ExternalLink.astro';
+import { localize, translations, type Locale, type LocalizedText } from '../i18n';
 
-interface MediaImage { type: 'image'; src: string; alt?: string }
+interface MediaImage { type: 'image'; src: string; alt?: LocalizedText }
 interface MediaVideo { type: 'video'; src: string; poster?: string }
-interface MediaLink  { type: 'link';  url: string; label?: string }
+interface MediaLink  { type: 'link';  url: string; label?: LocalizedText }
 type MediaItem = MediaImage | MediaVideo | MediaLink;
 
 interface Props {
   media: MediaItem[];
   layout?: 'full' | 'compact';
   galleryId: string; // unique per entry, groups images into one lightbox gallery
+  locale?: Locale;
 }
-const { media, layout = 'full', galleryId } = Astro.props;
+const { media, layout = 'full', galleryId, locale = 'en' } = Astro.props;
+const labels = translations[locale].media;
 
 const images = media.filter((m): m is MediaImage => m.type === 'image');
 const videos = media.filter((m): m is MediaVideo => m.type === 'video');
@@ -32,10 +35,10 @@ const galleryClass = images.length > 1 ? 'is-gallery' : 'is-single';
             data-lightbox={galleryId}
             data-index={i}
             data-src={withBase(img.src)}
-            data-alt={img.alt ?? ''}
-            aria-label={`Open image${img.alt ? `: ${img.alt}` : ''}`}
+            data-alt={img.alt ? localize(img.alt, locale) : ''}
+            aria-label={`${labels.openImage}${img.alt ? `: ${localize(img.alt, locale)}` : ''}`}
           >
-            <img class="media-img" src={withBase(img.src)} alt={img.alt ?? ''} loading="lazy" />
+            <img class="media-img" src={withBase(img.src)} alt={img.alt ? localize(img.alt, locale) : ''} loading="lazy" />
           </button>
         ))}
       </div>
@@ -52,7 +55,7 @@ const galleryClass = images.length > 1 ? 'is-gallery' : 'is-single';
     {/* LINKS — clean cards (e.g. a LinkedIn post); no iframe, no cookies */}
     {links.map((l) => (
       <ExternalLink class="media-link" href={l.url}>
-        <span class="media-link-label">{l.label ?? 'Read the full post'}</span>
+        <span class="media-link-label">{l.label ? localize(l.label, locale) : labels.readFull}</span>
       </ExternalLink>
     ))}
   </div>
