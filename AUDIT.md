@@ -1,36 +1,53 @@
 # Audit report — accessibility, SEO, AI readiness
 
-Run on the production build, June 2026.
+Updated against the production build on 21 June 2026.
 
-## Accessibility (WCAG 2.1 AA)
+## Accessibility (WCAG 2.2 AA)
 
 Tested with **axe-core** (the industry-standard automated engine) via a real
-headless browser, in **both light and dark themes**.
+browser in **both light and dark themes**, including the open image dialog.
 
-- **Result: 0 violations** in both themes, against the wcag2a, wcag2aa and
-  wcag21aa rule sets.
-- **One issue was found and fixed during the audit:** colour contrast on the
-  faint grey text (the `~/luca-fregoso` brand mark and the "selected … archive"
-  captions) fell below the 4.5:1 AA threshold. The faint-text colour was darkened
-  in light mode (`#6a6a63`) and lightened in dark mode (`#8a93a0`); both now pass
-  AA on every background they appear on, including the tinted sections.
+- **Automated result: 0 violations** against WCAG 2.0 A/AA, 2.1 AA and 2.2 AA.
+- **Regression result: 31 Playwright tests passed.**
+- Verified: colour contrast, landmarks, heading structure, labels, alt text,
+  320px reflow, a 200%-zoom-equivalent viewport, 44px compact controls,
+  reduced motion, forced-colors focus visibility and no-JavaScript content.
+- The native image dialog keeps focus inside, exposes every enabled control,
+  supports arrows/Escape/swipe, announces image changes and restores focus.
+- External links consistently announce that they open a new tab; internal links
+  remain in the current tab.
+- Contact uses a deliberate reveal step, a public alias, separate mail/copy
+  actions and live feedback. The personal Gmail address is absent from HTML and
+  machine-readable public text.
 
-What was already in place (and verified): semantic headings, `lang="en"`,
-skip-link, alt text on images, visible focus states, ARIA on the lightbox dialog,
-keyboard support (Esc / arrows), and `prefers-reduced-motion` honoured by every
-animation (cursor, reveal-on-scroll, the live-dot pulse).
+### Manual verification matrix
+
+These checks cannot be certified by automation and should be repeated before a
+major release:
+
+| Environment | Journey | Status |
+|---|---|---|
+| Safari + VoiceOver | Landmarks, links, contact reveal, image dialog | Pending manual pass |
+| Chrome + NVDA | Reading order, live announcements, dialog controls | Pending manual pass |
+| Keyboard only | Skip link, full page order, dialog, contact actions | Covered automatically; manual spot-check pending |
+| Browser zoom 200% and 400% | Reflow, clipping and readability | 200% equivalent automated; manual browser zoom pending |
+| Windows forced colors | Focus, buttons, links and dialog controls | Core focus automated; full visual pass pending |
 
 > Note: automated tools catch ~30–50% of accessibility issues. A zero-violation
-> axe result is a strong baseline, not a guarantee. For a public professional
-> site this is a solid place to be; a manual screen-reader pass (VoiceOver/NVDA)
-> would be the next level if you want to go further.
+> axe result is a strong baseline, not formal WCAG certification.
+
+### Privacy release blocker
+
+`public/cv.pdf` still contains the personal Gmail address and mobile number.
+Replace it with the user-supplied export containing `hello@luca-fregoso.com`
+and no phone number, then inspect the rendered PDF and re-run text extraction
+before deployment.
 
 ## SEO
 
 - **`sitemap-index.xml` + `sitemap-0.xml`** — generated automatically on every
   build via `@astrojs/sitemap`.
-- **`robots.txt`** — added in `public/`, allows all crawlers and points to the
-  sitemap. ⚠️ Update the `Sitemap:` URL to your final domain before publishing.
+- **`robots.txt`** allows all crawlers and points to the current sitemap.
 - Per-page `<title>`, meta description, canonical URL, Open Graph and Twitter
   cards: already present (in `BaseLayout.astro`).
 - **JSON-LD `Person`** structured data: already present — helps search engines
@@ -52,7 +69,7 @@ animation (cursor, reveal-on-scroll, the live-dot pulse).
 
 ## Before publishing — checklist
 
-1. `astro.config.mjs`: set `site` + `base` (or remove `base` for a custom domain).
-2. `public/robots.txt`: update the `Sitemap:` URL to the real domain.
-3. `public/llms.txt`: review the wording — it's your machine-readable bio.
-4. Re-run the build and you're good.
+1. Replace and verify `public/cv.pdf` as described above.
+2. Complete the VoiceOver and NVDA manual passes.
+3. Review `SITE_URL`, `BASE_PATH`, `robots.txt` and `llms.txt` when moving domains.
+4. Run `npm run check`, `npm test` and `npm run build`.

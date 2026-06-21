@@ -49,6 +49,15 @@ test.describe('regressions', () => {
     expect(html).not.toContain('luca.fregoso@gmail.com');
   });
 
+  test('personal contact details are absent from machine-readable public text', async ({ request }) => {
+    const response = await request.get('/llms.txt');
+    expect(response.ok()).toBeTruthy();
+    const text = await response.text();
+    expect(text).not.toContain('luca.fregoso@gmail.com');
+    expect(text).not.toContain('+39 347 5420915');
+    expect(text).toContain('#contact');
+  });
+
   test('tinted sections render a visible full-width background band', async ({ page }) => {
     // Bug history: the background band collapsed to the content width.
     await page.goto('/');

@@ -6,6 +6,7 @@ import Media from '../components/Media.astro';
 import Lightbox from '../components/Lightbox.astro';
 import ContactEmail from '../components/ContactEmail.astro';
 import SocialIcon from '../components/SocialIcon.astro';
+import ExternalLink from '../components/ExternalLink.astro';
 import { site } from '../data/site';
 import { withBase } from '../lib/url';
 
@@ -86,8 +87,8 @@ function caseHref(href: string) {
             <a class="button button-secondary" href="#work">See selected work</a>
           </div>
           <div class="utility-links mono" aria-label="Profile links">
-            <a href={site.links.linkedin} target="_blank" rel="noopener noreferrer">LinkedIn ↗</a>
-            <a href={site.links.sessionize} target="_blank" rel="noopener noreferrer">Sessionize ↗</a>
+            <ExternalLink href={site.links.linkedin}>LinkedIn</ExternalLink>
+            <ExternalLink href={site.links.sessionize}>Sessionize</ExternalLink>
             <a href={withBase('/cv.pdf')}>CV (PDF)</a>
           </div>
         </div>
@@ -184,9 +185,9 @@ function caseHref(href: string) {
             {heroEntry.data.blurb && <p class="story-copy">{heroEntry.data.blurb}</p>}
             <Media media={heroEntry.data.media} layout={heroEntry.data.layout ?? 'full'} galleryId={`g-${heroEntry.id}`} />
             {outlink(heroEntry.data) && (
-              <a class={`outlink mono ${outlink(heroEntry.data)!.strong ? 'is-strong' : ''}`} href={outlink(heroEntry.data)!.href} target="_blank" rel="noopener noreferrer">
-                {outlink(heroEntry.data)!.label} <span aria-hidden="true">↗</span>
-              </a>
+              <ExternalLink class={`outlink mono ${outlink(heroEntry.data)!.strong ? 'is-strong' : ''}`} href={outlink(heroEntry.data)!.href}>
+                {outlink(heroEntry.data)!.label}
+              </ExternalLink>
             )}
           </article>
         )}
@@ -203,9 +204,9 @@ function caseHref(href: string) {
                 {entry.data.location && <p class="feed-location mono">{entry.data.location}</p>}
                 {entry.data.blurb && <p>{entry.data.blurb}</p>}
                 {outlink(entry.data) && (
-                  <a class={`outlink mono ${outlink(entry.data)!.strong ? 'is-strong' : ''}`} href={outlink(entry.data)!.href} target="_blank" rel="noopener noreferrer">
-                    {outlink(entry.data)!.label} <span aria-hidden="true">↗</span>
-                  </a>
+                  <ExternalLink class={`outlink mono ${outlink(entry.data)!.strong ? 'is-strong' : ''}`} href={outlink(entry.data)!.href}>
+                    {outlink(entry.data)!.label}
+                  </ExternalLink>
                 )}
               </div>
             </li>
@@ -227,9 +228,9 @@ function caseHref(href: string) {
                     {entry.data.location && <p class="feed-location mono">{entry.data.location}</p>}
                     {entry.data.blurb && <p>{entry.data.blurb}</p>}
                     {outlink(entry.data) && (
-                      <a class="outlink mono" href={outlink(entry.data)!.href} target="_blank" rel="noopener noreferrer">
-                        {outlink(entry.data)!.label} <span aria-hidden="true">↗</span>
-                      </a>
+                      <ExternalLink class="outlink mono" href={outlink(entry.data)!.href}>
+                        {outlink(entry.data)!.label}
+                      </ExternalLink>
                     )}
                   </div>
                 </li>
@@ -253,12 +254,12 @@ function caseHref(href: string) {
               <p>{talk.data.abstract}</p>
               <p class="talk-events mono">{talk.data.events.join(' · ')}</p>
               {talk.data.sessionizeUrl && (
-                <a href={talk.data.sessionizeUrl} target="_blank" rel="noopener noreferrer">View session ↗</a>
+                <ExternalLink href={talk.data.sessionizeUrl}>View session</ExternalLink>
               )}
             </article>
           ))}
         </div>
-        <a class="section-link mono" href={site.links.sessionize} target="_blank" rel="noopener noreferrer">Full speaker profile ↗</a>
+        <ExternalLink class="section-link mono" href={site.links.sessionize}>Full speaker profile</ExternalLink>
       </section>
 
       <section class="section writing tinted" id="writing" aria-labelledby="writing-title">
@@ -272,7 +273,7 @@ function caseHref(href: string) {
             <article class="writing-item">
               <span class="writing-index mono">{String(index + 1).padStart(2, '0')}</span>
               <div>
-                <h3><a href={article.data.url} target="_blank" rel="noopener noreferrer">{article.data.title} ↗</a></h3>
+                <h3><ExternalLink href={article.data.url}>{article.data.title}</ExternalLink></h3>
                 <p>{article.data.summary}</p>
               </div>
               <div class="writing-meta mono">
@@ -293,14 +294,14 @@ function caseHref(href: string) {
           <p>I’m open to senior international roles in developer programs, technical content and presales—and to the right hosting, speaking or program collaboration.</p>
         </div>
         <div class="contact-actions">
-          <ContactEmail class="button button-primary" />
-          <a class="button button-secondary" href={site.links.linkedin} target="_blank" rel="noopener noreferrer">Connect on LinkedIn ↗</a>
+          <ContactEmail />
+          <ExternalLink class="button button-secondary" href={site.links.linkedin}>Connect on LinkedIn</ExternalLink>
           <a class="text-link mono" href={withBase('/cv.pdf')}>View CV (PDF)</a>
           <nav class="social-links" aria-label="Social profiles">
             {site.socials.map((social) => (
-              <a href={social.url} target="_blank" rel="noopener noreferrer" aria-label={social.name} title={social.name}>
+              <ExternalLink href={social.url} ariaLabel={social.name} title={social.name} showArrow={false}>
                 <SocialIcon name={social.name} class="social-icon" />
-              </a>
+              </ExternalLink>
             ))}
           </nav>
         </div>
@@ -328,7 +329,7 @@ function caseHref(href: string) {
   .hero-actions, .utility-links { display: flex; flex-wrap: wrap; align-items: center; gap: .75rem; }
   .hero-actions { margin-top: 2rem; }
   .utility-links { margin-top: 1.25rem; gap: 1.4rem; }
-  .utility-links a { min-height: 44px; display: inline-flex; align-items: center; font-size: .76rem; }
+  .utility-links :global(a) { min-height: 44px; display: inline-flex; align-items: center; font-size: .76rem; }
   .button { min-height: 48px; padding: .7rem 1.15rem; border: 1px solid var(--border-strong); border-radius: var(--radius-md); display: inline-flex; justify-content: center; align-items: center; font: 650 .86rem/1.2 var(--font-mono); text-align: center; cursor: pointer; transition: transform .18s var(--ease-out), border-color .18s, background .18s; }
   .button:hover { transform: translateY(-2px); border-color: var(--lime); }
   .button-primary { color: #171715; background: var(--lime); border-color: var(--lime); }
@@ -393,8 +394,8 @@ function caseHref(href: string) {
   .feed-meta span { color: var(--accent-text); }
   .feed-body h3 { margin: 0; font-size: 1.15rem; }
   .feed-body > p:not(.feed-location) { max-width: 66ch; margin: .55rem 0 0; color: var(--text-muted); font-size: .92rem; }
-  .outlink { width: fit-content; margin-top: .9rem; display: inline-flex; gap: .35rem; font-size: .76rem; }
-  .outlink.is-strong { min-height: 44px; padding: .45rem .8rem; align-items: center; border: 1px solid var(--border-strong); border-radius: var(--radius-md); }
+  :global(.outlink) { width: fit-content; margin-top: .9rem; display: inline-flex; gap: .35rem; font-size: .76rem; }
+  :global(.outlink.is-strong) { min-height: 44px; padding: .45rem .8rem; align-items: center; border: 1px solid var(--border-strong); border-radius: var(--radius-md); }
   .earlier { margin-top: 1.5rem; }
   .earlier summary { width: fit-content; min-height: 44px; display: flex; align-items: center; cursor: pointer; color: var(--accent-text); font-size: .76rem; }
   .earlier[open] summary { margin-bottom: .5rem; }
@@ -405,14 +406,14 @@ function caseHref(href: string) {
   .talk-card h3 { margin: 2rem 0 1rem; font-size: 1.35rem; }
   .talk-card > p:not(.talk-events) { margin: 0; color: var(--text-muted); font-size: .88rem; }
   .talk-events { margin: auto 0 1rem; padding-top: 1.5rem; color: var(--text-faint); font-size: .67rem; }
-  .talk-card a, .section-link { width: fit-content; font-size: .78rem; }
-  .section-link { min-height: 44px; margin-top: 1.5rem; display: inline-flex; align-items: center; }
+  .talk-card :global(a), :global(.section-link) { width: fit-content; font-size: .78rem; }
+  :global(.section-link) { min-height: 44px; margin-top: 1.5rem; display: inline-flex; align-items: center; }
 
   .writing-list { border-top: 1px solid var(--border); }
   .writing-item { min-height: 150px; display: grid; grid-template-columns: 54px 1fr 180px; gap: 2rem; align-items: start; padding: 1.5rem 0; border-bottom: 1px solid var(--border); }
   .writing-index { color: var(--accent-text); font-size: .68rem; }
   .writing-item h3 { margin: 0; font-size: 1.15rem; }
-  .writing-item h3 a { color: var(--text); }
+  .writing-item h3 :global(a) { color: var(--text); }
   .writing-item p { max-width: 62ch; margin: .55rem 0 0; color: var(--text-muted); font-size: .9rem; }
   .writing-meta { display: flex; flex-direction: column; gap: .4rem; color: var(--text-faint); font-size: .68rem; text-align: right; }
 
@@ -421,18 +422,17 @@ function caseHref(href: string) {
   .contact h2 { max-width: 12ch; margin: 0; color: #f3f5f7; font-size: clamp(2.5rem, 5vw, 4.5rem); line-height: 1; letter-spacing: -.055em; }
   .contact-grid p { max-width: 58ch; color: #aab3c0; }
   .contact-actions { display: flex; flex-direction: column; align-items: stretch; justify-content: center; gap: .8rem; }
-  .contact-actions :global(.email-reveal) {
-    min-height: 48px; padding: .7rem 1.15rem; display: inline-flex;
-    justify-content: center; align-items: center; color: #171715;
-    background: var(--lime); border: 1px solid var(--lime);
-    border-radius: var(--radius-md); font: 650 .86rem/1.2 var(--font-mono);
+  .contact-actions :global(.button) {
+    min-height: 48px; padding: .7rem 1.15rem; border: 1px solid var(--border-strong);
+    border-radius: var(--radius-md); display: inline-flex; gap: .35rem;
+    justify-content: center; align-items: center; font: 650 .86rem/1.2 var(--font-mono);
+    text-align: center; cursor: pointer;
   }
-  .contact-actions :global(.email-reveal:hover) { color: #171715; background: var(--lime-dim); border-color: var(--lime); }
-  .contact-actions .button-secondary { color: #f3f5f7; background: #151a22; border-color: #353d49; }
+  .contact-actions :global(.button-secondary) { color: #f3f5f7; background: #151a22; border-color: #353d49; }
   .text-link { min-height: 44px; display: inline-flex; justify-content: center; align-items: center; color: #c3ce4a; font-size: .76rem; }
   .social-links { display: flex; justify-content: center; gap: .45rem; margin-top: .25rem; }
-  .social-links a { width: 44px; height: 44px; display: inline-flex; align-items: center; justify-content: center; color: #aab3c0; border: 1px solid #353d49; border-radius: var(--radius-pill); }
-  .social-links a:hover { color: #f3f5f7; border-color: var(--lime); }
+  .social-links :global(a) { width: 44px; height: 44px; display: inline-flex; align-items: center; justify-content: center; color: #aab3c0; border: 1px solid #353d49; border-radius: var(--radius-pill); }
+  .social-links :global(a:hover) { color: #f3f5f7; border-color: var(--lime); }
   .social-links :global(.social-icon) { width: 20px; height: 20px; display: block; }
   .colophon { margin: 2rem 0 0; color: var(--text-faint); font-size: .7rem; }
 

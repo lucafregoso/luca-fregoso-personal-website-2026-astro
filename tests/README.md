@@ -34,7 +34,7 @@ testing — your real deploy config in `astro.config.mjs` is untouched.
 - the page title never says "undefined"
 - no `undefined` anywhere in `<head>` (meta tags / JSON-LD)
 - talks & writing content is visible **even with JavaScript disabled**
-- the email address never appears as plain text in the HTML source
+- the personal email and phone never appear in HTML or machine-readable text
 - full-width tinted section bands do not collapse to the content width
 - placeholder profiles never reach published links
 - featured updates retain their lime marker without a card fill
@@ -43,15 +43,20 @@ testing — your real deploy config in `astro.config.mjs` is untouched.
 - positioning, proof and section hierarchy remain present
 - LinkedIn, Sessionize, CV and contact conversion paths remain valid
 - landmark and heading structure stays navigable
-- 320px mobile and tablet layouts do not overflow horizontally
+- 320px, 200%-zoom-equivalent and tablet layouts do not overflow horizontally
+- compact primary controls retain at least 44×44px targets
 
 **`tests/functional.spec.ts`** — the interactive pieces:
-- lightbox opens, navigates between images, closes (Esc + backdrop)
+- native image dialog traps focus correctly, announces navigation, supports
+  arrows/Escape/backdrop and restores focus
 - theme toggle switches and persists across reload
-- external links open in a new tab with `rel="noopener"`; entry titles never do
-- the obfuscated email reveals on interaction
+- external links securely open and announce a new tab; internal links never do
+- the email alias reveals deliberately, exposes mail/copy actions and announces
+  clipboard success
+- skip-link focus, reduced motion and forced-colors focus indicators
 
-**`tests/accessibility.spec.ts`** — axe-core, WCAG 2.1 AA, in **both themes**.
+**`tests/accessibility.spec.ts`** — axe-core, WCAG 2.2 AA, in **both themes**
+for the idle page and open image dialog.
 > Automated a11y tools catch ~30–50% of issues. A clean run is a strong
 > baseline, not a guarantee — a manual screen-reader pass is the next level.
 

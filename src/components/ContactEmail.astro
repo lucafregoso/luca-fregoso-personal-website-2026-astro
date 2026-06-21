@@ -1,44 +1,109 @@
 ---
-// Obfuscated email. The address never appears as a plain string in the
-// HTML source — it's split into data-attributes and reassembled by JS on
-// first interaction, so spam harvesters that scrape static HTML get nothing,
-// while humans get a normal mailto link.
+// The alias is deliberately revealed only after user activation. This deters
+// basic static scrapers without pretending that client-side data is secret.
 import { site } from '../data/site';
-interface Props { class?: string; label?: string }
-const { class: cls = '', label = 'Email me' } = Astro.props;
+
+interface Props {
+  id?: string;
+}
+
+const { id = 'contact-email' } = Astro.props;
+const actionsId = `${id}-actions`;
+const statusId = `${id}-status`;
 ---
 
-<button
-  type="button"
-  class={`email-reveal ${cls}`}
-  data-u={site.emailUser}
-  data-d={site.emailDomain}
-  aria-label="Reveal email address"
->
-  <span class="email-text">{label}</span>
-</button>
+<div class="contact-email" data-contact-email data-u={site.emailUser} data-d={site.emailDomain}>
+  <button
+    type="button"
+    class="email-reveal"
+    aria-expanded="false"
+    aria-controls={actionsId}
+    data-email-reveal
+  >
+    Email me
+  </button>
+
+  <div class="email-actions" id={actionsId} hidden data-email-actions>
+    <p class="email-address mono" data-email-address></p>
+    <div class="email-buttons">
+      <a class="email-link" href="#" data-email-link>Email me</a>
+      <button type="button" class="email-copy" aria-describedby={statusId} data-email-copy>
+        Copy address
+      </button>
+    </div>
+  </div>
+
+  <p class="sr-only" id={statusId} role="status" aria-live="polite" aria-atomic="true" data-email-status></p>
+</div>
 
 <script is:inline>
-  document.querySelectorAll('.email-reveal').forEach(function (btn) {
-    let revealed = false;
-    function addr() { return btn.getAttribute('data-u') + '@' + btn.getAttribute('data-d'); }
-    btn.addEventListener('mouseenter', function () {
-      if (!revealed) { btn.querySelector('.email-text').textContent = addr(); revealed = true; }
+  document.querySelectorAll('[data-contact-email]').forEach(function (root) {
+    var reveal = root.querySelector('[data-email-reveal]');
+    var actions = root.querySelector('[data-email-actions]');
+    var address = root.querySelector('[data-email-address]');
+    var emailLink = root.querySelector('[data-email-link]');
+    var copy = root.querySelector('[data-email-copy]');
+    var status = root.querySelector('[data-email-status]');
+    if (!reveal || !actions || !address || !emailLink || !copy || !status) return;
+
+    function getAddress() {
+      return root.getAttribute('data-u') + '@' + root.getAttribute('data-d');
+    }
+
+    function announce(message) {
+      status.textContent = '';
+      window.setTimeout(function () { status.textContent = message; }, 20);
+    }
+
+    reveal.addEventListener('click', function () {
+      var value = getAddress();
+      address.textContent = value;
+      emailLink.setAttribute('href', 'mailto:' + value);
+      actions.hidden = false;
+      reveal.setAttribute('aria-expanded', 'true');
+      reveal.hidden = true;
+      announce('Email address revealed.');
+      emailLink.focus();
     });
-    btn.addEventListener('click', function () {
-      const a = addr();
-      btn.querySelector('.email-text').textContent = a;
-      revealed = true;
-      window.location.href = 'mailto:' + a;
+
+    copy.addEventListener('click', async function () {
+      var value = getAddress();
+      try {
+        await navigator.clipboard.writeText(value);
+        copy.textContent = 'Copied';
+        announce('Email address copied to clipboard.');
+      } catch (error) {
+        announce('Copy failed. Select the email address shown above.');
+      }
     });
   });
 </script>
 
 <style>
-  .email-reveal {
-    appearance: none; background: none; border: none; padding: 0; margin: 0;
-    cursor: pointer; font: inherit; color: var(--accent-text);
-    border-bottom: 1px solid transparent;
+  .contact-email { display: grid; gap: .75rem; }
+  .email-reveal, .email-link, .email-copy {
+    min-height: 48px; padding: .7rem 1.15rem; border-radius: var(--radius-md);
+    display: inline-flex; align-items: center; justify-content: center;
+    font: 650 .86rem/1.2 var(--font-mono); cursor: pointer;
   }
-  .email-reveal:hover { border-bottom-color: var(--lime); }
+  .email-reveal[hidden] { display: none; }
+  .email-reveal, .email-link {
+    color: #171715; background: var(--lime); border: 1px solid var(--lime);
+  }
+  .email-reveal:hover, .email-link:hover {
+    color: #171715; background: var(--lime-dim); border-color: var(--lime);
+  }
+  .email-actions { display: grid; gap: .75rem; }
+  .email-actions[hidden] { display: none; }
+  .email-address {
+    margin: 0; padding: .65rem .8rem; color: #f3f5f7; background: #151a22;
+    border: 1px solid #353d49; border-radius: var(--radius-sm);
+    font-size: .78rem; text-align: center; user-select: all;
+  }
+  .email-buttons { display: grid; grid-template-columns: 1fr 1fr; gap: .75rem; }
+  .email-copy { color: #f3f5f7; background: #151a22; border: 1px solid #353d49; }
+  .email-copy:hover { border-color: var(--lime); }
+  @media (max-width: 420px) {
+    .email-buttons { grid-template-columns: 1fr; }
+  }
 </style>

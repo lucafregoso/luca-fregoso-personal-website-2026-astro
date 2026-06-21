@@ -129,6 +129,6 @@ export const site = {
 
   // Email, stored split so it never appears as a harvestable string in
   // the HTML. The UI reassembles it on interaction (see ContactEmail).
-  emailUser: 'luca.fregoso',
-  emailDomain: 'gmail.com',
+  emailUser: 'hello',
+  emailDomain: 'luca-fregoso.com',
 };
