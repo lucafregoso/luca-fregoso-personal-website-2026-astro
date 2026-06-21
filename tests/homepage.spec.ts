@@ -62,6 +62,7 @@ test.describe('homepage content contract', () => {
 test.describe('homepage responsive contract', () => {
   for (const viewport of [
     { name: 'small phone', width: 320, height: 700 },
+    { name: '200% zoom equivalent', width: 640, height: 800 },
     { name: 'tablet', width: 768, height: 900 },
   ]) {
     test(`has no horizontal page overflow on ${viewport.name}`, async ({ page }) => {
@@ -77,4 +78,23 @@ test.describe('homepage responsive contract', () => {
       await expect(page.locator('.hero-actions')).toBeVisible();
     });
   }
+
+  test('primary compact controls meet the 44px target size', async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.goto('/');
+    const selectors = ['#theme-toggle', '.hero-actions a', '.social-links a'];
+    for (const selector of selectors) {
+      const boxes = await page.locator(selector).evaluateAll((elements) =>
+        elements.map((element) => {
+          const box = element.getBoundingClientRect();
+          return { width: box.width, height: box.height };
+        })
+      );
+      expect(boxes.length).toBeGreaterThan(0);
+      for (const box of boxes) {
+        expect(box.width).toBeGreaterThanOrEqual(44);
+        expect(box.height).toBeGreaterThanOrEqual(44);
+      }
+    }
+  });
 });

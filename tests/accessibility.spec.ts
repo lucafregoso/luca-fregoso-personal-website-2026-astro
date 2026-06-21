@@ -20,24 +20,23 @@ async function runAxe(page: any) {
   await page.evaluate(axeSource);
   return page.evaluate(async () => {
     // @ts-ignore — axe is injected at runtime
-    return await axe.run({ runOnly: ['wcag2a', 'wcag2aa', 'wcag21aa'] });
+    return await axe.run({ runOnly: ['wcag2a', 'wcag2aa', 'wcag21aa', 'wcag22aa'] });
   });
 }
 
-for (const theme of ['light', 'dark'] as const) {
-  test(`no WCAG 2.1 AA violations — ${theme} theme`, async ({ page }) => {
-    await page.goto('/');
-    await page.evaluate((t) => document.documentElement.setAttribute('data-theme', t), theme);
+async function settlePage(page: any, theme: 'light' | 'dark') {
+  await page.goto('/');
+  await page.evaluate((t: string) => document.documentElement.setAttribute('data-theme', t), theme);
+  await page.evaluate(() => {
+    document.documentElement.classList.remove('js-reveal');
+    document.querySelectorAll('[data-reveal]').forEach((el) => el.classList.add('is-in'));
+  });
+  await page.waitForTimeout(200);
+}
 
-    // Settle into the final visual state: reveal-on-scroll elements start at
-    // opacity:0 and would make axe measure contrast against a blended colour.
-    // Force them visible and disable the reveal class so axe sees the real,
-    // stable rendering.
-    await page.evaluate(() => {
-      document.documentElement.classList.remove('js-reveal');
-      document.querySelectorAll('[data-reveal]').forEach((el) => el.classList.add('is-in'));
-    });
-    await page.waitForTimeout(200);
+for (const theme of ['light', 'dark'] as const) {
+  test(`no WCAG 2.2 AA violations — ${theme} theme`, async ({ page }) => {
+    await settlePage(page, theme);
 
     const results = await runAxe(page);
 
@@ -50,6 +49,14 @@ for (const theme of ['light', 'dark'] as const) {
       }
     }
 
+    expect(results.violations).toEqual([]);
+  });
+
+  test(`image dialog has no WCAG 2.2 AA violations — ${theme} theme`, async ({ page }) => {
+    await settlePage(page, theme);
+    await page.locator('[data-lightbox]').first().click();
+    await expect(page.locator('#lightbox')).toBeVisible();
+    const results = await runAxe(page);
     expect(results.violations).toEqual([]);
   });
 }
