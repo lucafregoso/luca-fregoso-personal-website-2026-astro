@@ -4,8 +4,8 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 import ThemeToggle from '../components/ThemeToggle.astro';
 import Media from '../components/Media.astro';
 import Lightbox from '../components/Lightbox.astro';
-import SocialIcon from '../components/SocialIcon.astro';
 import ContactEmail from '../components/ContactEmail.astro';
+import SocialIcon from '../components/SocialIcon.astro';
 import { site } from '../data/site';
 import { withBase } from '../lib/url';
 
@@ -14,25 +14,24 @@ const allNow = (await getCollection('now')).sort(
 );
 const todayMs = Date.now();
 const upcoming = allNow
-  .filter((e) => e.data.date.valueOf() > todayMs)
-  .sort((a, b) => a.data.date.valueOf() - b.data.date.valueOf()); // soonest first
-const past = allNow.filter((e) => e.data.date.valueOf() <= todayMs);
+  .filter((entry) => entry.data.date.valueOf() > todayMs)
+  .sort((a, b) => a.data.date.valueOf() - b.data.date.valueOf());
+const past = allNow.filter((entry) => entry.data.date.valueOf() <= todayMs);
 const heroEntry = past[0];
-const restEntries = past.slice(1);
+const recentEntries = past.slice(1, 4);
+const earlierEntries = past.slice(4);
 
-const talks = (await getCollection('talks')).sort(
-  (a, b) => a.data.order - b.data.order
-);
+const talks = (await getCollection('talks')).sort((a, b) => a.data.order - b.data.order);
 const writing = (await getCollection('writing')).sort(
   (a, b) => b.data.date.valueOf() - a.data.date.valueOf()
 );
 
-const monthYear = (d: Date) =>
-  d.toLocaleDateString('en-GB', { year: 'numeric', month: 'short' });
-const dayMonth = (d: Date) =>
-  d.toLocaleDateString('en-GB', { day: '2-digit', month: 'short' });
-const fullDate = (d: Date) =>
-  d.toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
+const monthYear = (date: Date) =>
+  date.toLocaleDateString('en-GB', { year: 'numeric', month: 'short' });
+const dayMonth = (date: Date) =>
+  date.toLocaleDateString('en-GB', { day: '2-digit', month: 'short' });
+const fullDate = (date: Date) =>
+  date.toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
 
 const kindLabel: Record<string, string> = {
   speaking: 'on stage',
@@ -42,191 +41,269 @@ const kindLabel: Record<string, string> = {
   note: 'note',
 };
 
-const latest = past[0]?.data.date;
-const stale = latest
-  ? (todayMs - latest.valueOf()) / 86400000 > 75
-  : true;
-
-// Derive a human label + host for an outbound link.
 function outlink(entry: { url?: string; urlLabel?: string; urlStyle?: string }) {
   if (!entry.url) return null;
   let host = '';
   try { host = new URL(entry.url).hostname.replace(/^www\./, ''); } catch {}
-  const isLinkedIn = host.includes('linkedin');
-  const platform = isLinkedIn ? 'LinkedIn' : host;
-  const label =
-    entry.urlLabel ??
-    (entry.urlStyle === 'strong' ? `Read the full post on ${platform}` : `Read it on ${platform}`);
-  return { href: entry.url, label, strong: entry.urlStyle === 'strong' };
+  const platform = host.includes('linkedin') ? 'LinkedIn' : host;
+  return {
+    href: entry.url,
+    label:
+      entry.urlLabel ??
+      (entry.urlStyle === 'strong' ? `Read the full post on ${platform}` : `Read it on ${platform}`),
+    strong: entry.urlStyle === 'strong',
+  };
+}
+
+function caseHref(href: string) {
+  return href.startsWith('/') ? withBase(href) : href;
 }
 ---
 
 <BaseLayout>
-  <div class="wrap">
-    <!-- TOP -->
-    <div class="top">
-      <span class="brand mono">luca&middot;fregoso</span>
-      <ThemeToggle />
-    </div>
-
-    <!-- INTRO -->
-    <header class="intro">
-      <h1 class="name">Luca Fregoso</h1>
-      <p class="currently">{site.currently}</p>
-      <div class="intro-body">
-        {site.intro.map((p) => <p>{p}</p>)}
-      </div>
-      <nav class="intro-links">
-        <a href={site.links.linkedin} target="_blank" rel="noopener noreferrer">LinkedIn</a>
-        <a href={site.links.sessionize} target="_blank" rel="noopener noreferrer">Sessionize</a>
+  <div class="site-shell">
+    <header class="topbar" aria-label="Site header">
+      <a class="brand mono" href="#top" aria-label="Luca Fregoso, back to top">luca·fregoso</a>
+      <nav class="site-nav" aria-label="Primary navigation">
+        <a href="#work">Work</a>
+        <a href="#lately">Lately</a>
+        <a href="#talks">Talks</a>
         <a href="#writing">Writing</a>
-        <a href={withBase("/cv.pdf")}>CV</a>
+        <a href="#contact">Contact</a>
       </nav>
+      <ThemeToggle />
     </header>
 
-    <!-- THE STREAM -->
-    <section class="stream tinted" id="now" aria-label="What I'm up to">
-      <div class="stream-head">
-        <h2><span class="lime-bar"></span>Lately</h2>
-        {!stale && <span class="pulse mono" title="Recently updated">live</span>}
-      </div>
+    <main id="main" tabindex="-1">
+      <section class="hero" id="top" aria-labelledby="hero-title">
+        <div class="hero-copy">
+          <p class="eyebrow mono"><span class="status-dot" aria-hidden="true"></span>{site.eyebrow}</p>
+          <h1 id="hero-title">{site.headline}</h1>
+          <p class="hero-intro">{site.intro}</p>
+          <p class="hero-proof">{site.proof}</p>
+          <div class="hero-actions">
+            <a class="button button-primary" href="#contact">Discuss a leadership role</a>
+            <a class="button button-secondary" href="#work">See selected work</a>
+          </div>
+          <div class="utility-links mono" aria-label="Profile links">
+            <a href={site.links.linkedin} target="_blank" rel="noopener noreferrer">LinkedIn ↗</a>
+            <a href={site.links.sessionize} target="_blank" rel="noopener noreferrer">Sessionize ↗</a>
+            <a href={withBase('/cv.pdf')}>CV (PDF)</a>
+          </div>
+        </div>
 
-      {/* UPCOMING — future-dated entries, pinned on top */}
-      {upcoming.length > 0 && (
-        <ul class="upcoming">
-          {upcoming.map((e) => (
-            <li class="up-item">
-              <span class="up-tag mono">upcoming</span>
-              <span class="up-title">
-                {e.data.title}
-                {e.data.location && <span class="up-loc mono"> · {e.data.location}</span>}
-              </span>
-              <time class="up-date mono" datetime={e.data.date.toISOString()}>{dayMonth(e.data.date)}</time>
+        <figure class="hero-visual">
+          <img
+            src={withBase('/hackathon-2026.jpg')}
+            alt="Luca Fregoso hosting on stage at Docebo GAME UP! Product Power Up 2026."
+            width="1200"
+            height="900"
+          />
+          <figcaption class="mono">
+            <span>On stage</span>
+            <span>Docebo · Milan · 2026</span>
+          </figcaption>
+        </figure>
+      </section>
+
+      <section class="metrics" aria-label="Impact in numbers">
+        {site.metrics.map((metric) => (
+          <div class="metric">
+            <strong>{metric.value}</strong>
+            <span>{metric.label}</span>
+          </div>
+        ))}
+      </section>
+
+      <section class="section work" id="work" aria-labelledby="work-title">
+        <div class="section-heading">
+          <p class="section-number mono">01 / Selected impact</p>
+          <h2 id="work-title">Where strategy meets delivery.</h2>
+          <p>I work at the joins: between technology and people, editorial judgment and commercial reality, the stage and everything behind it.</p>
+        </div>
+
+        <div class="capability-grid">
+          {site.capabilities.map((capability) => (
+            <article class="capability">
+              <span class="capability-number mono">{capability.number}</span>
+              <h3>{capability.title}</h3>
+              <p>{capability.description}</p>
+            </article>
+          ))}
+        </div>
+
+        <div class="case-grid">
+          {site.caseStudies.map((caseStudy) => (
+            <article class="case-card">
+              <p class="case-label mono">{caseStudy.label}</p>
+              <h3>{caseStudy.title}</h3>
+              <p>{caseStudy.description}</p>
+              <strong class="case-outcome">{caseStudy.outcome}</strong>
+              <a
+                href={caseHref(caseStudy.href)}
+                {...(caseStudy.download ? { 'aria-label': `${caseStudy.linkLabel}, PDF` } : {})}
+              >
+                {caseStudy.linkLabel} <span aria-hidden="true">→</span>
+              </a>
+            </article>
+          ))}
+        </div>
+      </section>
+
+      <section class="section stream tinted" id="lately" aria-labelledby="lately-title">
+        <div class="section-heading compact">
+          <p class="section-number mono">02 / Field notes</p>
+          <div class="heading-row">
+            <h2 id="lately-title">Lately</h2>
+            {heroEntry && <span class="updated mono">Updated {dayMonth(heroEntry.data.date)}</span>}
+          </div>
+          <p>Recent work from programs, stages and the communities around them.</p>
+        </div>
+
+        {upcoming.length > 0 && (
+          <ul class="upcoming">
+            {upcoming.map((entry) => (
+              <li>
+                <span class="up-tag mono">upcoming</span>
+                <span class="up-title">{entry.data.title}</span>
+                {entry.data.location && <span class="up-location mono">{entry.data.location}</span>}
+                <time class="up-date mono" datetime={entry.data.date.toISOString()}>{dayMonth(entry.data.date)}</time>
+              </li>
+            ))}
+          </ul>
+        )}
+
+        {heroEntry && (
+          <article data-reveal class={`featured-story ${heroEntry.data.featured ? 'is-featured' : ''}`}>
+            <div class="story-meta mono">
+              <span>{kindLabel[heroEntry.data.kind] ?? heroEntry.data.kind}</span>
+              <time datetime={heroEntry.data.date.toISOString()}>{fullDate(heroEntry.data.date)}</time>
+            </div>
+            <h3>{heroEntry.data.title}</h3>
+            {heroEntry.data.location && <p class="story-location mono">{heroEntry.data.location}</p>}
+            {heroEntry.data.blurb && <p class="story-copy">{heroEntry.data.blurb}</p>}
+            <Media media={heroEntry.data.media} layout={heroEntry.data.layout ?? 'full'} galleryId={`g-${heroEntry.id}`} />
+            {outlink(heroEntry.data) && (
+              <a class={`outlink mono ${outlink(heroEntry.data)!.strong ? 'is-strong' : ''}`} href={outlink(heroEntry.data)!.href} target="_blank" rel="noopener noreferrer">
+                {outlink(heroEntry.data)!.label} <span aria-hidden="true">↗</span>
+              </a>
+            )}
+          </article>
+        )}
+
+        <ol class="feed">
+          {recentEntries.map((entry) => (
+            <li data-reveal class={`feed-item ${entry.data.featured ? 'is-featured' : ''}`}>
+              <div class="feed-meta mono">
+                <time datetime={entry.data.date.toISOString()}>{dayMonth(entry.data.date)}</time>
+                <span>{kindLabel[entry.data.kind] ?? entry.data.kind}</span>
+              </div>
+              <div class="feed-body">
+                <h3>{entry.data.title}</h3>
+                {entry.data.location && <p class="feed-location mono">{entry.data.location}</p>}
+                {entry.data.blurb && <p>{entry.data.blurb}</p>}
+                {outlink(entry.data) && (
+                  <a class={`outlink mono ${outlink(entry.data)!.strong ? 'is-strong' : ''}`} href={outlink(entry.data)!.href} target="_blank" rel="noopener noreferrer">
+                    {outlink(entry.data)!.label} <span aria-hidden="true">↗</span>
+                  </a>
+                )}
+              </div>
             </li>
           ))}
-        </ul>
-      )}
+        </ol>
 
-      {/* HERO — most recent past entry, in full */}
-      {heroEntry && (
-        <article data-reveal class={`hero-entry ${heroEntry.data.featured ? 'is-feat' : ''}`}>
-          <div class="hero-meta mono">
-            <span class="hero-kind">{kindLabel[heroEntry.data.kind] ?? heroEntry.data.kind}</span>
-            <time datetime={heroEntry.data.date.toISOString()}>{fullDate(heroEntry.data.date)}</time>
-            {heroEntry.data.featured && <span class="feat-tag mono">★ featured</span>}
-          </div>
-          <h3 class="hero-title">{heroEntry.data.title}</h3>
-          {heroEntry.data.location && <p class="hero-loc mono">{heroEntry.data.location}</p>}
-          {heroEntry.data.blurb && <p class="hero-blurb">{heroEntry.data.blurb}</p>}
-          <Media
-            media={heroEntry.data.media}
-            layout={heroEntry.data.layout ?? 'full'}
-            galleryId={`g-${heroEntry.id}`}
-          />
-          {outlink(heroEntry.data) && (
-            <a class={`outlink mono ${outlink(heroEntry.data)!.strong ? 'is-strong' : ''}`}
-               href={outlink(heroEntry.data)!.href} target="_blank" rel="noopener noreferrer">
-              {outlink(heroEntry.data)!.label} <span class="arr" aria-hidden="true">↗</span>
-            </a>
-          )}
-        </article>
-      )}
+        {earlierEntries.length > 0 && (
+          <details class="earlier">
+            <summary class="mono">Show {earlierEntries.length} earlier updates</summary>
+            <ol class="feed">
+              {earlierEntries.map((entry) => (
+                <li class={`feed-item ${entry.data.featured ? 'is-featured' : ''}`}>
+                  <div class="feed-meta mono">
+                    <time datetime={entry.data.date.toISOString()}>{dayMonth(entry.data.date)}</time>
+                    <span>{kindLabel[entry.data.kind] ?? entry.data.kind}</span>
+                  </div>
+                  <div class="feed-body">
+                    <h3>{entry.data.title}</h3>
+                    {entry.data.location && <p class="feed-location mono">{entry.data.location}</p>}
+                    {entry.data.blurb && <p>{entry.data.blurb}</p>}
+                    {outlink(entry.data) && (
+                      <a class="outlink mono" href={outlink(entry.data)!.href} target="_blank" rel="noopener noreferrer">
+                        {outlink(entry.data)!.label} <span aria-hidden="true">↗</span>
+                      </a>
+                    )}
+                  </div>
+                </li>
+              ))}
+            </ol>
+          </details>
+        )}
+      </section>
 
-      {/* THE REST — tight list */}
-      <ol class="feed">
-        {restEntries.map((e) => (
-          <li data-reveal class={`feed-item ${e.data.featured ? 'is-feat' : ''}`}>
-            <time class="feed-date mono" datetime={e.data.date.toISOString()}>
-              {dayMonth(e.data.date)}<span class="yr">{e.data.date.getFullYear()}</span>
-            </time>
-            <div class="feed-body">
-              <span class="feed-kind mono">
-                {kindLabel[e.data.kind] ?? e.data.kind}
-                {e.data.featured && <span class="feat-tag mono">★ featured</span>}
-              </span>
-              <h3 class="feed-title">
-                {e.data.title}
-                {e.data.location && <span class="feed-loc mono"> · {e.data.location}</span>}
-              </h3>
-              {e.data.blurb && <p class="feed-blurb">{e.data.blurb}</p>}
-              <Media
-                media={e.data.media}
-                layout={e.data.layout ?? 'compact'}
-                galleryId={`g-${e.id}`}
-              />
-              {outlink(e.data) && (
-                <a class={`outlink mono ${outlink(e.data)!.strong ? 'is-strong' : ''}`}
-                   href={outlink(e.data)!.href} target="_blank" rel="noopener noreferrer">
-                  {outlink(e.data)!.label} <span class="arr" aria-hidden="true">↗</span>
-                </a>
+      <section class="section" id="talks" aria-labelledby="talks-title">
+        <div class="section-heading compact">
+          <p class="section-number mono">03 / On stage</p>
+          <h2 id="talks-title">Talks for people navigating change.</h2>
+          <p>Selected sessions about technical careers, hiring and the tools we use to think.</p>
+        </div>
+        <div class="talk-grid">
+          {talks.map((talk) => (
+            <article class="talk-card">
+              <span class="talk-status mono">session</span>
+              <h3>{talk.data.title}</h3>
+              <p>{talk.data.abstract}</p>
+              <p class="talk-events mono">{talk.data.events.join(' · ')}</p>
+              {talk.data.sessionizeUrl && (
+                <a href={talk.data.sessionizeUrl} target="_blank" rel="noopener noreferrer">View session ↗</a>
               )}
-            </div>
-          </li>
-        ))}
-      </ol>
-    </section>
+            </article>
+          ))}
+        </div>
+        <a class="section-link mono" href={site.links.sessionize} target="_blank" rel="noopener noreferrer">Full speaker profile ↗</a>
+      </section>
 
-    <!-- TALKS ARCHIVE -->
-    <section class="archive" id="talks">
-      <h2><span class="lime-bar"></span>Talks</h2>
-      <p class="arch-intro mono">selected sessions · an ongoing archive</p>
-      <div class="arch-list">
-        {talks.map((t) => (
-          <article data-reveal class="arch-item">
-            <h3>
-              {t.data.sessionizeUrl
-                ? <a href={t.data.sessionizeUrl} target="_blank" rel="noopener noreferrer">{t.data.title}</a>
-                : t.data.title}
-            </h3>
-            <p class="arch-blurb">{t.data.abstract}</p>
-            <p class="arch-meta mono">{t.data.events.join('  ·  ')}</p>
-          </article>
-        ))}
-      </div>
-      <a class="more mono" href={site.links.sessionize} target="_blank" rel="noopener noreferrer">full speaker profile &rarr;</a>
-    </section>
+      <section class="section writing tinted" id="writing" aria-labelledby="writing-title">
+        <div class="section-heading compact">
+          <p class="section-number mono">04 / In writing</p>
+          <h2 id="writing-title">Notes from the work.</h2>
+          <p>Articles about developer careers, technology and the decisions behind good programs.</p>
+        </div>
+        <div class="writing-list">
+          {writing.map((article, index) => (
+            <article class="writing-item">
+              <span class="writing-index mono">{String(index + 1).padStart(2, '0')}</span>
+              <div>
+                <h3><a href={article.data.url} target="_blank" rel="noopener noreferrer">{article.data.title} ↗</a></h3>
+                <p>{article.data.summary}</p>
+              </div>
+              <div class="writing-meta mono">
+                <span>{article.data.publication}</span>
+                <time datetime={article.data.date.toISOString()}>{monthYear(article.data.date)}</time>
+              </div>
+            </article>
+          ))}
+        </div>
+      </section>
+    </main>
 
-    <!-- WRITING ARCHIVE -->
-    <section class="archive tinted" id="writing">
-      <h2><span class="lime-bar"></span>Writing</h2>
-      <p class="arch-intro mono">articles across publications · an ongoing archive</p>
-      <div class="arch-list">
-        {writing.map((w) => (
-          <article data-reveal class="arch-item compact">
-            <div class="arch-row">
-              <h3><a href={w.data.url} target="_blank" rel="noopener noreferrer">{w.data.title}</a></h3>
-              <span class="arch-date mono">{monthYear(w.data.date)}</span>
-            </div>
-            <p class="arch-blurb">{w.data.summary}</p>
-            <span class="pub-badge mono">{w.data.publication}</span>
-          </article>
-        ))}
-      </div>
-    </section>
-
-    <!-- CONTACT -->
-    <footer class="foot" id="contact">
-      <h2><span class="lime-bar"></span>Get in touch</h2>
-      <p>Open to senior roles in developer programs, technical content and presales — full remote, international included.</p>
-
-      <div class="socials">
-        {site.socials.map((s) => (
-          <a
-            class="social"
-            href={s.url}
-            target="_blank"
-            rel="noopener noreferrer"
-            aria-label={s.name}
-            title={s.name}
-          >
-            <SocialIcon name={s.name} class="social-ico" />
-          </a>
-        ))}
-      </div>
-
-      <div class="foot-links">
-        <ContactEmail />
-        <a href={withBase("/cv.pdf")}>CV (PDF)</a>
+    <footer class="contact" id="contact">
+      <p class="section-number mono">05 / Let’s talk</p>
+      <div class="contact-grid">
+        <div>
+          <h2>Bring me the complicated brief.</h2>
+          <p>I’m open to senior international roles in developer programs, technical content and presales—and to the right hosting, speaking or program collaboration.</p>
+        </div>
+        <div class="contact-actions">
+          <ContactEmail class="button button-primary" />
+          <a class="button button-secondary" href={site.links.linkedin} target="_blank" rel="noopener noreferrer">Connect on LinkedIn ↗</a>
+          <a class="text-link mono" href={withBase('/cv.pdf')}>View CV (PDF)</a>
+          <nav class="social-links" aria-label="Social profiles">
+            {site.socials.map((social) => (
+              <a href={social.url} target="_blank" rel="noopener noreferrer" aria-label={social.name} title={social.name}>
+                <SocialIcon name={social.name} class="social-icon" />
+              </a>
+            ))}
+          </nav>
+        </div>
       </div>
       <p class="colophon mono">Built with Astro. Updated by hand, on purpose.</p>
     </footer>
@@ -236,189 +313,171 @@ function outlink(entry: { url?: string; urlLabel?: string; urlStyle?: string }) 
 </BaseLayout>
 
 <style>
-  .top { display: flex; justify-content: space-between; align-items: center; padding: 1.4rem 0; }
-  .brand { font-size: 0.82rem; color: var(--text-faint); letter-spacing: 0.05em; }
+  .site-shell { width: min(calc(100% - 3rem), var(--shell)); margin: 0 auto; }
+  .topbar { min-height: 76px; display: grid; grid-template-columns: 1fr auto auto; align-items: center; gap: 2rem; }
+  .brand { color: var(--text); font-size: .8rem; letter-spacing: .05em; border: 0; }
+  .site-nav { display: flex; gap: 1.35rem; align-items: center; }
+  .site-nav a { min-height: 44px; display: inline-flex; align-items: center; font: 500 .78rem/1 var(--font-mono); color: var(--text-muted); }
 
-  /* INTRO */
-  .intro { padding: 2rem 0 3rem; }
-  .name {
-    font-family: var(--font-mono);
-    font-size: clamp(2rem, 6vw, 3.1rem);
-    font-weight: 700;
-    margin: 0 0 0.5rem;
-    letter-spacing: -0.02em;
-  }
-  .currently {
-    font-family: var(--font-mono);
-    font-size: 0.9rem;
-    color: var(--accent-text);
-    margin: 0 0 1.8rem;
-    line-height: 1.5;
-    max-width: 60ch;
-  }
-  .intro-body p {
-    font-size: 1.18rem;
-    line-height: 1.65;
-    margin: 0 0 1rem;
-    max-width: 60ch;
-    color: var(--text);
-  }
-  .intro-links { display: flex; gap: 1.3rem; margin-top: 1.6rem; flex-wrap: wrap; }
-  .intro-links a { font-family: var(--font-mono); font-size: 0.85rem; }
+  .hero { min-height: min(760px, calc(100svh - 76px)); padding: 5rem 0 6rem; display: grid; grid-template-columns: minmax(0, 7fr) minmax(280px, 5fr); align-items: center; gap: clamp(3rem, 8vw, 7rem); }
+  .eyebrow, .section-number { margin: 0 0 1.25rem; color: var(--accent-text); font-size: .72rem; letter-spacing: .08em; text-transform: uppercase; }
+  .status-dot { width: 8px; height: 8px; display: inline-block; margin-right: .65rem; border-radius: 50%; background: var(--lime); box-shadow: 0 0 0 5px color-mix(in srgb, var(--lime), transparent 78%); }
+  .hero h1 { margin: 0; max-width: 12ch; font-size: clamp(3rem, 6.5vw, 5.7rem); line-height: .98; letter-spacing: -.065em; text-wrap: balance; }
+  .hero-intro { max-width: 58ch; margin: 2rem 0 0; font-size: clamp(1.15rem, 2vw, 1.42rem); line-height: 1.5; }
+  .hero-proof { max-width: 62ch; margin: 1rem 0 0; color: var(--text-muted); }
+  .hero-actions, .utility-links { display: flex; flex-wrap: wrap; align-items: center; gap: .75rem; }
+  .hero-actions { margin-top: 2rem; }
+  .utility-links { margin-top: 1.25rem; gap: 1.4rem; }
+  .utility-links a { min-height: 44px; display: inline-flex; align-items: center; font-size: .76rem; }
+  .button { min-height: 48px; padding: .7rem 1.15rem; border: 1px solid var(--border-strong); border-radius: var(--radius-md); display: inline-flex; justify-content: center; align-items: center; font: 650 .86rem/1.2 var(--font-mono); text-align: center; cursor: pointer; transition: transform .18s var(--ease-out), border-color .18s, background .18s; }
+  .button:hover { transform: translateY(-2px); border-color: var(--lime); }
+  .button-primary { color: #171715; background: var(--lime); border-color: var(--lime); }
+  .button-primary:hover { color: #171715; background: var(--lime-dim); }
+  .button-secondary { color: var(--text); background: var(--surface); }
+  .hero-visual { position: relative; margin: 0; align-self: stretch; min-height: 460px; overflow: hidden; border-radius: var(--radius-md); background: var(--surface-2); }
+  .hero-visual::after { content: ''; position: absolute; inset: 0; box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--text), transparent 84%); border-radius: inherit; pointer-events: none; }
+  .hero-visual img { width: 100%; height: 100%; display: block; object-fit: cover; filter: saturate(.82) contrast(1.05); transition: transform .5s var(--ease-out); }
+  .hero-visual:hover img { transform: scale(1.015); }
+  .hero-visual figcaption { position: absolute; z-index: 1; left: 1rem; right: 1rem; bottom: 1rem; padding: .65rem .8rem; display: flex; justify-content: space-between; gap: 1rem; border-radius: var(--radius-sm); color: #fff; background: rgba(10, 12, 16, .78); backdrop-filter: blur(8px); font-size: .65rem; text-transform: uppercase; letter-spacing: .07em; }
 
-  /* shared section headings with a lime tick */
-  h2 { font-size: 1.05rem; text-transform: lowercase; letter-spacing: 0.04em;
-       color: var(--text-muted); font-weight: 600; display: flex; align-items: center; }
-  .lime-bar { display: inline-block; width: 14px; height: 3px; background: var(--lime);
-              margin-right: 10px; border-radius: 2px; }
+  .metrics { display: grid; grid-template-columns: repeat(5, 1fr); border-block: 1px solid var(--border); }
+  .metric { min-height: 136px; padding: 1.4rem 1rem; display: flex; flex-direction: column; justify-content: center; border-right: 1px solid var(--border); }
+  .metric:first-child { padding-left: 0; }
+  .metric:last-child { border: 0; }
+  .metric strong { font-size: clamp(1.5rem, 3vw, 2.15rem); letter-spacing: -.04em; }
+  .metric span { margin-top: .35rem; color: var(--text-muted); font-size: .76rem; line-height: 1.45; }
 
-  /* STREAM */
-  /* Full-bleed tinted sections (alternating rhythm).
-     The tint spans the viewport while content stays in .wrap. */
-  .tinted { position: relative; }
-  .tinted::before {
-    content: ''; position: absolute; z-index: 0;
-    top: 0; bottom: 0; left: 50%; transform: translateX(-50%);
-    width: 100vw; background: var(--surface-2);
-  }
+  .section { padding: 7rem 0; position: relative; }
+  .section-heading { display: grid; grid-template-columns: 1fr 2fr; column-gap: 3rem; margin-bottom: 3.5rem; }
+  .section-heading .section-number { grid-row: 1 / span 2; }
+  .section-heading h2 { max-width: 15ch; margin: 0; font-size: clamp(2.2rem, 4.5vw, 4rem); line-height: 1.05; letter-spacing: -.05em; text-wrap: balance; }
+  .section-heading > p:last-child { max-width: 60ch; margin: 1.2rem 0 0; color: var(--text-muted); }
+  .section-heading.compact { margin-bottom: 2.5rem; }
+  .heading-row { display: flex; align-items: baseline; justify-content: space-between; gap: 2rem; }
+  .updated { flex: none; color: var(--text-faint); font-size: .68rem; text-transform: uppercase; letter-spacing: .06em; }
+  .tinted { isolation: isolate; }
+  .tinted::before { content: ''; position: absolute; z-index: 0; inset: 0 50%; width: 100vw; transform: translateX(-50%); background: var(--surface-2); }
   .tinted > * { position: relative; z-index: 1; }
+  .stream { border-top: 0; }
 
-  .stream { padding: 3rem 0; }
-  .stream-head { display: flex; align-items: center; gap: 0.8rem; margin-bottom: 1.6rem; }
-  .pulse { font-size: 0.7rem; color: var(--accent-text);
-           border: 1px solid var(--border-strong); border-radius: 20px; padding: 1px 9px; }
+  .capability-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1px; overflow: hidden; border: 1px solid var(--border); border-radius: var(--radius-md); background: var(--border); }
+  .capability { min-height: 260px; padding: 1.6rem; background: var(--surface); }
+  .capability-number { color: var(--accent-text); font-size: .7rem; }
+  .capability h3 { margin: 3.5rem 0 .8rem; font-size: 1.25rem; }
+  .capability p { margin: 0; color: var(--text-muted); font-size: .9rem; }
+  .case-grid { margin-top: 4rem; display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.2rem; }
+  .case-card { min-height: 390px; padding: 1.6rem; display: flex; flex-direction: column; border-top: 3px solid var(--lime); background: var(--surface-2); border-radius: 0 0 var(--radius-md) var(--radius-md); }
+  .case-label { margin: 0 0 3rem; color: var(--accent-text); font-size: .66rem; text-transform: uppercase; letter-spacing: .08em; }
+  .case-card h3 { margin: 0 0 1rem; font-size: 1.35rem; }
+  .case-card > p:not(.case-label) { margin: 0; color: var(--text-muted); font-size: .9rem; }
+  .case-outcome { margin-top: auto; padding: 1.5rem 0 1rem; font-size: .88rem; line-height: 1.45; }
+  .case-card a { width: fit-content; font: 600 .78rem/1.4 var(--font-mono); }
 
-  .feed { list-style: none; margin: 0; padding: 0; }
-  .feed-item {
-    display: grid; grid-template-columns: 76px 1fr; gap: 1.1rem;
-    padding: 1.1rem 0; border-bottom: 1px solid var(--border);
-    position: relative;
-  }
-  .feed-date {
-    font-size: 0.78rem; color: var(--text-faint); line-height: 1.3; text-align: right;
-    padding-top: 0.2rem;
-  }
-  .feed-date .yr { display: block; opacity: 0.6; }
-  .feed-kind {
-    font-size: 0.68rem; text-transform: uppercase; letter-spacing: 0.08em;
-    color: var(--accent-text); display: block; margin-bottom: 0.25rem;
-  }
-  .feed-title { font-size: 1.05rem; margin: 0; font-weight: 600; line-height: 1.35; }
-  .feed-loc { font-weight: 400; font-size: 0.8rem; color: var(--text-faint); }
-  .feed-blurb { margin: 0.4rem 0 0; color: var(--text-muted); font-size: 0.96rem; max-width: 58ch; }
+  .upcoming { margin: 0 0 2rem; padding: 0; list-style: none; }
+  .upcoming li { min-height: 60px; display: grid; grid-template-columns: auto 1fr auto auto; align-items: center; gap: 1rem; padding: .7rem .9rem; border: 1px dashed var(--border-strong); border-radius: var(--radius-md); background: var(--surface); }
+  .up-tag { padding: .15rem .45rem; border-radius: var(--radius-sm); color: #171715; background: var(--lime); font-size: .62rem; text-transform: uppercase; letter-spacing: .08em; }
+  .up-title { font-weight: 650; }
+  .up-location, .up-date { color: var(--text-faint); font-size: .7rem; }
+  .featured-story { padding: 2.5rem 0 3rem; border-bottom: 1px solid var(--border); }
+  .featured-story.is-featured { padding-left: 1.25rem; border-left: 3px solid var(--lime); }
+  .story-meta { display: flex; gap: 1rem; color: var(--text-faint); font-size: .68rem; text-transform: uppercase; letter-spacing: .07em; }
+  .story-meta span { color: var(--accent-text); }
+  .featured-story h3 { max-width: 25ch; margin: .8rem 0 0; font-size: clamp(1.7rem, 3vw, 2.6rem); }
+  .story-location, .feed-location { margin: .5rem 0 0; color: var(--text-faint); font-size: .72rem; }
+  .story-copy { max-width: 68ch; font-size: 1.05rem; }
+  .feed { margin: 0; padding: 0; list-style: none; }
+  .feed-item { display: grid; grid-template-columns: 180px 1fr; gap: 2rem; padding: 1.6rem 0; border-bottom: 1px solid var(--border); position: relative; }
+  .feed-item.is-featured { padding-left: 1.25rem; }
+  .feed-item.is-featured::before { content: ''; position: absolute; inset: 1.6rem auto 1.6rem 0; width: 3px; border-radius: var(--radius-pill); background: var(--lime); }
+  .feed-meta { display: flex; flex-direction: column; gap: .35rem; color: var(--text-faint); font-size: .68rem; text-transform: uppercase; letter-spacing: .07em; }
+  .feed-meta span { color: var(--accent-text); }
+  .feed-body h3 { margin: 0; font-size: 1.15rem; }
+  .feed-body > p:not(.feed-location) { max-width: 66ch; margin: .55rem 0 0; color: var(--text-muted); font-size: .92rem; }
+  .outlink { width: fit-content; margin-top: .9rem; display: inline-flex; gap: .35rem; font-size: .76rem; }
+  .outlink.is-strong { min-height: 44px; padding: .45rem .8rem; align-items: center; border: 1px solid var(--border-strong); border-radius: var(--radius-md); }
+  .earlier { margin-top: 1.5rem; }
+  .earlier summary { width: fit-content; min-height: 44px; display: flex; align-items: center; cursor: pointer; color: var(--accent-text); font-size: .76rem; }
+  .earlier[open] summary { margin-bottom: .5rem; }
 
-  /* Outbound link — always opens a new tab, never the title */
-  .outlink {
-    display: inline-flex; align-items: center; gap: 0.35rem;
-    margin-top: 0.8rem; font-size: 0.8rem;
-    color: var(--text-muted);
-    border-bottom: 1px solid transparent;
-  }
-  .outlink .arr { color: var(--accent-text); }
-  .outlink:hover { color: var(--text); border-bottom-color: var(--lime); }
-  .outlink.is-strong {
-    font-size: 0.85rem; font-weight: 600; color: var(--accent-text);
-    border: 1px solid var(--border-strong); border-radius: 8px;
-    padding: 0.45rem 0.9rem; margin-top: 1rem;
-  }
-  .outlink.is-strong:hover { border-color: var(--lime); background: var(--surface-2); }
+  .talk-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.2rem; }
+  .talk-card { min-height: 380px; padding: 1.6rem; display: flex; flex-direction: column; border: 1px solid var(--border); border-radius: var(--radius-md); background: var(--surface); }
+  .talk-status { width: fit-content; padding: .2rem .5rem; color: #171715; background: var(--lime); border-radius: var(--radius-pill); font-size: .6rem; text-transform: uppercase; letter-spacing: .08em; }
+  .talk-card h3 { margin: 2rem 0 1rem; font-size: 1.35rem; }
+  .talk-card > p:not(.talk-events) { margin: 0; color: var(--text-muted); font-size: .88rem; }
+  .talk-events { margin: auto 0 1rem; padding-top: 1.5rem; color: var(--text-faint); font-size: .67rem; }
+  .talk-card a, .section-link { width: fit-content; font-size: .78rem; }
+  .section-link { min-height: 44px; margin-top: 1.5rem; display: inline-flex; align-items: center; }
 
-  /* UPCOMING — pinned future entries */
-  .upcoming { list-style: none; margin: 0 0 2rem; padding: 0; }
-  .up-item {
-    display: flex; align-items: baseline; gap: 0.8rem;
-    padding: 0.7rem 0.9rem; margin-bottom: 0.5rem;
-    border: 1px dashed var(--border-strong); border-radius: 9px;
-    background: var(--surface);
-  }
-  .up-tag {
-    font-size: 0.62rem; text-transform: uppercase; letter-spacing: 0.1em;
-    color: #1a1a1a; background: var(--lime); border-radius: 4px;
-    padding: 2px 7px; white-space: nowrap; flex-shrink: 0;
-  }
-  .up-title { font-weight: 600; font-size: 1rem; flex: 1; }
-  .up-loc { font-weight: 400; font-size: 0.78rem; color: var(--text-faint); }
-  .up-date { font-size: 0.78rem; color: var(--text-muted); white-space: nowrap; flex-shrink: 0; }
+  .writing-list { border-top: 1px solid var(--border); }
+  .writing-item { min-height: 150px; display: grid; grid-template-columns: 54px 1fr 180px; gap: 2rem; align-items: start; padding: 1.5rem 0; border-bottom: 1px solid var(--border); }
+  .writing-index { color: var(--accent-text); font-size: .68rem; }
+  .writing-item h3 { margin: 0; font-size: 1.15rem; }
+  .writing-item h3 a { color: var(--text); }
+  .writing-item p { max-width: 62ch; margin: .55rem 0 0; color: var(--text-muted); font-size: .9rem; }
+  .writing-meta { display: flex; flex-direction: column; gap: .4rem; color: var(--text-faint); font-size: .68rem; text-align: right; }
 
-  /* HERO ENTRY — the most recent thing, in full */
-  .hero-entry {
-    padding: 1.6rem 0 2rem;
-    border-bottom: 1px solid var(--border);
-    margin-bottom: 1.5rem;
+  .contact { padding: 7rem 0 2rem; }
+  .contact-grid { display: grid; grid-template-columns: 2fr 1fr; gap: 4rem; padding: 3rem; border-radius: var(--radius-md); color: var(--dark-text, #e6edf3); background: #0b0e13; }
+  .contact h2 { max-width: 12ch; margin: 0; color: #f3f5f7; font-size: clamp(2.5rem, 5vw, 4.5rem); line-height: 1; letter-spacing: -.055em; }
+  .contact-grid p { max-width: 58ch; color: #aab3c0; }
+  .contact-actions { display: flex; flex-direction: column; align-items: stretch; justify-content: center; gap: .8rem; }
+  .contact-actions :global(.email-reveal) {
+    min-height: 48px; padding: .7rem 1.15rem; display: inline-flex;
+    justify-content: center; align-items: center; color: #171715;
+    background: var(--lime); border: 1px solid var(--lime);
+    border-radius: var(--radius-md); font: 650 .86rem/1.2 var(--font-mono);
   }
-  .hero-meta {
-    display: flex; gap: 1rem; align-items: center;
-    font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.08em;
-    color: var(--text-faint); margin-bottom: 0.5rem;
-  }
-  .hero-meta .hero-kind { color: var(--accent-text); }
-  .hero-title { font-size: clamp(1.4rem, 4vw, 1.9rem); margin: 0; line-height: 1.25; }
-  /* featured hero: same lime edge as featured list items */
-  .hero-entry.is-feat .hero-title {
-    padding-left: 0.9rem; border-left: 3px solid var(--lime);
-  }
-  .hero-loc { font-size: 0.82rem; color: var(--text-faint); margin: 0.4rem 0 0; }
-  .hero-blurb { font-size: 1.08rem; line-height: 1.6; color: var(--text); margin: 0.8rem 0 0; max-width: 60ch; }
+  .contact-actions :global(.email-reveal:hover) { color: #171715; background: var(--lime-dim); border-color: var(--lime); }
+  .contact-actions .button-secondary { color: #f3f5f7; background: #151a22; border-color: #353d49; }
+  .text-link { min-height: 44px; display: inline-flex; justify-content: center; align-items: center; color: #c3ce4a; font-size: .76rem; }
+  .social-links { display: flex; justify-content: center; gap: .45rem; margin-top: .25rem; }
+  .social-links a { width: 44px; height: 44px; display: inline-flex; align-items: center; justify-content: center; color: #aab3c0; border: 1px solid #353d49; border-radius: var(--radius-pill); }
+  .social-links a:hover { color: #f3f5f7; border-color: var(--lime); }
+  .social-links :global(.social-icon) { width: 20px; height: 20px; display: block; }
+  .colophon { margin: 2rem 0 0; color: var(--text-faint); font-size: .7rem; }
 
-  /* "featured" label — reads as a tag, not a link */
-  .feat-tag {
-    display: inline-block; margin-left: 0.6rem;
-    font-size: 0.62rem; letter-spacing: 0.1em; text-transform: uppercase;
-    color: var(--accent-text);
-  }
-
-  .arch-intro {
-    font-size: 0.76rem; color: var(--text-faint);
-    margin: 0.5rem 0 0; letter-spacing: 0.03em;
-  }
-
-  /* featured stream items: the lime left edge is the site's signature accent.
-     No background tint — that fought with the section bands. The "★ featured"
-     tag carries the meaning, so the edge stays purely decorative. */
-  .feed-item.is-feat {
-    padding-left: 1rem;
-    position: relative;
-  }
-  .feed-item.is-feat::after {
-    content: ''; position: absolute; left: 0; top: 1.1rem; bottom: 1.1rem;
-    width: 3px; background: var(--lime); border-radius: 2px;
+  @media (max-width: 900px) {
+    .site-nav { display: none; }
+    .topbar { grid-template-columns: 1fr auto; }
+    .hero { grid-template-columns: 1fr; padding: 4rem 0; }
+    .hero-visual { min-height: 420px; }
+    .metrics { grid-template-columns: repeat(3, 1fr); }
+    .metric:nth-child(3) { border-right: 0; }
+    .metric:nth-child(n + 4) { border-top: 1px solid var(--border); }
+    .capability-grid, .case-grid, .talk-grid { grid-template-columns: 1fr; }
+    .capability { min-height: auto; }
+    .capability h3 { margin-top: 2rem; }
+    .case-card, .talk-card { min-height: 320px; }
+    .contact-grid { grid-template-columns: 1fr; }
   }
 
-  /* ARCHIVES */
-  .archive { padding: 3rem 0; }
-  .arch-list { margin-top: 1.5rem; display: flex; flex-direction: column; gap: 1.5rem; }
-  .arch-item h3 { font-size: 1.08rem; margin: 0 0 0.4rem; }
-  .arch-item.compact h3 { font-size: 1rem; margin: 0; }
-  .arch-row { display: flex; justify-content: space-between; align-items: baseline; gap: 1rem; }
-  .arch-blurb { margin: 0.3rem 0 0.5rem; color: var(--text-muted); font-size: 0.96rem; max-width: 62ch; }
-  .arch-meta { font-size: 0.78rem; color: var(--text-faint); margin: 0; }
-  .arch-date { font-size: 0.76rem; color: var(--text-faint); white-space: nowrap; }
-  .more { display: inline-block; margin-top: 1.4rem; font-size: 0.82rem; }
-
-  /* FOOT */
-  .foot { padding: 2.5rem 0 3.5rem; }
-  .foot p { max-width: 58ch; color: var(--text-muted); }
-
-  .socials { display: flex; align-items: center; gap: 1.2rem; margin: 1.4rem 0 0.4rem; flex-wrap: wrap; }
-  .social {
-    display: inline-flex; align-items: center;
-    color: var(--text-muted); border-bottom: none;
-    transition: color 0.15s ease, transform 0.15s ease;
-  }
-  .social :global(.social-ico) { width: 22px; height: 22px; display: block; }
-  .social:hover { color: var(--text); transform: translateY(-1px); }
-
-  .foot-links { display: flex; gap: 1.2rem; margin: 1.4rem 0 0; flex-wrap: wrap; align-items: center; }
-  .foot-links a { font-family: var(--font-mono); font-size: 0.85rem; }
-  .colophon { font-size: 0.74rem; color: var(--text-faint); margin-top: 2rem; }
-
-  .pub-badge {
-    display: inline-block; margin-top: 0.5rem;
-    font-size: 0.7rem; letter-spacing: 0.04em; color: var(--text-faint);
-    border: 1px solid var(--border); border-radius: 5px; padding: 2px 7px;
-  }
-
-  @media (max-width: 520px) {
-    .feed-item { grid-template-columns: 60px 1fr; gap: 0.8rem; }
+  @media (max-width: 620px) {
+    .site-shell { width: min(calc(100% - 2rem), var(--shell)); }
+    .topbar { min-height: 64px; }
+    .hero { min-height: auto; padding: 3.5rem 0 4rem; gap: 2.5rem; }
+    .hero h1 { font-size: clamp(2.8rem, 14vw, 4.25rem); }
+    .hero-actions { align-items: stretch; flex-direction: column; }
+    .hero-visual { min-height: 330px; }
+    .hero-visual figcaption { flex-direction: column; gap: .2rem; }
+    .metrics { grid-template-columns: repeat(2, 1fr); }
+    .metric { min-height: 120px; padding: 1rem; border-top: 1px solid var(--border); }
+    .metric:nth-child(odd) { padding-left: 0; }
+    .metric:nth-child(even) { border-right: 0; }
+    .metric:first-child, .metric:nth-child(2) { border-top: 0; }
+    .metric:last-child { grid-column: 1 / -1; border-top: 1px solid var(--border); }
+    .section { padding: 5rem 0; }
+    .section-heading { display: block; margin-bottom: 2.5rem; }
+    .section-heading h2 { font-size: 2.6rem; }
+    .heading-row { align-items: flex-start; flex-direction: column; gap: .6rem; }
+    .case-grid { margin-top: 2.5rem; }
+    .upcoming li { grid-template-columns: auto 1fr auto; }
+    .up-location { display: none; }
+    .featured-story.is-featured { padding-left: .85rem; }
+    .feed-item { grid-template-columns: 1fr; gap: .65rem; }
+    .feed-meta { flex-direction: row; }
+    .writing-item { grid-template-columns: 36px 1fr; gap: 1rem; }
+    .writing-meta { grid-column: 2; flex-direction: row; text-align: left; }
+    .contact { padding-top: 5rem; }
+    .contact-grid { padding: 2rem 1.25rem; gap: 2rem; }
   }
 </style>

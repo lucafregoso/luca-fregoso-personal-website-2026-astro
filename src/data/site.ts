@@ -14,7 +14,6 @@ export const site = {
   // ---- Identity ----
   name: 'Luca Fregoso',
   tagline: 'Developer Programs & Content Lead',
-  email: 'luca.fregoso@gmail.com',
   location: 'La Spezia, Italy — open to full remote',
 
   // ---- Technical / SEO / social metadata ----
@@ -46,29 +45,86 @@ export const site = {
   },
 
   // ---- Page content ----
-  intro: [
-    "I spend my days deciding what gets said on stage and what gets built behind the scenes.",
-    "At Codemotion I lead technical content and presales — curating the speaker programs for Europe’s developer conferences, and sitting with enterprise clients to turn vague intentions into things that actually ship. Fifteen years of writing code is what lets me do both.",
+  eyebrow: 'Developer programs · technical content · presales',
+  headline: 'I design technical programs people trust.',
+  intro:
+    'From European conference agendas to enterprise solutions, I turn hundreds of inputs, competing priorities and vague promises into clear programs that can actually ship.',
+  proof:
+    'Fifteen years building software gives me the technical depth to lead content, presales, learning programs and rooms full of developers.',
+
+  metrics: [
+    { value: '15 years', label: 'building software' },
+    { value: '~600', label: 'CFP proposals reviewed per edition' },
+    { value: '~90', label: 'sessions shaped per conference' },
+    { value: '2–3k', label: 'developers reached per event' },
+    { value: '~200', label: 'people trained in an academy built from zero' },
   ],
 
-  currently:
-    "Leading content & presales at Codemotion · MC across the European scene.",
+  capabilities: [
+    {
+      number: '01',
+      title: 'Developer programs & content',
+      description:
+        'Content strategy, CFP and speaker curation, committee leadership, agenda design and quality standards for technical audiences.',
+    },
+    {
+      number: '02',
+      title: 'Technical presales',
+      description:
+        'Turning business intent and sales commitments into credible technical scope, delivery plans and solutions teams can stand behind.',
+    },
+    {
+      number: '03',
+      title: 'Stages & learning',
+      description:
+        'MC and moderation, conference speaking, academy design and developer education that keeps complex rooms moving together.',
+    },
+  ],
+
+  caseStudies: [
+    {
+      label: 'Conference programs',
+      title: 'Shaping trusted agendas across Europe',
+      description:
+        'I coordinate international committees and turn roughly 600 submissions into a balanced ~90-session program for Codemotion editions in Rome, Madrid and Milan.',
+      outcome: '2,000–3,000 developers served at each event',
+      href: '#talks',
+      linkLabel: 'Explore speaking work',
+    },
+    {
+      label: 'Enterprise presales',
+      title: 'Making ambitious promises deliverable',
+      description:
+        'I sit between clients, sales and delivery teams to uncover the real need, challenge assumptions and define technical work that can move from pitch to production.',
+      outcome: 'Business intent translated into credible technical scope',
+      href: '#contact',
+      linkLabel: 'Discuss a leadership role',
+    },
+    {
+      label: 'Learning programs',
+      title: 'Building a technical academy from zero',
+      description:
+        'I designed the program, teaching model and operating rhythm for an academy that helped people enter and grow in technical careers.',
+      outcome: '~200 people trained',
+      href: '/cv.pdf',
+      linkLabel: 'Read the full CV',
+      download: true,
+    },
+  ],
 
   links: {
     linkedin: 'https://www.linkedin.com/in/lucafregoso',
     sessionize: 'https://sessionize.com/luca-fregoso/',
   },
 
-  // Social profiles, in priority order. LinkedIn is primary and gets
-  // visual weight; the rest are secondary. Remove any you don't want
-  // shown, or reorder — the first item is treated as primary.
-  // Replace the placeholder handles with your real profile URLs.
+  // Only verified public profiles belong here. Placeholder links are never
+  // rendered: trust is more valuable than a row of empty social icons.
   socials: [
     { name: 'LinkedIn', url: 'https://www.linkedin.com/in/lucafregoso', primary: true },
-    { name: 'Bluesky',  url: 'https://bsky.app/profile/REPLACE_ME' },
-    { name: 'Mastodon', url: 'https://REPLACE_INSTANCE/@REPLACE_ME' },
-    { name: 'X',        url: 'https://x.com/REPLACE_ME' },
-    { name: 'Instagram',url: 'https://instagram.com/REPLACE_ME' },
+    { name: 'Bluesky', url: 'https://bsky.app/profile/lucafregoso.bsky.social' },
+    { name: 'Mastodon', url: 'https://fosstodon.org/@scakko' },
+    { name: 'X', url: 'https://x.com/scakko' },
+    { name: 'Instagram', url: 'https://www.instagram.com/lucafregoso' },
   ],
 
   // Email, stored split so it never appears as a harvestable string in

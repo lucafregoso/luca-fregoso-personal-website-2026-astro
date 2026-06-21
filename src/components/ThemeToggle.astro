@@ -1,6 +1,6 @@
 ---
 ---
-<button class="theme-toggle" id="theme-toggle" aria-label="Toggle dark mode" title="Toggle theme">
+<button class="theme-toggle" id="theme-toggle" aria-label="Switch to dark mode" title="Switch to dark mode">
   <span id="theme-icon" aria-hidden="true">◐</span>
 </button>
 
@@ -11,6 +11,11 @@
     function sync() {
       var t = document.documentElement.getAttribute('data-theme');
       if (icon) icon.textContent = t === 'dark' ? '☾' : '☀';
+      if (btn) {
+        var label = t === 'dark' ? 'Switch to light mode' : 'Switch to dark mode';
+        btn.setAttribute('aria-label', label);
+        btn.setAttribute('title', label);
+      }
     }
     sync();
     if (btn) {
