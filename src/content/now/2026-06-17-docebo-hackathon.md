@@ -12,6 +12,7 @@ location:
   en: "Docebo · Milan"
   it: "Docebo · Milano"
 featured: true
+mediaPresentation: contact-sheet
 media:
   - type: image
     src: /hackathon-2026.jpg

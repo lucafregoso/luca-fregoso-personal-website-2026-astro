@@ -19,6 +19,7 @@ Everything you'll want to change lives in a few predictable places:
 - `src/i18n/index.ts` — typed English and Italian interface and page copy.
 - `src/content/talks/` — one `.md` file per talk. Add a file, it appears on the site. Schema is in `src/content.config.ts`.
 - `src/content/writing/` — one `.md` file per article. Newest shows first automatically.
+- `src/content/appearances/` — one bilingual source per video, live recording or podcast; placements control whether it appears in Lately, Media, or both.
 - `src/styles/global.css` — design tokens. The lime accent (`--lime: #d0db02`) is used only for borders, prompts and the cursor; readable accent text uses a darker derived green so it passes contrast checks in both themes.
 - `public/cv.pdf` — your CV. Replace this file to update the download.
 
@@ -61,6 +62,40 @@ tags: ["topic"]
 ---
 ```
 
+### Adding a media appearance
+
+Create `src/content/appearances/my-appearance.md`. Posters must be local; the
+site never embeds or contacts YouTube or Spotify during page load.
+
+```markdown
+---
+title:
+  en: "Appearance title"
+  it: "Titolo dell'apparizione"
+summary:
+  en: "One sentence."
+  it: "Una frase."
+locales: [en, it]
+format: live-recording # video | live-recording | podcast
+platform: youtube      # youtube | spotify
+role: host             # host | speaker | guest
+placements: [lately, library]
+date: 2026-01-15
+duration: "44:01"
+publisher: "Show or publisher"
+platformId: "provider-id"
+externalUrl: "https://..."
+poster: /media/local-poster.png
+startAtSeconds: 1060   # optional, YouTube only
+mobilePresentation: row # row | above | text-only
+---
+```
+
+The permanent Media archive merges articles and appearances newest-first.
+Thumbnails and explicit watch/listen actions open the original platform in a
+new tab. On phones, `row` keeps a 96px thumbnail beside the copy, `above` uses
+a left-aligned thumbnail capped at 180px, and `text-only` hides the thumbnail.
+
 ## Where to extend next
 
 The structure is ready for more:
@@ -101,15 +136,19 @@ media:
       en: "Read the recap on LinkedIn"
       it: "Leggi il riepilogo su LinkedIn"
 
-# Optional: force media size regardless of featured state
-layout: full        # 'full' = large, 'compact' = smaller thumbs
+# Choose the image treatment for this Lately entry
+mediaPresentation: contact-sheet # contact-sheet | lead | sidecar
 ```
 
 Notes:
 - `url:` on the entry itself is the generic outbound link the title points to.
 - LinkedIn is linked, never embedded: no third-party cookies, no GDPR headache,
   and the look stays consistent with the rest of the site.
-- A single image renders large; multiple images auto-arrange into a grid.
+- Image sizing follows the entry’s `mediaPresentation`; it is never inferred
+  from whether the entry is currently featured.
+- `contact-sheet` shows compact 4:3 thumbnails, `lead` shows one 16:9 image
+  with a photo count, and `sidecar` places text and images in adjacent columns.
+  Every option retains the complete keyboard-accessible lightbox gallery.
 
 ## Linking out to LinkedIn (or anywhere) from a "Lately" entry
 
@@ -146,15 +185,16 @@ the editor autocompletes fields and the build catches missing values.
 `BaseLayout.astro` combines these sources to emit locale-specific canonical,
 Open Graph and `hreflang` metadata for `/` and `/it/`.
 
-To set the social share image: add `public/og-image.jpg` (recommended
-**1200×630 px**) and set `ogImage: '/og-image.jpg'` in `site.ts`. Until then
-it stays `null` and no image meta tag is emitted (nothing broken).
+The default social share image is the local stage photograph configured in
+`site.ts`; Open Graph/Twitter image alt text and dimensions are emitted by the
+layout. Replace it with a dedicated **1200×630 px** JPG when brand artwork is
+available.
 
 Note: the `keywords` meta tag is intentionally omitted — search engines have
 ignored it since ~2009; title, description, semantic HTML and the JSON-LD
 `Person` block are what actually matter.
 
-## Socials, email, and the Writing archive
+## Socials, email, and the Media archive
 
 **Socials** live in `site.socials` (in `src/data/site.ts`), in priority order.
 The first entry with `primary: true` is the primary professional profile and
@@ -166,10 +206,8 @@ the rest appear as social icons. Only verified URLs should be added. Icons live 
 `ContactEmail.astro`, so basic harvesters scraping the static source get nothing.
 To change it, edit the two fields in `site.ts`.
 
-**Writing** is a multi-source archive: each entry in `src/content/writing/`
+**Media** is a multi-source archive: each entry in `src/content/writing/`
 declares a `publication` (e.g. "Codemotion Magazine", "Medium") shown as a badge,
-and an external `url`. When you start publishing on Medium, just add a markdown
-file with `publication: Medium` and its URL — the site becomes the hub that
-points to your articles wherever they live. Internal article pages (hosted on the
-site itself) can be added later under `src/pages/writing/` and will open in the
-same tab; external links open in a new tab automatically.
+and an external `url`; `src/content/appearances/` contributes recordings and
+podcasts without duplicating content files. The site remains the hub for work
+published elsewhere, and external links open in a new tab automatically.

@@ -34,7 +34,7 @@ test.describe('regressions', () => {
     await expect(talks).toBeVisible();
     expect(await talks.evaluate((el) => getComputedStyle(el).opacity)).toBe('1');
 
-    const writing = page.locator('#writing .writing-item').first();
+    const writing = page.locator('#media .writing-item').first();
     await expect(writing).toBeVisible();
     expect(await writing.evaluate((el) => getComputedStyle(el).opacity)).toBe('1');
 

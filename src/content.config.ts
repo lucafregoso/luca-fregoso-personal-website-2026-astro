@@ -41,9 +41,8 @@ const now = defineCollection({
         ])
       )
       .default([]),
-    // Media prominence, decided per entry: 'full' = large, 'compact' = thumb row.
-    // Defaults: featured → full, others → compact (overridable here).
-    layout: z.enum(['full', 'compact']).optional(),
+    // Editorial treatment for image groups in the Lately chronology.
+    mediaPresentation: z.enum(['contact-sheet', 'lead', 'sidecar']).default('contact-sheet'),
     featured: z.boolean().default(false),
   }),
 });
@@ -76,4 +75,27 @@ const writing = defineCollection({
   }),
 });
 
-export const collections = { now, talks, writing };
+// Appearances — one source of truth for recordings, live streams and podcasts.
+// Entries can appear in the dated stream, the permanent media library, or both.
+const appearances = defineCollection({
+  loader: glob({ pattern: '**/*.md', base: './src/content/appearances' }),
+  schema: z.object({
+    title: localizedText,
+    summary: localizedText,
+    locales: localeVisibility,
+    format: z.enum(['video', 'live-recording', 'podcast']),
+    platform: z.enum(['youtube', 'spotify']),
+    role: z.enum(['host', 'speaker', 'guest']),
+    placements: z.array(z.enum(['lately', 'library'])).min(1),
+    date: z.coerce.date(),
+    duration: z.string().regex(/^\d{1,2}:\d{2}(?::\d{2})?$/),
+    publisher: z.string().min(1),
+    platformId: z.string().min(1),
+    externalUrl: z.string().url(),
+    poster: z.string().startsWith('/'),
+    startAtSeconds: z.number().int().nonnegative().optional(),
+    mobilePresentation: z.enum(['row', 'above', 'text-only']).default('row'),
+  }),
+});
+
+export const collections = { now, talks, writing, appearances };
