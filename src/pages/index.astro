@@ -325,14 +325,16 @@ function caseHref(href: string) {
         <div class="writing-list">
           {library.map((item) => item.type === 'article' ? (
             <article class="writing-item">
-              <div>
+              <div class="writing-rail">
+                <div class="writing-meta mono">
+                  <span>{item.entry.data.publication}</span>
+                  <time datetime={item.entry.data.date.toISOString()}>{monthYear(item.entry.data.date)}</time>
+                </div>
+              </div>
+              <div class="writing-body">
                 <div class="archive-badges mono"><span>{t.writing.article}</span></div>
                 <h3><ExternalLink href={item.entry.data.url}>{localize(item.entry.data.title, locale)}</ExternalLink></h3>
                 <p>{localize(item.entry.data.summary, locale)}</p>
-              </div>
-              <div class="writing-meta mono">
-                <span>{item.entry.data.publication}</span>
-                <time datetime={item.entry.data.date.toISOString()}>{monthYear(item.entry.data.date)}</time>
               </div>
             </article>
           ) : <AppearanceEntry appearance={item.entry.data} {locale} variant="archive" anchorId={appearanceAnchor(item.entry.id)} />)}
@@ -465,13 +467,14 @@ function caseHref(href: string) {
   :global(.section-link) { min-height: 44px; margin-top: 1.5rem; display: inline-flex; align-items: center; }
 
   .writing-list { border-top: 1px solid var(--border); }
-  .writing-item { min-height: 150px; display: grid; grid-template-columns: minmax(0, 1fr) 180px; gap: 2rem; align-items: start; padding: 1.5rem 0; border-bottom: 1px solid var(--border); }
+  .writing-item { display: grid; grid-template-columns: clamp(180px, 20vw, 210px) minmax(0, 1fr); gap: 1.75rem; align-items: start; padding: 1.6rem 0; border-bottom: 1px solid var(--border); }
+  .writing-rail, .writing-body { min-width: 0; }
   .writing-item h3 { margin: 0; font-size: 1.15rem; }
   .archive-badges { margin-bottom: .55rem; display: flex; }
   .archive-badges span { padding: .2rem .5rem; border: 1px solid var(--border-strong); border-radius: var(--radius-pill); color: var(--accent-text); font-size: .62rem; text-transform: uppercase; letter-spacing: .06em; }
   .writing-item h3 :global(a) { color: var(--text); }
   .writing-item p { max-width: 62ch; margin: .55rem 0 0; color: var(--text-muted); font-size: .9rem; }
-  .writing-meta { display: flex; flex-direction: column; gap: .4rem; color: var(--text-faint); font-size: .68rem; text-align: right; }
+  .writing-meta { display: flex; flex-direction: column; gap: .35rem; color: var(--text-faint); font-size: .68rem; text-align: left; }
 
   .contact { padding: 7rem 0 2rem; }
   .contact-grid { display: grid; grid-template-columns: 2fr 1fr; gap: 4rem; padding: 3rem; border-radius: var(--radius-md); color: var(--dark-text, #e6edf3); background: #0b0e13; }
@@ -503,6 +506,7 @@ function caseHref(href: string) {
     .capability h3 { margin-top: 2rem; }
     .case-card, .talk-card { min-height: 320px; }
     .contact-grid { grid-template-columns: 1fr; }
+    .writing-item { grid-template-columns: minmax(150px, 28%) minmax(0, 1fr); gap: 1.2rem; }
   }
 
   @media (max-width: 760px) {
@@ -536,7 +540,7 @@ function caseHref(href: string) {
     .feed-item { grid-template-columns: 1fr; gap: .65rem; }
     .feed-meta { flex-direction: row; }
     .writing-item { grid-template-columns: 1fr; gap: 1rem; }
-    .writing-meta { grid-column: 1; flex-direction: row; text-align: left; }
+    .writing-meta { flex-direction: row; flex-wrap: wrap; }
     .contact { padding-top: 5rem; }
     .contact-grid { padding: 2rem 1.25rem; gap: 2rem; }
   }
