@@ -34,5 +34,18 @@ export default defineConfig({
   base: isPlaywright
     ? '/'
     : env.BASE_PATH || '/luca-fregoso-personal-website-2026-astro/',
-  integrations: [sitemap()],
+  i18n: {
+    defaultLocale: 'en',
+    locales: ['en', 'it'],
+    routing: {
+      prefixDefaultLocale: false,
+      redirectToDefaultLocale: false,
+    },
+  },
+  integrations: [sitemap({
+    i18n: {
+      defaultLocale: 'en',
+      locales: { en: 'en-US', it: 'it-IT' },
+    },
+  })],
 });

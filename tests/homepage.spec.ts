@@ -18,14 +18,14 @@ test.describe('homepage content contract', () => {
       'Where strategy meets delivery.',
       'Lately',
       'Talks for people navigating change.',
-      'Notes from the work.',
+      'Media & writing.',
       'Bring me the complicated brief.',
     ]);
 
     await expect(page.locator('#work .case-card').first()).toBeVisible();
     await expect(page.locator('#lately article').first()).toBeVisible();
     await expect(page.locator('#talks .talk-card').first()).toBeVisible();
-    await expect(page.locator('#writing .writing-item').first()).toBeVisible();
+    await expect(page.locator('#media .writing-item').first()).toBeVisible();
   });
 
   test('offers clear primary profile and conversion paths', async ({ page }) => {

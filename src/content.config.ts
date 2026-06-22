@@ -1,6 +1,12 @@
 import { defineCollection, z } from 'astro:content';
 import { glob } from 'astro/loaders';
 
+const localizedText = z.object({
+  en: z.string().min(1),
+  it: z.string().min(1),
+});
+const localeVisibility = z.array(z.enum(['en', 'it'])).min(1);
+
 // NOW — the dated stream. This is the heart of the site.
 // Add an entry by dropping a .md file in src/content/now/.
 // Keep the most recent entry no older than ~2 months, or the
@@ -9,9 +15,10 @@ const now = defineCollection({
   loader: glob({ pattern: '**/*.md', base: './src/content/now' }),
   schema: z.object({
     date: z.coerce.date(),
-    title: z.string(),
+    title: localizedText,
+    locales: localeVisibility,
     kind: z.enum(['speaking', 'writing', 'milestone', 'building', 'note']),
-    blurb: z.string().optional(),
+    blurb: localizedText.optional(),
     // Generic outbound link (LinkedIn post, article, event page…).
     url: z.string().url().optional(),
     // How prominently to surface the outbound link:
@@ -19,8 +26,8 @@ const now = defineCollection({
     //   'strong' → bigger "Read the full post ↗", for entries that are excerpts
     urlStyle: z.enum(['subtle', 'strong']).default('subtle'),
     // Optional custom label for the outbound link.
-    urlLabel: z.string().optional(),
-    location: z.string().optional(),
+    urlLabel: localizedText.optional(),
+    location: localizedText.optional(),
     // Media: zero, one, or many items, mixed types.
     //   - { type: 'image', src, alt }
     //   - { type: 'video', src, poster? }   (self-hosted file in /public)
@@ -28,15 +35,14 @@ const now = defineCollection({
     media: z
       .array(
         z.discriminatedUnion('type', [
-          z.object({ type: z.literal('image'), src: z.string(), alt: z.string().optional() }),
+          z.object({ type: z.literal('image'), src: z.string(), alt: localizedText.optional() }),
           z.object({ type: z.literal('video'), src: z.string(), poster: z.string().optional() }),
-          z.object({ type: z.literal('link'), url: z.string().url(), label: z.string().optional() }),
+          z.object({ type: z.literal('link'), url: z.string().url(), label: localizedText.optional() }),
         ])
       )
       .default([]),
-    // Media prominence, decided per entry: 'full' = large, 'compact' = thumb row.
-    // Defaults: featured → full, others → compact (overridable here).
-    layout: z.enum(['full', 'compact']).optional(),
+    // Editorial treatment for image groups in the Lately chronology.
+    mediaPresentation: z.enum(['contact-sheet', 'lead', 'sidecar']).default('contact-sheet'),
     featured: z.boolean().default(false),
   }),
 });
@@ -45,8 +51,9 @@ const now = defineCollection({
 const talks = defineCollection({
   loader: glob({ pattern: '**/*.md', base: './src/content/talks' }),
   schema: z.object({
-    title: z.string(),
-    abstract: z.string(),
+    title: localizedText,
+    abstract: localizedText,
+    locales: localeVisibility,
     events: z.array(z.string()).default([]),
     tags: z.array(z.string()).default([]),
     sessionizeUrl: z.string().url().optional(),
@@ -58,8 +65,9 @@ const talks = defineCollection({
 const writing = defineCollection({
   loader: glob({ pattern: '**/*.md', base: './src/content/writing' }),
   schema: z.object({
-    title: z.string(),
-    summary: z.string(),
+    title: localizedText,
+    summary: localizedText,
+    locales: localeVisibility,
     publication: z.string().default('Codemotion Magazine'),
     url: z.string().url(),
     date: z.coerce.date(),
@@ -67,4 +75,27 @@ const writing = defineCollection({
   }),
 });
 
-export const collections = { now, talks, writing };
+// Appearances — one source of truth for recordings, live streams and podcasts.
+// Entries can appear in the dated stream, the permanent media library, or both.
+const appearances = defineCollection({
+  loader: glob({ pattern: '**/*.md', base: './src/content/appearances' }),
+  schema: z.object({
+    title: localizedText,
+    summary: localizedText,
+    locales: localeVisibility,
+    format: z.enum(['video', 'live-recording', 'podcast']),
+    platform: z.enum(['youtube', 'spotify']),
+    role: z.enum(['host', 'speaker', 'guest']),
+    placements: z.array(z.enum(['lately', 'library'])).min(1),
+    date: z.coerce.date(),
+    duration: z.string().regex(/^\d{1,2}:\d{2}(?::\d{2})?$/),
+    publisher: z.string().min(1),
+    platformId: z.string().min(1),
+    externalUrl: z.string().url(),
+    poster: z.string().startsWith('/'),
+    startAtSeconds: z.number().int().nonnegative().optional(),
+    mobilePresentation: z.enum(['row', 'above', 'text-only']).default('row'),
+  }),
+});
+
+export const collections = { now, talks, writing, appearances };

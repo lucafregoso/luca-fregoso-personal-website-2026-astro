@@ -36,9 +36,9 @@ export const site = {
 
     // Social share image. Put the file in /public and set the path
     // here (with a leading slash). RECOMMENDED SIZE: 1200×630 px.
-    // Kept null until you add the file, so no broken tag is emitted.
-    // When ready: add public/og-image.jpg and set ogImage: '/og-image.jpg'.
-    ogImage: null as string | null,
+    // The stage photograph is local, so social crawlers never depend on a
+    // third-party media host. It is deliberately large enough for rich cards.
+    ogImage: '/hackathon-2026.jpg' as string | null,
 
     // Browser UI / mobile address-bar tint.
     themeColor: '#d0db02',
