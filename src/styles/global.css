@@ -58,6 +58,11 @@
 
 html {
   scroll-behavior: smooth;
+  /* Full-bleed section backgrounds use 100vw, which includes the classic
+     scrollbar gutter. Clip that intentional overpaint instead of creating
+     a page-level horizontal scrollbar. */
+  overflow-x: hidden;
+  overflow-x: clip;
 }
 @media (prefers-reduced-motion: reduce) {
   html { scroll-behavior: auto; }
