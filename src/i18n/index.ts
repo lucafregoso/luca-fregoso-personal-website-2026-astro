@@ -19,7 +19,9 @@ const en = {
   nav: {
     header: 'Site header', primary: 'Primary navigation', language: 'Language selection',
     brand: 'Luca Fregoso, back to top', work: 'Work', lately: 'Lately', talks: 'Talks',
-    writing: 'Writing', contact: 'Contact', openMenu: 'Open menu', closeMenu: 'Close menu',
+    writing: 'Media', contact: 'Contact', openMenu: 'Open menu', closeMenu: 'Close menu',
+    chooseLanguage: 'Choose language. Current language: English', closeLanguage: 'Close language selection',
+    languages: { en: 'English', it: 'Italian' },
   },
   theme: { dark: 'Switch to dark mode', light: 'Switch to light mode' },
   skip: 'Skip to content',
@@ -55,8 +57,14 @@ const en = {
     status: 'session', view: 'View session', fullProfile: 'Full speaker profile',
   },
   writing: {
-    number: '04 / In writing', title: 'Notes from the work.',
-    intro: 'Articles about developer careers, technology and the decisions behind good programs.',
+    number: '04 / Media & writing', title: 'Media & writing.',
+    intro: 'Recordings, podcasts and articles about developer careers, technology and the decisions behind good programs.',
+    article: 'article',
+  },
+  appearances: {
+    watch: 'Watch on YouTube', listen: 'Listen on Spotify',
+    formats: { video: 'video', 'live-recording': 'live recording', podcast: 'podcast' },
+    roles: { host: 'host', speaker: 'speaker', guest: 'guest' },
   },
   contact: {
     number: '05 / Let’s talk', title: 'Bring me the complicated brief.',
@@ -69,7 +77,7 @@ const en = {
     revealed: 'Email address revealed.', copiedStatus: 'Email address copied to clipboard.',
     failed: 'Copy failed. Select the email address shown above.',
   },
-  media: { openImage: 'Open image', readFull: 'Read the full post' },
+  media: { openImage: 'Open image', readFull: 'Read the full post', viewPhotos: (count: number) => `View ${count} photos` },
   lightbox: {
     viewer: 'Image viewer', close: 'Close image viewer', previous: 'Previous image', next: 'Next image',
     imageOf: (position: number, total: number) => `Image ${position} of ${total}`,
@@ -88,7 +96,9 @@ const it = {
   nav: {
     header: 'Intestazione del sito', primary: 'Navigazione principale', language: 'Selezione lingua',
     brand: 'Luca Fregoso, torna all’inizio', work: 'Lavoro', lately: 'Ultimamente', talks: 'Talk',
-    writing: 'Articoli', contact: 'Contatti', openMenu: 'Apri menu', closeMenu: 'Chiudi menu',
+    writing: 'Media', contact: 'Contatti', openMenu: 'Apri menu', closeMenu: 'Chiudi menu',
+    chooseLanguage: 'Scegli la lingua. Lingua attuale: Italiano', closeLanguage: 'Chiudi la selezione della lingua',
+    languages: { en: 'Inglese', it: 'Italiano' },
   },
   theme: { dark: 'Passa al tema scuro', light: 'Passa al tema chiaro' },
   skip: 'Vai al contenuto',
@@ -138,8 +148,14 @@ const it = {
     status: 'sessione', view: 'Vedi la sessione', fullProfile: 'Profilo speaker completo',
   },
   writing: {
-    number: '04 / Articoli', title: 'Note dal lavoro.',
-    intro: 'Articoli su carriere tech, tecnologia e le decisioni che rendono efficace un buon programma.',
+    number: '04 / Media e articoli', title: 'Media e articoli.',
+    intro: 'Registrazioni, podcast e articoli su carriere tech, tecnologia e le decisioni che rendono efficace un buon programma.',
+    article: 'articolo',
+  },
+  appearances: {
+    watch: 'Guarda su YouTube', listen: 'Ascolta su Spotify',
+    formats: { video: 'video', 'live-recording': 'registrazione live', podcast: 'podcast' },
+    roles: { host: 'host', speaker: 'speaker', guest: 'ospite' },
   },
   contact: {
     number: '05 / Parliamone', title: 'Portami il brief più complicato.',
@@ -152,7 +168,7 @@ const it = {
     revealed: 'Indirizzo email mostrato.', copiedStatus: 'Indirizzo email copiato negli appunti.',
     failed: 'Copia non riuscita. Seleziona l’indirizzo email mostrato qui sopra.',
   },
-  media: { openImage: 'Apri immagine', readFull: 'Leggi il post completo' },
+  media: { openImage: 'Apri immagine', readFull: 'Leggi il post completo', viewPhotos: (count: number) => `Vedi ${count} foto` },
   lightbox: {
     viewer: 'Visualizzatore immagini', close: 'Chiudi il visualizzatore', previous: 'Immagine precedente', next: 'Immagine successiva',
     imageOf: (position: number, total: number) => `Immagine ${position} di ${total}`,

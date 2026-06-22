@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 675" role="img" aria-labelledby="title description">
+  <title id="title">Spotlight #11 – Luca Fregoso</title>
+  <desc id="description">Abstract local poster for the podcast appearance.</desc>
+  <defs>
+    <linearGradient id="background" x1="0" y1="1" x2="1" y2="0">
+      <stop stop-color="#121a16"/>
+      <stop offset="1" stop-color="#244438"/>
+    </linearGradient>
+  </defs>
+  <rect width="1200" height="675" fill="url(#background)"/>
+  <circle cx="1050" cy="520" r="300" fill="#1ed760" opacity=".75"/>
+  <g fill="none" stroke="#d9ffe6" stroke-width="12" opacity=".6">
+    <path d="M850 455c110-42 230-30 320 20"/>
+    <path d="M830 505c125-48 270-32 355 24"/>
+    <path d="M815 560c145-55 300-35 385 28"/>
+  </g>
+  <text x="76" y="102" fill="#8ff0b0" font-family="ui-monospace,monospace" font-size="28" letter-spacing="4">IL PODCAST OPEN SOURCE</text>
+  <text x="76" y="285" fill="#fff" font-family="Arial,sans-serif" font-size="88" font-weight="700">Spotlight #11</text>
+  <text x="76" y="390" fill="#fff" font-family="Arial,sans-serif" font-size="68" font-weight="700">Luca Fregoso</text>
+  <text x="80" y="555" fill="#c7e9d2" font-family="ui-monospace,monospace" font-size="28">PODCAST · GUEST APPEARANCE</text>
+</svg>

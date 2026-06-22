@@ -62,3 +62,15 @@ for (const locale of [{ path: '/', name: 'English' }, { path: '/it/', name: 'Ita
     });
   }
 }
+
+for (const locale of [
+  { path: '/', name: 'English', language: /Choose language/i },
+  { path: '/it/', name: 'Italian', language: /Scegli la lingua/i },
+] as const) {
+  test(`open language disclosure has no WCAG 2.2 AA violations — ${locale.name}`, async ({ page }) => {
+    await settlePage(page, locale.path, 'light');
+    await page.getByRole('button', { name: locale.language }).click();
+    const results = await runAxe(page);
+    expect(results.violations).toEqual([]);
+  });
+}

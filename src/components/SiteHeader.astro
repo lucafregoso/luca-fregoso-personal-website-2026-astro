@@ -19,7 +19,7 @@ const defaultNav = [
   { href: '#work', label: labels.work },
   { href: '#lately', label: labels.lately },
   { href: '#talks', label: labels.talks },
-  { href: '#writing', label: labels.writing },
+  { href: '#media', label: labels.writing },
   { href: '#contact', label: labels.contact },
 ];
 const navItems = Astro.props.navItems ?? defaultNav;
@@ -65,16 +65,21 @@ const navItems = Astro.props.navItems ?? defaultNav;
 
     let evaluatedY = window.scrollY;
     let open = false;
+    let externalOverlayOpen = false;
     let frame = 0;
     const mobile = window.matchMedia('(max-width: 900px)');
 
-    const setOpen = (next: boolean) => {
+    const setOpen = (next: boolean, emit = true) => {
+      if (next === open) return;
       open = next;
       button.setAttribute('aria-expanded', String(next));
       button.setAttribute('aria-label', next ? button.dataset.labelClose! : button.dataset.labelOpen!);
       panel.hidden = !next;
       header.dataset.hidden = 'false';
       document.documentElement.classList.toggle('menu-open', next);
+      if (emit) document.dispatchEvent(new CustomEvent('site:overlay-change', {
+        detail: { source: 'navigation', open: next },
+      }));
     };
 
     button.addEventListener('click', () => setOpen(!open));
@@ -86,13 +91,19 @@ const navItems = Astro.props.navItems ?? defaultNav;
       if (event.key === 'Escape' && open) { setOpen(false); button.focus(); }
     });
     header.addEventListener('focusin', () => { header.dataset.hidden = 'false'; });
+    document.addEventListener('site:overlay-change', ((event: CustomEvent<{ source: string; open: boolean }>) => {
+      if (event.detail.source === 'navigation') return;
+      externalOverlayOpen = event.detail.open;
+      if (externalOverlayOpen && open) setOpen(false);
+      header.dataset.hidden = 'false';
+    }) as EventListener);
 
     const updateScrollState = () => {
       frame = 0;
       const currentY = Math.max(0, window.scrollY);
       header.dataset.compact = String(currentY > 24);
 
-      if (!mobile.matches || open || currentY <= 76) {
+      if (!mobile.matches || open || externalOverlayOpen || currentY <= 76) {
         header.dataset.hidden = 'false';
         evaluatedY = currentY;
       } else if (Math.abs(currentY - evaluatedY) >= 8) {

@@ -11,6 +11,7 @@ interface Props {
   locale?: Locale;
   canonicalPath?: string;
   alternatePaths?: Partial<Record<Locale, string>>;
+  structuredData?: object[];
 }
 const m = site.meta;
 const requestedLocale = Astro.props.locale;
@@ -21,6 +22,7 @@ const {
   description = t.meta.description,
   canonicalPath,
   alternatePaths,
+  structuredData = [],
 } = Astro.props;
 const canonical = new URL(canonicalPath ? withBase(canonicalPath) : Astro.url.pathname, Astro.site);
 const localeAlternates = getLocaleAlternates(Astro.url.pathname, alternatePaths);
@@ -56,10 +58,14 @@ const alternateOgLocale = translations[locale === 'en' ? 'it' : 'en'].meta.ogLoc
     <meta property="og:description" content={description} />
     <meta property="og:url" content={canonical} />
     {ogImageUrl && <meta property="og:image" content={ogImageUrl} />}
+    {ogImageUrl && <meta property="og:image:alt" content={locale === 'it' ? 'Luca Fregoso sul palco durante un evento per developer.' : 'Luca Fregoso on stage at a developer event.'} />}
+    {ogImageUrl && <meta property="og:image:width" content="1200" />}
+    {ogImageUrl && <meta property="og:image:height" content="900" />}
     <meta name="twitter:card" content={ogImageUrl ? 'summary_large_image' : 'summary'} />
     <meta name="twitter:title" content={title} />
     <meta name="twitter:description" content={description} />
     {ogImageUrl && <meta name="twitter:image" content={ogImageUrl} />}
+    {ogImageUrl && <meta name="twitter:image:alt" content={locale === 'it' ? 'Luca Fregoso sul palco durante un evento per developer.' : 'Luca Fregoso on stage at a developer event.'} />}
 
     <!-- JSON-LD: helps Google show you as a Person entity -->
     <script is:inline type="application/ld+json" set:html={JSON.stringify({
@@ -67,9 +73,11 @@ const alternateOgLocale = translations[locale === 'en' ? 'it' : 'en'].meta.ogLoc
       '@type': 'Person',
       name: site.name,
       jobTitle: site.tagline,
-      url: canonical.toString(),
-      sameAs: site.socials.map((s) => s.url),
+      '@id': new URL(withBase('/#person'), Astro.site).toString(),
+      url: new URL(withBase('/'), Astro.site).toString(),
+      sameAs: [...site.socials.map((s) => s.url), site.links.sessionize],
     })} />
+    {structuredData.map((item) => <script is:inline type="application/ld+json" set:html={JSON.stringify(item)} />)}
 
     <!-- Set theme before paint to avoid a flash -->
     <script is:inline>
