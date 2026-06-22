@@ -68,12 +68,19 @@ test.describe('homepage responsive contract', () => {
     test(`has no horizontal page overflow on ${viewport.name}`, async ({ page }) => {
       await page.setViewportSize(viewport);
       await page.goto('/');
+      await page.addStyleTag({ content: 'html { scrollbar-gutter: stable; }' });
 
       const dimensions = await page.evaluate(() => ({
         viewport: document.documentElement.clientWidth,
         content: document.documentElement.scrollWidth,
       }));
       expect(dimensions.content).toBeLessThanOrEqual(dimensions.viewport);
+      await expect(page.locator('html')).toHaveCSS('overflow-x', 'clip');
+      const horizontalPosition = await page.evaluate(() => {
+        document.documentElement.scrollLeft = 100;
+        return document.documentElement.scrollLeft;
+      });
+      expect(horizontalPosition).toBe(0);
       await expect(page.getByRole('heading', { level: 1 })).toBeVisible();
       await expect(page.locator('.hero-actions')).toBeVisible();
     });

@@ -22,7 +22,11 @@ test.describe('compact media appearances', () => {
           await expect(entry).toHaveCount(1);
           await expect(entry).toHaveAttribute('data-mobile-presentation', 'row');
           await expect(entry).toContainText(example.publisher);
-          await expect(entry).toContainText(example.duration);
+          if (sectionId === '#lately') {
+            await expect(entry).toContainText(example.duration);
+          } else {
+            await expect(entry).not.toContainText(example.duration);
+          }
         }
         const entry = appearanceFor(page.locator('#media'), example.title);
         const thumbnail = entry.locator('a.appearance-thumbnail');
@@ -74,8 +78,18 @@ test.describe('compact media appearances', () => {
   test('archive rows use the full content width and retain their separators', async ({ page }) => {
     await page.goto('/');
     const firstEntry = appearanceFor(page.locator('#media'), examples[1].title);
+    const firstArticle = page.locator('#media .writing-item:not([data-appearance-entry])').first();
     await expect(page.locator('#media .writing-index')).toHaveCount(0);
     await expect(firstEntry).toHaveCSS('border-bottom-width', '1px');
+    await expect(firstArticle.locator('.writing-meta')).toHaveCSS('text-align', 'left');
+    const appearanceTitle = await firstEntry.locator('h3').boundingBox();
+    const articleTitle = await firstArticle.locator('h3').boundingBox();
+    const articleBadge = await firstArticle.locator('.archive-badges').boundingBox();
+    expect(appearanceTitle).not.toBeNull();
+    expect(articleTitle).not.toBeNull();
+    expect(articleBadge).not.toBeNull();
+    expect(Math.abs(appearanceTitle!.x - articleTitle!.x)).toBeLessThanOrEqual(1);
+    expect(Math.abs(articleBadge!.x - articleTitle!.x)).toBeLessThanOrEqual(1);
     const borderBefore = await firstEntry.locator('.appearance-thumbnail').evaluate((element) => getComputedStyle(element).borderColor);
     await firstEntry.locator('.appearance-thumbnail').hover();
     await expect(firstEntry.locator('.appearance-thumbnail img')).not.toHaveCSS('transform', 'none');
