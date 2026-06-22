@@ -1,0 +1,117 @@
+---
+import { localePath, type Locale } from '../lib/i18n';
+
+interface Props {
+  locale: Locale;
+  pathname?: string;
+}
+
+const { locale, pathname = Astro.url.pathname } = Astro.props;
+const copy = locale === 'it'
+  ? {
+      nav: 'Selezione lingua', open: 'Scegli la lingua. Lingua attuale: Italiano',
+      close: 'Chiudi menu lingua', en: 'English', it: 'Italiano',
+    }
+  : {
+      nav: 'Language selection', open: 'Choose language. Current language: English',
+      close: 'Close language menu', en: 'English', it: 'Italiano',
+    };
+---
+
+<nav class="language-switcher" aria-label={copy.nav} data-language-switcher>
+  <button
+    class="language-trigger"
+    type="button"
+    aria-expanded="false"
+    aria-haspopup="true"
+    aria-controls="language-menu"
+    aria-label={copy.open}
+    data-label-open={copy.open}
+    data-label-close={copy.close}
+  >
+    <span class="language-code" aria-hidden="true">{locale.toUpperCase()}</span>
+  </button>
+
+  <ul id="language-menu" class="language-menu" hidden>
+    {(['en', 'it'] as const).map((itemLocale) => (
+      <li>
+        <a
+          lang={itemLocale}
+          hreflang={itemLocale}
+          href={localePath(pathname, itemLocale)}
+          aria-current={itemLocale === locale ? 'page' : undefined}
+        >
+          <span class="menu-code" aria-hidden="true">{itemLocale.toUpperCase()}</span>
+          <span>{copy[itemLocale]}</span>
+        </a>
+      </li>
+    ))}
+  </ul>
+</nav>
+
+<script>
+  (function () {
+    const root = document.querySelector<HTMLElement>('[data-language-switcher]');
+    const trigger = root?.querySelector<HTMLButtonElement>('.language-trigger');
+    const menu = root?.querySelector<HTMLElement>('.language-menu');
+    if (!root || !trigger || !menu) return;
+
+    let open = false;
+    const announce = (next: boolean) => document.dispatchEvent(new CustomEvent('site:overlay-change', {
+      detail: { source: 'language', open: next },
+    }));
+
+    const setOpen = (next: boolean, restoreFocus = false, emit = true) => {
+      if (next === open) return;
+      open = next;
+      trigger.setAttribute('aria-expanded', String(next));
+      trigger.setAttribute('aria-label', next ? trigger.dataset.labelClose! : trigger.dataset.labelOpen!);
+      menu.hidden = !next;
+      if (next) requestAnimationFrame(() => menu.querySelector<HTMLAnchorElement>('a')?.focus());
+      if (!next && restoreFocus) trigger.focus();
+      if (emit) announce(next);
+    };
+
+    trigger.addEventListener('click', () => setOpen(!open));
+    menu.querySelectorAll('a').forEach((link) => link.addEventListener('click', () => setOpen(false)));
+    document.addEventListener('pointerdown', (event) => {
+      if (open && event.target instanceof Node && !root.contains(event.target)) setOpen(false, true);
+    });
+    document.addEventListener('keydown', (event) => {
+      if (event.key === 'Escape' && open) { event.preventDefault(); setOpen(false, true); }
+    });
+    root.addEventListener('focusout', (event) => {
+      if (open && event.relatedTarget instanceof Node && !root.contains(event.relatedTarget)) setOpen(false);
+    });
+    document.addEventListener('site:overlay-change', ((event: CustomEvent<{ source: string; open: boolean }>) => {
+      if (event.detail.source !== 'language' && event.detail.open && open) setOpen(false, false);
+    }) as EventListener);
+  })();
+</script>
+
+<style>
+  .language-switcher { position: relative; }
+  .language-trigger {
+    width: 44px; height: 44px; padding: 9px; display: inline-flex; align-items: center; justify-content: center;
+    border: 1px solid var(--border); border-radius: 8px; color: var(--text-muted); background: var(--surface);
+    cursor: pointer;
+  }
+  .language-trigger:hover, .language-trigger[aria-expanded='true'] { color: var(--text); border-color: var(--lime); }
+  .language-code { font: 700 .68rem/1 var(--font-mono); letter-spacing: .04em; }
+  .language-menu {
+    position: absolute; top: calc(100% + .45rem); right: 0; z-index: 20; min-width: 10.5rem;
+    margin: 0; padding: .35rem; list-style: none; border: 1px solid var(--border);
+    border-radius: var(--radius-md); background: var(--surface); box-shadow: 0 14px 34px rgba(0,0,0,.14);
+  }
+  .language-menu[hidden] { display: none; }
+  .language-menu a {
+    min-height: 44px; padding: .45rem .65rem; display: flex; align-items: center; gap: .7rem;
+    border: 0; border-radius: 8px; color: var(--text); font: 600 .78rem/1 var(--font-mono);
+  }
+  .language-menu a:hover, .language-menu a:focus-visible { background: var(--surface-2); }
+  .menu-code { min-width: 2rem; color: var(--accent-text); font-size: .68rem; letter-spacing: .05em; }
+  .language-menu a[aria-current='page']::after { content: '✓'; margin-left: auto; color: var(--accent-text); }
+  @media (forced-colors: active) {
+    .language-trigger, .language-menu { border-color: ButtonText; }
+  }
+</style>

@@ -1,5 +1,0 @@
-# robots.txt — allow everything, point to the sitemap.
-User-agent: *
-Allow: /
-
-Sitemap: https://lucafregoso.github.io/luca-fregoso-personal-website-2026-astro/sitemap-index.xml

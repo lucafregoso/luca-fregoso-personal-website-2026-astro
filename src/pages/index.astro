@@ -1,48 +1,95 @@
 ---
 import { getCollection } from 'astro:content';
 import BaseLayout from '../layouts/BaseLayout.astro';
-import ThemeToggle from '../components/ThemeToggle.astro';
+import SiteHeader from '../components/SiteHeader.astro';
 import Media from '../components/Media.astro';
 import Lightbox from '../components/Lightbox.astro';
 import ContactEmail from '../components/ContactEmail.astro';
 import SocialIcon from '../components/SocialIcon.astro';
 import ExternalLink from '../components/ExternalLink.astro';
+import AppearanceEntry from '../components/AppearanceEntry.astro';
 import { site } from '../data/site';
 import { withBase } from '../lib/url';
+import { localize, translations, type Locale, type LocalizedText } from '../i18n';
 
-const allNow = (await getCollection('now')).sort(
+interface Props { locale?: Locale }
+const locale = Astro.props.locale ?? 'en';
+const t = translations[locale];
+
+const allNow = (await getCollection('now')).filter((entry) => entry.data.locales.includes(locale)).sort(
   (a, b) => b.data.date.valueOf() - a.data.date.valueOf()
 );
+const appearances = (await getCollection('appearances'))
+  .filter((entry) => entry.data.locales.includes(locale))
+  .sort((a, b) => b.data.date.valueOf() - a.data.date.valueOf());
+const latelyAppearances = appearances.filter((entry) => entry.data.placements.includes('lately'));
+
+const timeline = [
+  ...allNow.map((entry) => ({ type: 'update' as const, date: entry.data.date, entry })),
+  ...latelyAppearances.map((entry) => ({ type: 'appearance' as const, date: entry.data.date, entry })),
+].sort((a, b) => b.date.valueOf() - a.date.valueOf());
 const todayMs = Date.now();
 const upcoming = allNow
   .filter((entry) => entry.data.date.valueOf() > todayMs)
   .sort((a, b) => a.data.date.valueOf() - b.data.date.valueOf());
-const past = allNow.filter((entry) => entry.data.date.valueOf() <= todayMs);
+const past = timeline.filter((item) => item.date.valueOf() <= todayMs);
 const heroEntry = past[0];
 const recentEntries = past.slice(1, 4);
 const earlierEntries = past.slice(4);
 
-const talks = (await getCollection('talks')).sort((a, b) => a.data.order - b.data.order);
-const writing = (await getCollection('writing')).sort(
+const talks = (await getCollection('talks')).filter((entry) => entry.data.locales.includes(locale)).sort((a, b) => a.data.order - b.data.order);
+const writing = (await getCollection('writing')).filter((entry) => entry.data.locales.includes(locale)).sort(
   (a, b) => b.data.date.valueOf() - a.data.date.valueOf()
 );
+const library = [
+  ...writing.map((entry) => ({ type: 'article' as const, date: entry.data.date, entry })),
+  ...appearances
+    .filter((entry) => entry.data.placements.includes('library'))
+    .map((entry) => ({ type: 'appearance' as const, date: entry.data.date, entry })),
+].sort((a, b) => b.date.valueOf() - a.date.valueOf());
+
+const appearanceAnchor = (id: string) => `appearance-${id.replace(/[^a-z0-9-]/gi, '-')}`;
+const isoDuration = (duration: string) => {
+  const parts = duration.split(':').map(Number);
+  const [hours, minutes, seconds] = parts.length === 3 ? parts : [0, parts[0], parts[1]];
+  return `PT${hours ? `${hours}H` : ''}${minutes ? `${minutes}M` : ''}${seconds ? `${seconds}S` : ''}`;
+};
+const appearanceStructuredData = appearances
+  .filter((entry) => entry.data.placements.includes('library'))
+  .map((entry) => {
+    const url = new URL(`${Astro.url.pathname}#${appearanceAnchor(entry.id)}`, Astro.site).toString();
+    const common = {
+      '@context': 'https://schema.org',
+      '@id': url,
+      name: localize(entry.data.title, locale),
+      description: localize(entry.data.summary, locale),
+      datePublished: entry.data.date.toISOString().slice(0, 10),
+      duration: isoDuration(entry.data.duration),
+      url: entry.data.externalUrl,
+      mainEntityOfPage: url,
+      thumbnailUrl: new URL(withBase(entry.data.poster), Astro.site).toString(),
+      publisher: { '@type': 'Organization', name: entry.data.publisher },
+      contributor: {
+        '@type': 'Person',
+        '@id': new URL(withBase('/#person'), Astro.site).toString(),
+        name: site.name,
+      },
+    };
+    return entry.data.format === 'podcast'
+      ? { ...common, '@type': 'PodcastEpisode', associatedMedia: { '@type': 'AudioObject', contentUrl: entry.data.externalUrl } }
+      : { ...common, '@type': 'VideoObject', contentUrl: entry.data.externalUrl, uploadDate: entry.data.date.toISOString() };
+  });
 
 const monthYear = (date: Date) =>
-  date.toLocaleDateString('en-GB', { year: 'numeric', month: 'short' });
+  date.toLocaleDateString(locale === 'it' ? 'it-IT' : 'en-GB', { year: 'numeric', month: 'short' });
 const dayMonth = (date: Date) =>
-  date.toLocaleDateString('en-GB', { day: '2-digit', month: 'short' });
+  date.toLocaleDateString(locale === 'it' ? 'it-IT' : 'en-GB', { day: '2-digit', month: 'short' });
 const fullDate = (date: Date) =>
-  date.toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
+  date.toLocaleDateString(locale === 'it' ? 'it-IT' : 'en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
 
-const kindLabel: Record<string, string> = {
-  speaking: 'on stage',
-  writing: 'wrote',
-  milestone: 'milestone',
-  building: 'shipped',
-  note: 'note',
-};
+const kindLabel: Record<string, string> = t.lately.kinds;
 
-function outlink(entry: { url?: string; urlLabel?: string; urlStyle?: string }) {
+function outlink(entry: { url?: string; urlLabel?: LocalizedText; urlStyle?: string }) {
   if (!entry.url) return null;
   let host = '';
   try { host = new URL(entry.url).hostname.replace(/^www\./, ''); } catch {}
@@ -50,8 +97,8 @@ function outlink(entry: { url?: string; urlLabel?: string; urlStyle?: string }) 
   return {
     href: entry.url,
     label:
-      entry.urlLabel ??
-      (entry.urlStyle === 'strong' ? `Read the full post on ${platform}` : `Read it on ${platform}`),
+      (entry.urlLabel ? localize(entry.urlLabel, locale) : undefined) ??
+      (entry.urlStyle === 'strong' ? t.lately.readFull(platform) : t.lately.read(platform)),
     strong: entry.urlStyle === 'strong',
   };
 }
@@ -61,54 +108,52 @@ function caseHref(href: string) {
 }
 ---
 
-<BaseLayout>
+<BaseLayout locale={locale} title={t.meta.title} description={t.meta.description} structuredData={appearanceStructuredData}>
+  <SiteHeader
+    locale={locale}
+    navItems={[
+      { href: '#work', label: t.nav.work },
+      { href: '#lately', label: t.nav.lately },
+      { href: '#talks', label: t.nav.talks },
+      { href: '#media', label: t.nav.writing },
+      { href: '#contact', label: t.nav.contact },
+    ]}
+  />
   <div class="site-shell">
-    <header class="topbar" aria-label="Site header">
-      <a class="brand mono" href="#top" aria-label="Luca Fregoso, back to top">luca·fregoso</a>
-      <nav class="site-nav" aria-label="Primary navigation">
-        <a href="#work">Work</a>
-        <a href="#lately">Lately</a>
-        <a href="#talks">Talks</a>
-        <a href="#writing">Writing</a>
-        <a href="#contact">Contact</a>
-      </nav>
-      <ThemeToggle />
-    </header>
-
     <main id="main" tabindex="-1">
       <section class="hero" id="top" aria-labelledby="hero-title">
         <div class="hero-copy">
-          <p class="eyebrow mono"><span class="status-dot" aria-hidden="true"></span>{site.eyebrow}</p>
-          <h1 id="hero-title">{site.headline}</h1>
-          <p class="hero-intro">{site.intro}</p>
-          <p class="hero-proof">{site.proof}</p>
+          <p class="eyebrow mono"><span class="status-dot" aria-hidden="true"></span>{t.hero.eyebrow}</p>
+          <h1 id="hero-title">{t.hero.headline}</h1>
+          <p class="hero-intro">{t.hero.intro}</p>
+          <p class="hero-proof">{t.hero.proof}</p>
           <div class="hero-actions">
-            <a class="button button-primary" href="#contact">Discuss a leadership role</a>
-            <a class="button button-secondary" href="#work">See selected work</a>
+            <a class="button button-primary" href="#contact">{t.hero.primary}</a>
+            <a class="button button-secondary" href="#work">{t.hero.secondary}</a>
           </div>
-          <div class="utility-links mono" aria-label="Profile links">
+          <div class="utility-links mono" aria-label={t.hero.profileLinks}>
             <ExternalLink href={site.links.linkedin}>LinkedIn</ExternalLink>
             <ExternalLink href={site.links.sessionize}>Sessionize</ExternalLink>
-            <a href={withBase('/cv.pdf')}>CV (PDF)</a>
+            <a href={withBase('/cv.pdf')}>{t.hero.cv}</a>
           </div>
         </div>
 
         <figure class="hero-visual">
           <img
             src={withBase('/hackathon-2026.jpg')}
-            alt="Luca Fregoso hosting on stage at Docebo GAME UP! Product Power Up 2026."
+            alt={t.hero.imageAlt}
             width="1200"
             height="900"
           />
           <figcaption class="mono">
-            <span>On stage</span>
-            <span>Docebo · Milan · 2026</span>
+            <span>{t.hero.imageContext}</span>
+            <span>{t.hero.imagePlace}</span>
           </figcaption>
         </figure>
       </section>
 
-      <section class="metrics" aria-label="Impact in numbers">
-        {site.metrics.map((metric) => (
+      <section class="metrics" aria-label={locale === 'it' ? 'Impatto in numeri' : 'Impact in numbers'}>
+        {t.metrics.map((metric) => (
           <div class="metric">
             <strong>{metric.value}</strong>
             <span>{metric.label}</span>
@@ -118,13 +163,13 @@ function caseHref(href: string) {
 
       <section class="section work" id="work" aria-labelledby="work-title">
         <div class="section-heading">
-          <p class="section-number mono">01 / Selected impact</p>
-          <h2 id="work-title">Where strategy meets delivery.</h2>
-          <p>I work at the joins: between technology and people, editorial judgment and commercial reality, the stage and everything behind it.</p>
+          <p class="section-number mono">{t.work.number}</p>
+          <h2 id="work-title">{t.work.title}</h2>
+          <p>{t.work.intro}</p>
         </div>
 
         <div class="capability-grid">
-          {site.capabilities.map((capability) => (
+          {t.capabilities.map((capability) => (
             <article class="capability">
               <span class="capability-number mono">{capability.number}</span>
               <h3>{capability.title}</h3>
@@ -134,7 +179,7 @@ function caseHref(href: string) {
         </div>
 
         <div class="case-grid">
-          {site.caseStudies.map((caseStudy) => (
+          {t.caseStudies.map((caseStudy) => (
             <article class="case-card">
               <p class="case-label mono">{caseStudy.label}</p>
               <h3>{caseStudy.title}</h3>
@@ -153,88 +198,97 @@ function caseHref(href: string) {
 
       <section class="section stream tinted" id="lately" aria-labelledby="lately-title">
         <div class="section-heading compact">
-          <p class="section-number mono">02 / Field notes</p>
+          <p class="section-number mono">{t.lately.number}</p>
           <div class="heading-row">
-            <h2 id="lately-title">Lately</h2>
-            {heroEntry && <span class="updated mono">Updated {dayMonth(heroEntry.data.date)}</span>}
+            <h2 id="lately-title">{t.lately.title}</h2>
+            {heroEntry && <span class="updated mono">{t.lately.updated} {dayMonth(heroEntry.date)}</span>}
           </div>
-          <p>Recent work from programs, stages and the communities around them.</p>
+          <p>{t.lately.intro}</p>
         </div>
 
         {upcoming.length > 0 && (
           <ul class="upcoming">
             {upcoming.map((entry) => (
               <li>
-                <span class="up-tag mono">upcoming</span>
-                <span class="up-title">{entry.data.title}</span>
-                {entry.data.location && <span class="up-location mono">{entry.data.location}</span>}
+                <span class="up-tag mono">{t.lately.upcoming}</span>
+                <span class="up-title">{localize(entry.data.title, locale)}</span>
+                {entry.data.location && <span class="up-location mono">{localize(entry.data.location, locale)}</span>}
                 <time class="up-date mono" datetime={entry.data.date.toISOString()}>{dayMonth(entry.data.date)}</time>
               </li>
             ))}
           </ul>
         )}
 
-        {heroEntry && (
-          <article data-reveal class={`featured-story ${heroEntry.data.featured ? 'is-featured' : ''}`}>
-            <div class="story-meta mono">
-              <span>{kindLabel[heroEntry.data.kind] ?? heroEntry.data.kind}</span>
-              <time datetime={heroEntry.data.date.toISOString()}>{fullDate(heroEntry.data.date)}</time>
+        {heroEntry?.type === 'update' && (
+          <article data-reveal class={`featured-story media-presentation-${heroEntry.entry.data.mediaPresentation} ${heroEntry.entry.data.featured ? 'is-featured' : ''}`}>
+            <div class="story-content">
+              <div class="story-meta mono">
+                <span>{kindLabel[heroEntry.entry.data.kind] ?? heroEntry.entry.data.kind}</span>
+                <time datetime={heroEntry.date.toISOString()}>{fullDate(heroEntry.date)}</time>
+              </div>
+              <h3>{localize(heroEntry.entry.data.title, locale)}</h3>
+              {heroEntry.entry.data.location && <p class="story-location mono">{localize(heroEntry.entry.data.location, locale)}</p>}
+              {heroEntry.entry.data.blurb && <p class="story-copy">{localize(heroEntry.entry.data.blurb, locale)}</p>}
+              {outlink(heroEntry.entry.data) && (
+                <ExternalLink class={`outlink mono ${outlink(heroEntry.entry.data)!.strong ? 'is-strong' : ''}`} href={outlink(heroEntry.entry.data)!.href}>
+                  {outlink(heroEntry.entry.data)!.label}
+                </ExternalLink>
+              )}
             </div>
-            <h3>{heroEntry.data.title}</h3>
-            {heroEntry.data.location && <p class="story-location mono">{heroEntry.data.location}</p>}
-            {heroEntry.data.blurb && <p class="story-copy">{heroEntry.data.blurb}</p>}
-            <Media media={heroEntry.data.media} layout={heroEntry.data.layout ?? 'full'} galleryId={`g-${heroEntry.id}`} />
-            {outlink(heroEntry.data) && (
-              <ExternalLink class={`outlink mono ${outlink(heroEntry.data)!.strong ? 'is-strong' : ''}`} href={outlink(heroEntry.data)!.href}>
-                {outlink(heroEntry.data)!.label}
-              </ExternalLink>
-            )}
+            <Media locale={locale} media={heroEntry.entry.data.media} presentation={heroEntry.entry.data.mediaPresentation} galleryId={`g-${heroEntry.entry.id}`} />
           </article>
         )}
+        {heroEntry?.type === 'appearance' && <AppearanceEntry appearance={heroEntry.entry.data} {locale} variant="featured" />}
 
         <ol class="feed">
-          {recentEntries.map((entry) => (
-            <li data-reveal class={`feed-item ${entry.data.featured ? 'is-featured' : ''}`}>
+          {recentEntries.map((item) => item.type === 'update' ? (
+            <li data-reveal class={`feed-item ${item.entry.data.featured ? 'is-featured' : ''}`}>
               <div class="feed-meta mono">
-                <time datetime={entry.data.date.toISOString()}>{dayMonth(entry.data.date)}</time>
-                <span>{kindLabel[entry.data.kind] ?? entry.data.kind}</span>
+                <time datetime={item.date.toISOString()}>{dayMonth(item.date)}</time>
+                <span>{kindLabel[item.entry.data.kind] ?? item.entry.data.kind}</span>
               </div>
-              <div class="feed-body">
-                <h3>{entry.data.title}</h3>
-                {entry.data.location && <p class="feed-location mono">{entry.data.location}</p>}
-                {entry.data.blurb && <p>{entry.data.blurb}</p>}
-                {outlink(entry.data) && (
-                  <ExternalLink class={`outlink mono ${outlink(entry.data)!.strong ? 'is-strong' : ''}`} href={outlink(entry.data)!.href}>
-                    {outlink(entry.data)!.label}
-                  </ExternalLink>
-                )}
+              <div class={`feed-body media-presentation-${item.entry.data.mediaPresentation}`}>
+                <div class="feed-copy">
+                  <h3>{localize(item.entry.data.title, locale)}</h3>
+                  {item.entry.data.location && <p class="feed-location mono">{localize(item.entry.data.location, locale)}</p>}
+                  {item.entry.data.blurb && <p>{localize(item.entry.data.blurb, locale)}</p>}
+                  {outlink(item.entry.data) && (
+                    <ExternalLink class={`outlink mono ${outlink(item.entry.data)!.strong ? 'is-strong' : ''}`} href={outlink(item.entry.data)!.href}>
+                      {outlink(item.entry.data)!.label}
+                    </ExternalLink>
+                  )}
+                </div>
+                <Media locale={locale} media={item.entry.data.media} presentation={item.entry.data.mediaPresentation} galleryId={`g-${item.entry.id}`} />
               </div>
             </li>
-          ))}
+          ) : <AppearanceEntry appearance={item.entry.data} {locale} variant="feed" />)}
         </ol>
 
         {earlierEntries.length > 0 && (
           <details class="earlier">
-            <summary class="mono">Show {earlierEntries.length} earlier updates</summary>
+            <summary class="mono">{t.lately.showEarlier(earlierEntries.length)}</summary>
             <ol class="feed">
-              {earlierEntries.map((entry) => (
-                <li class={`feed-item ${entry.data.featured ? 'is-featured' : ''}`}>
+              {earlierEntries.map((item) => item.type === 'update' ? (
+                <li class={`feed-item ${item.entry.data.featured ? 'is-featured' : ''}`}>
                   <div class="feed-meta mono">
-                    <time datetime={entry.data.date.toISOString()}>{dayMonth(entry.data.date)}</time>
-                    <span>{kindLabel[entry.data.kind] ?? entry.data.kind}</span>
+                    <time datetime={item.date.toISOString()}>{dayMonth(item.date)}</time>
+                    <span>{kindLabel[item.entry.data.kind] ?? item.entry.data.kind}</span>
                   </div>
-                  <div class="feed-body">
-                    <h3>{entry.data.title}</h3>
-                    {entry.data.location && <p class="feed-location mono">{entry.data.location}</p>}
-                    {entry.data.blurb && <p>{entry.data.blurb}</p>}
-                    {outlink(entry.data) && (
-                      <ExternalLink class="outlink mono" href={outlink(entry.data)!.href}>
-                        {outlink(entry.data)!.label}
-                      </ExternalLink>
-                    )}
+                  <div class={`feed-body media-presentation-${item.entry.data.mediaPresentation}`}>
+                    <div class="feed-copy">
+                      <h3>{localize(item.entry.data.title, locale)}</h3>
+                      {item.entry.data.location && <p class="feed-location mono">{localize(item.entry.data.location, locale)}</p>}
+                      {item.entry.data.blurb && <p>{localize(item.entry.data.blurb, locale)}</p>}
+                      {outlink(item.entry.data) && (
+                        <ExternalLink class="outlink mono" href={outlink(item.entry.data)!.href}>
+                          {outlink(item.entry.data)!.label}
+                        </ExternalLink>
+                      )}
+                    </div>
+                    <Media locale={locale} media={item.entry.data.media} presentation={item.entry.data.mediaPresentation} galleryId={`g-${item.entry.id}`} />
                   </div>
                 </li>
-              ))}
+              ) : <AppearanceEntry appearance={item.entry.data} {locale} variant="feed" />)}
             </ol>
           </details>
         )}
@@ -242,62 +296,62 @@ function caseHref(href: string) {
 
       <section class="section" id="talks" aria-labelledby="talks-title">
         <div class="section-heading compact">
-          <p class="section-number mono">03 / On stage</p>
-          <h2 id="talks-title">Talks for people navigating change.</h2>
-          <p>Selected sessions about technical careers, hiring and the tools we use to think.</p>
+          <p class="section-number mono">{t.talks.number}</p>
+          <h2 id="talks-title">{t.talks.title}</h2>
+          <p>{t.talks.intro}</p>
         </div>
         <div class="talk-grid">
           {talks.map((talk) => (
             <article class="talk-card">
-              <span class="talk-status mono">session</span>
-              <h3>{talk.data.title}</h3>
-              <p>{talk.data.abstract}</p>
+              <span class="talk-status mono">{t.talks.status}</span>
+              <h3>{localize(talk.data.title, locale)}</h3>
+              <p>{localize(talk.data.abstract, locale)}</p>
               <p class="talk-events mono">{talk.data.events.join(' · ')}</p>
               {talk.data.sessionizeUrl && (
-                <ExternalLink href={talk.data.sessionizeUrl}>View session</ExternalLink>
+                <ExternalLink href={talk.data.sessionizeUrl}>{t.talks.view}</ExternalLink>
               )}
             </article>
           ))}
         </div>
-        <ExternalLink class="section-link mono" href={site.links.sessionize}>Full speaker profile</ExternalLink>
+        <ExternalLink class="section-link mono" href={site.links.sessionize}>{t.talks.fullProfile}</ExternalLink>
       </section>
 
-      <section class="section writing tinted" id="writing" aria-labelledby="writing-title">
+      <section class="section writing tinted" id="media" aria-labelledby="writing-title">
         <div class="section-heading compact">
-          <p class="section-number mono">04 / In writing</p>
-          <h2 id="writing-title">Notes from the work.</h2>
-          <p>Articles about developer careers, technology and the decisions behind good programs.</p>
+          <p class="section-number mono">{t.writing.number}</p>
+          <h2 id="writing-title">{t.writing.title}</h2>
+          <p>{t.writing.intro}</p>
         </div>
         <div class="writing-list">
-          {writing.map((article, index) => (
+          {library.map((item) => item.type === 'article' ? (
             <article class="writing-item">
-              <span class="writing-index mono">{String(index + 1).padStart(2, '0')}</span>
               <div>
-                <h3><ExternalLink href={article.data.url}>{article.data.title}</ExternalLink></h3>
-                <p>{article.data.summary}</p>
+                <div class="archive-badges mono"><span>{t.writing.article}</span></div>
+                <h3><ExternalLink href={item.entry.data.url}>{localize(item.entry.data.title, locale)}</ExternalLink></h3>
+                <p>{localize(item.entry.data.summary, locale)}</p>
               </div>
               <div class="writing-meta mono">
-                <span>{article.data.publication}</span>
-                <time datetime={article.data.date.toISOString()}>{monthYear(article.data.date)}</time>
+                <span>{item.entry.data.publication}</span>
+                <time datetime={item.entry.data.date.toISOString()}>{monthYear(item.entry.data.date)}</time>
               </div>
             </article>
-          ))}
+          ) : <AppearanceEntry appearance={item.entry.data} {locale} variant="archive" anchorId={appearanceAnchor(item.entry.id)} />)}
         </div>
       </section>
     </main>
 
     <footer class="contact" id="contact">
-      <p class="section-number mono">05 / Let’s talk</p>
+      <p class="section-number mono">{t.contact.number}</p>
       <div class="contact-grid">
         <div>
-          <h2>Bring me the complicated brief.</h2>
-          <p>I’m open to senior international roles in developer programs, technical content and presales—and to the right hosting, speaking or program collaboration.</p>
+          <h2>{t.contact.title}</h2>
+          <p>{t.contact.intro}</p>
         </div>
         <div class="contact-actions">
-          <ContactEmail />
-          <ExternalLink class="button button-secondary" href={site.links.linkedin}>Connect on LinkedIn</ExternalLink>
-          <a class="text-link mono" href={withBase('/cv.pdf')}>View CV (PDF)</a>
-          <nav class="social-links" aria-label="Social profiles">
+          <ContactEmail locale={locale} />
+          <ExternalLink class="button button-secondary" href={site.links.linkedin}>{t.contact.linkedin}</ExternalLink>
+          <a class="text-link mono" href={withBase('/cv.pdf')}>{t.contact.cv}</a>
+          <nav class="social-links" aria-label={t.contact.socials}>
             {site.socials.map((social) => (
               <ExternalLink href={social.url} ariaLabel={social.name} title={social.name} showArrow={false}>
                 <SocialIcon name={social.name} class="social-icon" />
@@ -306,19 +360,16 @@ function caseHref(href: string) {
           </nav>
         </div>
       </div>
-      <p class="colophon mono">Built with Astro. Updated by hand, on purpose.</p>
+      <p class="colophon mono">{t.contact.colophon}</p>
     </footer>
   </div>
 
-  <Lightbox />
+  <Lightbox locale={locale} />
 </BaseLayout>
 
 <style>
   .site-shell { width: min(calc(100% - 3rem), var(--shell)); margin: 0 auto; }
-  .topbar { min-height: 76px; display: grid; grid-template-columns: 1fr auto auto; align-items: center; gap: 2rem; }
-  .brand { color: var(--text); font-size: .8rem; letter-spacing: .05em; border: 0; }
-  .site-nav { display: flex; gap: 1.35rem; align-items: center; }
-  .site-nav a { min-height: 44px; display: inline-flex; align-items: center; font: 500 .78rem/1 var(--font-mono); color: var(--text-muted); }
+  :is(#top, #work, #lately, #talks, #media, #contact) { scroll-margin-top: 5.5rem; }
 
   .hero { min-height: min(760px, calc(100svh - 76px)); padding: 5rem 0 6rem; display: grid; grid-template-columns: minmax(0, 7fr) minmax(280px, 5fr); align-items: center; gap: clamp(3rem, 8vw, 7rem); }
   .eyebrow, .section-number { margin: 0 0 1.25rem; color: var(--accent-text); font-size: .72rem; letter-spacing: .08em; text-transform: uppercase; }
@@ -386,6 +437,8 @@ function caseHref(href: string) {
   .featured-story h3 { max-width: 25ch; margin: .8rem 0 0; font-size: clamp(1.7rem, 3vw, 2.6rem); }
   .story-location, .feed-location { margin: .5rem 0 0; color: var(--text-faint); font-size: .72rem; }
   .story-copy { max-width: 68ch; font-size: 1.05rem; }
+  .featured-story.media-presentation-sidecar { display: grid; grid-template-columns: minmax(0, 3fr) minmax(240px, 2fr); gap: 2rem; align-items: start; }
+  .featured-story.media-presentation-sidecar :global(.media) { margin-top: 0; }
   .feed { margin: 0; padding: 0; list-style: none; }
   .feed-item { display: grid; grid-template-columns: 180px 1fr; gap: 2rem; padding: 1.6rem 0; border-bottom: 1px solid var(--border); position: relative; }
   .feed-item.is-featured { padding-left: 1.25rem; }
@@ -393,7 +446,9 @@ function caseHref(href: string) {
   .feed-meta { display: flex; flex-direction: column; gap: .35rem; color: var(--text-faint); font-size: .68rem; text-transform: uppercase; letter-spacing: .07em; }
   .feed-meta span { color: var(--accent-text); }
   .feed-body h3 { margin: 0; font-size: 1.15rem; }
-  .feed-body > p:not(.feed-location) { max-width: 66ch; margin: .55rem 0 0; color: var(--text-muted); font-size: .92rem; }
+  .feed-copy > p:not(.feed-location) { max-width: 66ch; margin: .55rem 0 0; color: var(--text-muted); font-size: .92rem; }
+  .feed-body.media-presentation-sidecar { display: grid; grid-template-columns: minmax(0, 1fr) minmax(220px, .65fr); gap: 1.5rem; align-items: start; }
+  .feed-body.media-presentation-sidecar :global(.media) { margin-top: 0; }
   :global(.outlink) { width: fit-content; margin-top: .9rem; display: inline-flex; gap: .35rem; font-size: .76rem; }
   :global(.outlink.is-strong) { min-height: 44px; padding: .45rem .8rem; align-items: center; border: 1px solid var(--border-strong); border-radius: var(--radius-md); }
   .earlier { margin-top: 1.5rem; }
@@ -410,9 +465,10 @@ function caseHref(href: string) {
   :global(.section-link) { min-height: 44px; margin-top: 1.5rem; display: inline-flex; align-items: center; }
 
   .writing-list { border-top: 1px solid var(--border); }
-  .writing-item { min-height: 150px; display: grid; grid-template-columns: 54px 1fr 180px; gap: 2rem; align-items: start; padding: 1.5rem 0; border-bottom: 1px solid var(--border); }
-  .writing-index { color: var(--accent-text); font-size: .68rem; }
+  .writing-item { min-height: 150px; display: grid; grid-template-columns: minmax(0, 1fr) 180px; gap: 2rem; align-items: start; padding: 1.5rem 0; border-bottom: 1px solid var(--border); }
   .writing-item h3 { margin: 0; font-size: 1.15rem; }
+  .archive-badges { margin-bottom: .55rem; display: flex; }
+  .archive-badges span { padding: .2rem .5rem; border: 1px solid var(--border-strong); border-radius: var(--radius-pill); color: var(--accent-text); font-size: .62rem; text-transform: uppercase; letter-spacing: .06em; }
   .writing-item h3 :global(a) { color: var(--text); }
   .writing-item p { max-width: 62ch; margin: .55rem 0 0; color: var(--text-muted); font-size: .9rem; }
   .writing-meta { display: flex; flex-direction: column; gap: .4rem; color: var(--text-faint); font-size: .68rem; text-align: right; }
@@ -437,8 +493,6 @@ function caseHref(href: string) {
   .colophon { margin: 2rem 0 0; color: var(--text-faint); font-size: .7rem; }
 
   @media (max-width: 900px) {
-    .site-nav { display: none; }
-    .topbar { grid-template-columns: 1fr auto; }
     .hero { grid-template-columns: 1fr; padding: 4rem 0; }
     .hero-visual { min-height: 420px; }
     .metrics { grid-template-columns: repeat(3, 1fr); }
@@ -451,9 +505,15 @@ function caseHref(href: string) {
     .contact-grid { grid-template-columns: 1fr; }
   }
 
+  @media (max-width: 760px) {
+    .featured-story.media-presentation-sidecar,
+    .feed-body.media-presentation-sidecar { grid-template-columns: 1fr; }
+    .featured-story.media-presentation-sidecar :global(.media),
+    .feed-body.media-presentation-sidecar :global(.media) { margin-top: 1rem; }
+  }
+
   @media (max-width: 620px) {
     .site-shell { width: min(calc(100% - 2rem), var(--shell)); }
-    .topbar { min-height: 64px; }
     .hero { min-height: auto; padding: 3.5rem 0 4rem; gap: 2.5rem; }
     .hero h1 { font-size: clamp(2.8rem, 14vw, 4.25rem); }
     .hero-actions { align-items: stretch; flex-direction: column; }
@@ -475,8 +535,8 @@ function caseHref(href: string) {
     .featured-story.is-featured { padding-left: .85rem; }
     .feed-item { grid-template-columns: 1fr; gap: .65rem; }
     .feed-meta { flex-direction: row; }
-    .writing-item { grid-template-columns: 36px 1fr; gap: 1rem; }
-    .writing-meta { grid-column: 2; flex-direction: row; text-align: left; }
+    .writing-item { grid-template-columns: 1fr; gap: 1rem; }
+    .writing-meta { grid-column: 1; flex-direction: row; text-align: left; }
     .contact { padding-top: 5rem; }
     .contact-grid { padding: 2rem 1.25rem; gap: 2rem; }
   }

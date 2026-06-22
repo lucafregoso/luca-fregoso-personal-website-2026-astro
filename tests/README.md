@@ -55,8 +55,25 @@ testing — your real deploy config in `astro.config.mjs` is untouched.
   clipboard success
 - skip-link focus, reduced motion and forced-colors focus indicators
 
+**`tests/header-i18n.spec.ts`** — bilingual navigation and responsive header:
+- English and Italian `lang`, canonical and `hreflang` metadata
+- locale switcher current-page state and navigation
+- mobile menu ARIA state, Escape/link close behavior and focus restoration
+- scroll-direction hide/show behavior and compact state
+- 44×44px mobile header and navigation targets
+- language disclosure keyboard/outside-close behavior and mobile-menu coordination
+
+**`tests/media-links.spec.ts`** — compact external media appearances:
+- approved YouTube/Spotify metadata and Lately/Media placements in both locales
+- no third-party iframe, embed URL or provider request
+- secure new-tab thumbnail/actions, local posters and the YouTube start time
+- desktop/tablet thumbnail ratios and the compact Lately contact sheet
+
+**`tests/runtime-quality.spec.ts`** — captures actionable provenance for console
+warnings/errors, page errors and failed requests across both locales and key interactions.
+
 **`tests/accessibility.spec.ts`** — axe-core, WCAG 2.2 AA, in **both themes**
-for the idle page and open image dialog.
+and **both locales** for the idle page, image dialog and language disclosure.
 > Automated a11y tools catch ~30–50% of issues. A clean run is a strong
 > baseline, not a guarantee — a manual screen-reader pass is the next level.
 

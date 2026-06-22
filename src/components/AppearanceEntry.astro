@@ -1,0 +1,119 @@
+---
+import ExternalLink from './ExternalLink.astro';
+import { localize, translations, type Locale, type LocalizedText } from '../i18n';
+import { withBase } from '../lib/url';
+
+type AppearanceFormat = 'video' | 'live-recording' | 'podcast';
+type AppearancePlatform = 'youtube' | 'spotify';
+type AppearanceRole = 'host' | 'speaker' | 'guest';
+
+interface Appearance {
+  title: LocalizedText;
+  summary: LocalizedText;
+  format: AppearanceFormat;
+  platform: AppearancePlatform;
+  role: AppearanceRole;
+  date: Date;
+  duration: string;
+  publisher: string;
+  platformId: string;
+  externalUrl: string;
+  poster: string;
+  startAtSeconds?: number;
+  mobilePresentation: 'row' | 'above' | 'text-only';
+}
+
+interface Props {
+  appearance: Appearance;
+  locale: Locale;
+  variant?: 'featured' | 'feed' | 'archive';
+  anchorId?: string;
+}
+
+const { appearance, locale, variant = 'feed', anchorId } = Astro.props;
+const t = translations[locale];
+const title = localize(appearance.title, locale);
+const summary = localize(appearance.summary, locale);
+const dateLocale = locale === 'it' ? 'it-IT' : 'en-GB';
+const dateLabel = appearance.date.toLocaleDateString(dateLocale, variant === 'archive'
+  ? { year: 'numeric', month: 'short' }
+  : { day: 'numeric', month: 'long', year: 'numeric' });
+const Tag = variant === 'feed' ? 'li' : 'article';
+const actionLabel = appearance.platform === 'youtube' ? t.appearances.watch : t.appearances.listen;
+---
+
+<Tag class:list={[
+  'appearance-entry',
+  variant === 'featured' && 'featured-story appearance-featured',
+  variant === 'feed' && 'feed-item appearance-feed',
+  variant === 'archive' && 'writing-item appearance-archive',
+]} data-appearance-entry data-format={appearance.format} data-mobile-presentation={appearance.mobilePresentation} id={anchorId}>
+  <div class:list={['appearance-copy', variant === 'feed' && 'feed-body']}>
+    <ExternalLink
+      class="appearance-thumbnail"
+      href={appearance.externalUrl}
+      ariaLabel={`${actionLabel}: ${title}`}
+      title={`${actionLabel}: ${title}`}
+      showArrow={false}
+    >
+      <img src={withBase(appearance.poster)} alt="" width="1200" height="675" loading="lazy" />
+    </ExternalLink>
+    <div class="appearance-details">
+      <div class="appearance-badges mono" aria-label={locale === 'it' ? 'Tipo di contenuto e ruolo' : 'Content format and role'}>
+        <span>{t.appearances.formats[appearance.format]}</span>
+        <span>{t.appearances.roles[appearance.role]}</span>
+      </div>
+      <h3>{title}</h3>
+      <p>{summary}</p>
+      <ExternalLink class="appearance-action mono" href={appearance.externalUrl}>{actionLabel}</ExternalLink>
+    </div>
+  </div>
+
+  <div class:list={['appearance-meta', 'mono', variant === 'feed' && 'feed-meta', variant === 'archive' && 'writing-meta']}>
+    <span>{appearance.publisher}</span>
+    <time datetime={appearance.date.toISOString()}>{dateLabel}</time>
+    <span>{appearance.duration}</span>
+  </div>
+</Tag>
+
+<style>
+  .appearance-entry { position: relative; }
+  .appearance-copy { min-width: 0; display: grid; grid-template-columns: minmax(150px, 25%) minmax(0, 1fr); gap: 1.5rem; align-items: start; }
+  .appearance-details { min-width: 0; }
+  .appearance-details h3 { margin: .55rem 0 0; }
+  .appearance-details > p { max-width: 66ch; margin: .55rem 0 0; color: var(--text-muted); font-size: .92rem; }
+  :global(.appearance-thumbnail) { display: block; overflow: hidden; aspect-ratio: 16 / 9; border: 1px solid var(--border); border-radius: 9px; background: var(--surface); }
+  :global(.appearance-thumbnail:hover) { border-bottom-color: var(--border); }
+  :global(.appearance-thumbnail img) { width: 100%; height: 100%; display: block; object-fit: cover; transition: transform .2s var(--ease-out); }
+  :global(.appearance-thumbnail:hover img) { transform: scale(1.015); }
+  :global(.appearance-action) { width: fit-content; min-height: 44px; margin-top: .55rem; display: inline-flex; align-items: center; gap: .35rem; font-size: .74rem; }
+  .appearance-badges { display: flex; flex-wrap: wrap; gap: .4rem; }
+  .appearance-badges span { padding: .2rem .5rem; border: 1px solid var(--border-strong); border-radius: var(--radius-pill); color: var(--accent-text); font-size: .62rem; text-transform: uppercase; letter-spacing: .06em; }
+  .appearance-meta { display: flex; gap: .45rem; color: var(--text-faint); font-size: .68rem; }
+  .appearance-featured { display: grid; grid-template-columns: minmax(0, 1fr) 180px; gap: 2rem; }
+  .appearance-featured .appearance-details h3 { max-width: 25ch; font-size: clamp(1.4rem, 2.4vw, 2rem); }
+  .appearance-featured .appearance-meta { flex-direction: column; text-align: right; }
+  .appearance-feed .appearance-meta { grid-column: 1; grid-row: 1; }
+  .appearance-feed .appearance-copy { grid-column: 2; }
+  .appearance-archive { min-height: 150px; display: grid; grid-template-columns: minmax(0, 1fr) 180px; gap: 2rem; align-items: start; padding: 1.5rem 0; border-bottom: 1px solid var(--border); }
+  @media (max-width: 900px) {
+    .appearance-copy { grid-template-columns: minmax(140px, 30%) minmax(0, 1fr); gap: 1.2rem; }
+  }
+  @media (max-width: 620px) {
+    .appearance-featured { grid-template-columns: 1fr; }
+    .appearance-featured .appearance-meta { grid-row: 1; flex-direction: row; text-align: left; }
+    .appearance-feed .appearance-meta, .appearance-feed .appearance-copy { grid-column: 1; }
+    .appearance-feed .appearance-meta { flex-direction: row; }
+    .appearance-archive { grid-template-columns: 1fr; gap: 1rem; }
+    .appearance-archive .appearance-meta { grid-column: 1; flex-direction: row; text-align: left; }
+    .appearance-entry[data-mobile-presentation='row'] .appearance-copy { grid-template-columns: 96px minmax(0, 1fr); gap: 1rem; }
+    .appearance-entry[data-mobile-presentation='above'] .appearance-copy,
+    .appearance-entry[data-mobile-presentation='text-only'] .appearance-copy { grid-template-columns: 1fr; }
+    .appearance-entry[data-mobile-presentation='above'] :global(.appearance-thumbnail) { width: min(180px, 100%); }
+    .appearance-entry[data-mobile-presentation='text-only'] :global(.appearance-thumbnail) { display: none; }
+    .appearance-details h3 { font-size: 1rem; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    :global(.appearance-thumbnail img) { transition: none; }
+  }
+</style>
