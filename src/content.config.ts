@@ -94,7 +94,7 @@ const appearances = defineCollection({
     externalUrl: z.string().url(),
     poster: z.string().startsWith('/'),
     startAtSeconds: z.number().int().nonnegative().optional(),
-    mobilePresentation: z.enum(['row', 'above', 'text-only']).default('row'),
+    mobilePresentation: z.enum(['stamp', 'poster', 'text-only']).default('stamp'),
   }),
 });
 

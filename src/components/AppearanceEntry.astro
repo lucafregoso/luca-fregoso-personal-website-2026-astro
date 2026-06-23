@@ -20,7 +20,7 @@ interface Appearance {
   externalUrl: string;
   poster: string;
   startAtSeconds?: number;
-  mobilePresentation: 'row' | 'above' | 'text-only';
+  mobilePresentation: 'stamp' | 'poster' | 'text-only';
 }
 
 interface Props {
@@ -49,7 +49,7 @@ const actionLabel = appearance.platform === 'youtube' ? t.appearances.watch : t.
   variant === 'archive' && 'writing-item appearance-archive',
 ]} data-appearance-entry data-format={appearance.format} data-mobile-presentation={appearance.mobilePresentation} id={anchorId}>
   <div class:list={['appearance-copy', variant === 'feed' && 'feed-body']}>
-    <div class:list={[variant === 'archive' && 'appearance-rail']}>
+    <div class:list={['appearance-media', variant === 'archive' && 'appearance-rail']}>
       <ExternalLink
         class="appearance-thumbnail"
         href={appearance.externalUrl}
@@ -88,15 +88,36 @@ const actionLabel = appearance.platform === 'youtube' ? t.appearances.watch : t.
 
 <style>
   .appearance-entry { position: relative; }
+  .appearance-entry::after {
+    content: '';
+    position: absolute;
+    inset: 1.65rem auto auto -.7rem;
+    width: 2px;
+    height: 1.75rem;
+    border-radius: var(--radius-pill);
+    background: var(--lime);
+    opacity: 0;
+    transform: scaleY(.65);
+    transform-origin: top;
+    transition: opacity .18s var(--ease-out), transform .18s var(--ease-out);
+    pointer-events: none;
+  }
+  .appearance-entry:hover::after,
+  .appearance-entry:focus-within::after { opacity: .8; transform: scaleY(1); }
   .appearance-copy { min-width: 0; display: grid; grid-template-columns: minmax(150px, 25%) minmax(0, 1fr); gap: 1.5rem; align-items: start; }
+  .appearance-media { min-width: 0; }
   .appearance-details { min-width: 0; }
   .appearance-details h3 { margin: .55rem 0 0; }
   .appearance-details > p { max-width: 66ch; margin: .55rem 0 0; color: var(--text-muted); font-size: .92rem; }
-  :global(.appearance-thumbnail) { display: block; overflow: hidden; aspect-ratio: 16 / 9; border: 1px solid var(--border); border-radius: 9px; background: var(--surface); }
-  :global(.appearance-thumbnail:hover) { border-bottom-color: var(--border); }
-  :global(.appearance-thumbnail img) { width: 100%; height: 100%; display: block; object-fit: cover; transition: transform .2s var(--ease-out); }
-  :global(.appearance-thumbnail:hover img) { transform: scale(1.015); }
+  :global(.appearance-thumbnail) { display: block; overflow: hidden; aspect-ratio: 16 / 9; border: 1px solid var(--border); border-radius: 9px; background: var(--surface); transition: border-color .18s var(--ease-out); }
+  :global(.appearance-thumbnail:hover) { border-color: var(--border); border-bottom-color: var(--border); }
+  :global(.appearance-thumbnail img) { width: 100%; height: 100%; display: block; object-fit: cover; transition: transform .24s var(--ease-out), filter .24s var(--ease-out); }
+  :global(.appearance-thumbnail:hover img),
+  :global(.appearance-thumbnail:focus-visible img) { transform: scale(1.018); filter: saturate(1.04); }
   :global(.appearance-action) { width: fit-content; min-height: 44px; margin-top: .55rem; display: inline-flex; align-items: center; gap: .35rem; font-size: .74rem; }
+  :global(.appearance-action .external-arrow) { display: inline-block; transition: transform .16s var(--ease-out); }
+  :global(.appearance-action:hover .external-arrow),
+  :global(.appearance-action:focus-visible .external-arrow) { transform: translate(2px, -2px); }
   .appearance-badges { display: flex; flex-wrap: wrap; gap: .4rem; }
   .appearance-badges span { padding: .2rem .5rem; border: 1px solid var(--border-strong); border-radius: var(--radius-pill); color: var(--accent-text); font-size: .62rem; text-transform: uppercase; letter-spacing: .06em; }
   .appearance-meta { display: flex; gap: .45rem; color: var(--text-faint); font-size: .68rem; }
@@ -117,22 +138,40 @@ const actionLabel = appearance.platform === 'youtube' ? t.appearances.watch : t.
     .appearance-featured { grid-template-columns: 1fr; }
     .appearance-featured .appearance-meta { grid-row: 1; flex-direction: row; text-align: left; }
     .appearance-feed .appearance-meta, .appearance-feed .appearance-copy { grid-column: 1; }
-    .appearance-feed .appearance-meta { flex-direction: row; }
+    .appearance-feed .appearance-meta { margin-top: .1rem; flex-direction: row; flex-wrap: wrap; gap: .35rem .65rem; }
+    .appearance-feed > .appearance-meta span:last-child { display: none; }
     .appearance-archive .appearance-rail { display: contents; }
-    .appearance-archive .appearance-meta { margin-top: 0; grid-column: 2; grid-row: 2; flex-direction: row; flex-wrap: wrap; text-align: left; }
-    .appearance-entry[data-mobile-presentation='row'] .appearance-copy { grid-template-columns: 104px minmax(0, 1fr); gap: .65rem 1rem; }
-    .appearance-entry[data-mobile-presentation='row'] .appearance-details { grid-column: 2; grid-row: 1; }
-    .appearance-entry[data-mobile-presentation='above'] .appearance-copy,
+    .appearance-archive .appearance-meta { margin-top: 0; grid-column: 1; grid-row: 3; flex-direction: row; flex-wrap: wrap; text-align: left; }
+    .appearance-badges { gap: .3rem; }
+    .appearance-badges span { padding: .16rem .45rem; border-color: transparent; background: var(--surface-2); font-size: .58rem; }
+    .appearance-entry[data-mobile-presentation='stamp'] .appearance-copy,
+    .appearance-entry[data-mobile-presentation='poster'] .appearance-copy,
     .appearance-entry[data-mobile-presentation='text-only'] .appearance-copy { grid-template-columns: 1fr; }
-    .appearance-entry[data-mobile-presentation='above'] :global(.appearance-thumbnail) { width: min(180px, 100%); grid-row: 1; }
-    .appearance-entry[data-mobile-presentation='above'] .appearance-details { grid-row: 2; }
-    .appearance-entry[data-mobile-presentation='above'] .appearance-meta { grid-column: 1; grid-row: 3; }
+    .appearance-entry[data-mobile-presentation='stamp'] .appearance-copy { gap: .85rem; }
+    .appearance-entry[data-mobile-presentation='stamp'] .appearance-details { grid-column: 1; grid-row: 1; }
+    .appearance-entry[data-mobile-presentation='stamp'] .appearance-media { width: min(8.75rem, 42vw); grid-column: 1; grid-row: 2; }
+    .appearance-entry[data-mobile-presentation='stamp'] :global(.appearance-thumbnail) { width: min(8.75rem, 42vw); grid-column: 1; grid-row: 2; border-radius: 8px; }
+    .appearance-entry[data-mobile-presentation='stamp'] .appearance-meta { grid-column: 1; grid-row: 3; }
+    .appearance-entry[data-mobile-presentation='poster'] .appearance-copy { gap: .9rem; }
+    .appearance-entry[data-mobile-presentation='poster'] .appearance-media { width: min(100%, 25rem); grid-column: 1; grid-row: 1; }
+    .appearance-entry[data-mobile-presentation='poster'] :global(.appearance-thumbnail) { width: min(100%, 25rem); max-height: 9.5rem; grid-column: 1; grid-row: 1; border-radius: var(--radius-md); }
+    .appearance-entry[data-mobile-presentation='poster'] .appearance-details { grid-column: 1; grid-row: 2; }
+    .appearance-entry[data-mobile-presentation='poster'] .appearance-meta { grid-column: 1; grid-row: 3; }
     .appearance-entry[data-mobile-presentation='text-only'] :global(.appearance-thumbnail) { display: none; }
+    .appearance-entry[data-mobile-presentation='text-only']:not(.appearance-archive) .appearance-media { display: none; }
     .appearance-entry[data-mobile-presentation='text-only'] .appearance-details { grid-row: 1; }
     .appearance-entry[data-mobile-presentation='text-only'] .appearance-meta { grid-column: 1; grid-row: 2; }
     .appearance-details h3 { font-size: 1rem; }
   }
   @media (prefers-reduced-motion: reduce) {
-    :global(.appearance-thumbnail img) { transition: none; }
+    .appearance-entry::after,
+    :global(.appearance-thumbnail),
+    :global(.appearance-thumbnail img),
+    :global(.appearance-action .external-arrow) { transition: none; }
+    .appearance-entry::after { transform: none; }
+    :global(.appearance-thumbnail:hover img),
+    :global(.appearance-thumbnail:focus-visible img) { transform: none; filter: none; }
+    :global(.appearance-action:hover .external-arrow),
+    :global(.appearance-action:focus-visible .external-arrow) { transform: none; }
   }
 </style>
