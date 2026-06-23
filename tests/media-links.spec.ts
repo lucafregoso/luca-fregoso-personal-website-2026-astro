@@ -3,8 +3,8 @@ import fs from 'node:fs';
 
 const providerRequest = /(?:youtube(?:-nocookie)?\.com|ytimg\.com|googlevideo\.com|spotify\.com|scdn\.co)/i;
 const examples = [
-  { title: 'Tech Chat – AI & Open Source', publisher: 'Codemotion', duration: '1:03:23', hrefPart: 'youtube.com/watch', action: { en: 'Watch on YouTube', it: 'Guarda su YouTube' } },
-  { title: 'Spotlight #11 – Luca Fregoso (Codemotion)', publisher: 'Il Podcast Open Source', duration: '44:01', hrefPart: 'open.spotify.com/episode', action: { en: 'Listen on Spotify', it: 'Ascolta su Spotify' } },
+  { title: 'Tech Chat – AI & Open Source', publisher: 'Codemotion', duration: '1:03:23', hrefPart: 'youtube.com/watch', mobilePresentation: 'poster', action: { en: 'Watch on YouTube', it: 'Guarda su YouTube' } },
+  { title: 'Spotlight #11 – Luca Fregoso (Codemotion)', publisher: 'Il Podcast Open Source', duration: '44:01', hrefPart: 'open.spotify.com/episode', mobilePresentation: 'stamp', action: { en: 'Listen on Spotify', it: 'Ascolta su Spotify' } },
 ] as const;
 const locales = [{ path: '/', lang: 'en' }, { path: '/it/', lang: 'it' }] as const;
 
@@ -20,7 +20,7 @@ test.describe('compact media appearances', () => {
         for (const sectionId of ['#lately', '#media']) {
           const entry = appearanceFor(page.locator(sectionId), example.title);
           await expect(entry).toHaveCount(1);
-          await expect(entry).toHaveAttribute('data-mobile-presentation', 'row');
+          await expect(entry).toHaveAttribute('data-mobile-presentation', example.mobilePresentation);
           await expect(entry).toContainText(example.publisher);
           if (sectionId === '#lately') {
             await expect(entry).toContainText(example.duration);
@@ -96,10 +96,55 @@ test.describe('compact media appearances', () => {
     await expect(firstEntry.locator('.appearance-thumbnail')).toHaveCSS('border-color', borderBefore);
   });
 
+  for (const width of [390, 320]) {
+    test(`phone stamp layout uses full-width copy at ${width}px`, async ({ page }) => {
+      await page.setViewportSize({ width, height: 900 });
+      await page.goto('/');
+      const entry = appearanceFor(page.locator('#media'), examples[1].title);
+      const thumbnailBox = await entry.locator('.appearance-thumbnail').boundingBox();
+      const titleBox = await entry.locator('h3').boundingBox();
+      const summaryBox = await entry.locator('.appearance-details p').boundingBox();
+      const copyBox = await entry.locator('.appearance-copy').boundingBox();
+      expect(thumbnailBox).not.toBeNull();
+      expect(titleBox).not.toBeNull();
+      expect(summaryBox).not.toBeNull();
+      expect(copyBox).not.toBeNull();
+      expect(titleBox!.y).toBeLessThan(thumbnailBox!.y);
+      expect(Math.abs(titleBox!.x - copyBox!.x)).toBeLessThanOrEqual(1);
+      expect(summaryBox!.width / copyBox!.width).toBeGreaterThan(.85);
+      await expect(entry).not.toContainText(examples[1].duration);
+    });
+
+    test(`phone poster layout keeps the image restrained at ${width}px`, async ({ page }) => {
+      await page.setViewportSize({ width, height: 900 });
+      await page.goto('/');
+      const entry = appearanceFor(page.locator('#media'), examples[0].title);
+      const thumbnailBox = await entry.locator('.appearance-thumbnail').boundingBox();
+      const titleBox = await entry.locator('h3').boundingBox();
+      const copyBox = await entry.locator('.appearance-copy').boundingBox();
+      expect(thumbnailBox).not.toBeNull();
+      expect(titleBox).not.toBeNull();
+      expect(copyBox).not.toBeNull();
+      expect(thumbnailBox!.y).toBeLessThan(titleBox!.y);
+      expect(thumbnailBox!.height).toBeLessThanOrEqual(153);
+      expect(thumbnailBox!.width / copyBox!.width).toBeGreaterThan(.9);
+      await expect(entry).not.toContainText(examples[0].duration);
+    });
+  }
+
+  test('text-only mobile mode remains available', async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 900 });
+    await page.goto('/');
+    const entry = appearanceFor(page.locator('#media'), examples[1].title);
+    await entry.evaluate((element) => element.setAttribute('data-mobile-presentation', 'text-only'));
+    await expect(entry.locator('.appearance-thumbnail')).toBeHidden();
+    await expect(entry.locator('h3')).toBeVisible();
+  });
+
   test('all Markdown presentation modes remain available', () => {
     const schema = fs.readFileSync('src/content.config.ts', 'utf8');
     expect(schema).toContain("['contact-sheet', 'lead', 'sidecar']");
-    expect(schema).toContain("['row', 'above', 'text-only']");
+    expect(schema).toContain("['stamp', 'poster', 'text-only']");
   });
 });
 

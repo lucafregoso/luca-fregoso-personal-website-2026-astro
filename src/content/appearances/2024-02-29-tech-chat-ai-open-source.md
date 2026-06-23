@@ -17,5 +17,5 @@ platformId: hexh4KEy2Lo
 externalUrl: https://www.youtube.com/watch?v=hexh4KEy2Lo&t=1060s
 poster: /media/tech-chat-ai-open-source.png
 startAtSeconds: 1060
-mobilePresentation: row
+mobilePresentation: poster
 ---
