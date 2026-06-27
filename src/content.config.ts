@@ -12,7 +12,7 @@ const localeVisibility = z.array(z.enum(['en', 'it'])).min(1);
 // Keep the most recent entry no older than ~2 months, or the
 // stream starts working against you.
 const now = defineCollection({
-  loader: glob({ pattern: '**/*.md', base: './src/content/now' }),
+  loader: glob({ pattern: '*.md', base: './src/content/now' }),
   schema: z.object({
     date: z.coerce.date(),
     title: localizedText,
@@ -49,7 +49,7 @@ const now = defineCollection({
 
 // Talks — stable archive, curated order.
 const talks = defineCollection({
-  loader: glob({ pattern: '**/*.md', base: './src/content/talks' }),
+  loader: glob({ pattern: '*.md', base: './src/content/talks' }),
   schema: z.object({
     title: localizedText,
     abstract: localizedText,
@@ -63,7 +63,7 @@ const talks = defineCollection({
 
 // Writing — stable archive, newest first.
 const writing = defineCollection({
-  loader: glob({ pattern: '**/*.md', base: './src/content/writing' }),
+  loader: glob({ pattern: '*.md', base: './src/content/writing' }),
   schema: z.object({
     title: localizedText,
     summary: localizedText,
@@ -78,7 +78,7 @@ const writing = defineCollection({
 // Appearances — one source of truth for recordings, live streams and podcasts.
 // Entries can appear in the dated stream, the permanent media library, or both.
 const appearances = defineCollection({
-  loader: glob({ pattern: '**/*.md', base: './src/content/appearances' }),
+  loader: glob({ pattern: '*.md', base: './src/content/appearances' }),
   schema: z.object({
     title: localizedText,
     summary: localizedText,
