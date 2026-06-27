@@ -77,6 +77,11 @@ test.describe('regressions', () => {
     expect(hrefs.join('\n')).not.toMatch(/REPLACE_ME|REPLACE_INSTANCE|example\.com/i);
   });
 
+  test('Sveltia CMS admin is not part of the public static site', async ({ request }) => {
+    const response = await request.get('/admin/');
+    expect(response.status()).toBe(404);
+  });
+
   test('featured items use the lime left bar, not a background tint', async ({ page }) => {
     // Bug history: featured entries kept getting a grey/lime background box
     // that clashed with the tinted section bands. The signature is the left
