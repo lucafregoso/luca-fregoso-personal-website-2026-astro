@@ -40,6 +40,11 @@ test.describe('locale metadata and switching', () => {
       await page.goto(locale.path);
 
       await expect(page.locator('html')).toHaveAttribute('lang', locale.lang);
+      const brand = page.locator('.site-brand');
+      await expect(brand).toHaveAttribute('href', locale.path);
+      const brandBox = await brand.boundingBox();
+      expect(brandBox).not.toBeNull();
+      expect(brandBox!.width).toBeLessThan(180);
 
       const canonical = await page.locator('link[rel="canonical"]').getAttribute('href');
       expect(new URL(canonical!).pathname).toBe(locale.path);
@@ -129,11 +134,13 @@ test.describe('responsive site header', () => {
       const toggle = page.getByRole('button', { name: locale.openMenu });
       await expect(toggle).toHaveAttribute('aria-controls', 'mobile-navigation');
       await expect(toggle).toHaveAttribute('aria-expanded', 'false');
+      await expect(toggle.locator('.menu-line')).toHaveCount(3);
       await expect(page.locator('#mobile-navigation')).toBeHidden();
 
       await toggle.click();
       const closeToggle = page.getByRole('button', { name: locale.closeMenu });
       await expect(closeToggle).toHaveAttribute('aria-expanded', 'true');
+      await expect(closeToggle.locator('.menu-line-middle')).toHaveCSS('opacity', '0');
       await expect(page.locator('#mobile-navigation')).toBeVisible();
 
       await page.keyboard.press('Escape');
@@ -180,5 +187,23 @@ test.describe('responsive site header', () => {
 
     await page.evaluate(() => window.scrollTo(0, 0));
     await expect(header).toHaveAttribute('data-compact', 'false');
+  });
+
+  test('mobile menu control stays visible and coherent in dark mode', async ({ page }) => {
+    await page.goto('/');
+    await page.locator('html').evaluate((element) => element.setAttribute('data-theme', 'dark'));
+    const menu = page.getByRole('button', { name: 'Open menu' });
+    await expect(menu).toBeVisible();
+    const styles = await menu.evaluate((element) => {
+      const computed = getComputedStyle(element);
+      return {
+        color: computed.color,
+        background: computed.backgroundColor,
+        borderRadius: computed.borderRadius,
+      };
+    });
+    expect(styles.color).not.toBe(styles.background);
+    expect(styles.background).not.toBe('rgba(0, 0, 0, 0)');
+    expect(styles.borderRadius).toBe('8px');
   });
 });

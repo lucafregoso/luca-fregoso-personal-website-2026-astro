@@ -14,7 +14,7 @@ export const site = {
   // ---- Identity ----
   name: 'Luca Fregoso',
   tagline: 'Developer Programs & Content Lead',
-  location: 'La Spezia, Italy — open to full remote',
+  location: 'La Spezia, Italy — working with remote teams',
 
   // ---- Technical / SEO / social metadata ----
   meta: {
@@ -28,9 +28,8 @@ export const site = {
 
     // Default meta description (search results + social preview).
     description:
-      'Developer Programs & Content Lead and Technical Presales at Codemotion. ' +
-      '15 years a full-stack developer, now leading content and speaker curation ' +
-      'for Europe’s developer conferences. Open to full-remote roles.',
+      'Developer programs, technical content and presales lead with 15 years in software. ' +
+      'Luca Fregoso shapes conference agendas, learning paths, technical narratives and developer-facing programs.',
 
     author: 'Luca Fregoso',
 
@@ -45,19 +44,20 @@ export const site = {
   },
 
   // ---- Page content ----
-  eyebrow: 'Developer programs · technical content · presales',
+  eyebrow: 'Developer programs · technical presales · community stages',
   headline: 'I design technical programs people trust.',
   intro:
     'From European conference agendas to enterprise solutions, I turn hundreds of inputs, competing priorities and vague promises into clear programs that can actually ship.',
   proof:
-    'Fifteen years building software gives me the technical depth to lead content, presales, learning programs and rooms full of developers.',
+    'Fifteen years building software let me move between code, content, presales, learning programs and rooms full of developers without losing the technical thread.',
 
   metrics: [
-    { value: '15 years', label: 'building software' },
-    { value: '~600', label: 'CFP proposals reviewed per edition' },
-    { value: '~90', label: 'sessions shaped per conference' },
-    { value: '2–3k', label: 'developers reached per event' },
-    { value: '~200', label: 'people trained in an academy built from zero' },
+    { value: '15 years', label: 'building software and technical programs' },
+    { value: '20+ paths', label: 'custom learning paths designed while leading an academy business unit' },
+    { value: '7 editions', label: 'Codemotion agendas, speakers and content shaped across Milan, Madrid and Rome' },
+    { value: 'MC', label: 'hosting tech events and keeping complex rooms moving' },
+    { value: 'Presales', label: 'supporting sales teams with credible technical narratives' },
+    { value: 'Mentoring', label: 'supporting startups on product direction and technical planning' },
   ],
 
   capabilities: [
@@ -69,15 +69,15 @@ export const site = {
     },
     {
       number: '02',
-      title: 'Technical presales',
+      title: 'Presales, products & scope',
       description:
-        'Turning business intent and sales commitments into credible technical scope, delivery plans and solutions teams can stand behind.',
+        'Turning business intent, sales conversations and early product ideas into credible technical scope, delivery plans and narratives teams can stand behind.',
     },
     {
       number: '03',
       title: 'Stages & learning',
       description:
-        'MC and moderation, conference speaking, academy design and developer education that keeps complex rooms moving together.',
+        'MC and moderation, conference speaking, academy design and developer education that keeps complex rooms moving with clarity.',
     },
   ],
 
@@ -86,7 +86,7 @@ export const site = {
       label: 'Conference programs',
       title: 'Shaping trusted agendas across Europe',
       description:
-        'I coordinate international committees and turn roughly 600 submissions into a balanced ~90-session program for Codemotion editions in Rome, Madrid and Milan.',
+        'I coordinate international committees and turn roughly 600 submissions per edition into balanced agendas for seven Codemotion editions: three in Milan, two in Madrid and two in Rome.',
       outcome: '2,000–3,000 developers served at each event',
       href: '#talks',
       linkLabel: 'Explore speaking work',
@@ -95,17 +95,17 @@ export const site = {
       label: 'Enterprise presales',
       title: 'Making ambitious promises deliverable',
       description:
-        'I sit between clients, sales and delivery teams to uncover the real need, challenge assumptions and define technical work that can move from pitch to production.',
-      outcome: 'Business intent translated into credible technical scope',
+        'I sit between clients, sales and delivery teams to uncover the real need, challenge assumptions and shape technical work that can move from pitch to production.',
+      outcome: 'Sales conversations translated into credible technical plans',
       href: '#contact',
-      linkLabel: 'Discuss a leadership role',
+      linkLabel: 'Discuss a complex brief',
     },
     {
       label: 'Learning programs',
       title: 'Building a technical academy from zero',
       description:
-        'I designed the program, teaching model and operating rhythm for an academy that helped people enter and grow in technical careers.',
-      outcome: '~200 people trained',
+        'I led the program, teaching model and operating rhythm for an academy business unit, designing more than twenty custom learning paths for technical careers.',
+      outcome: '20+ learning paths designed for people entering tech',
       href: '/cv.pdf',
       linkLabel: 'Read the full CV',
       download: true,

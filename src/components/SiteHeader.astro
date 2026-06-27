@@ -2,6 +2,7 @@
 import LanguageSwitcher from './LanguageSwitcher.astro';
 import ThemeToggle from './ThemeToggle.astro';
 import { translations, type Locale } from '../i18n';
+import { withBase } from '../lib/url';
 
 interface NavItem {
   href: string;
@@ -23,11 +24,12 @@ const defaultNav = [
   { href: '#contact', label: labels.contact },
 ];
 const navItems = Astro.props.navItems ?? defaultNav;
+const homeHref = withBase(locale === 'it' ? '/it/' : '/');
 ---
 
 <header class="site-header" aria-label={labels.header} data-site-header data-hidden="false" data-compact="false">
   <div class="site-header-inner">
-    <a class="site-brand mono" href="#top" aria-label={labels.brand}>luca·fregoso</a>
+    <a class="site-brand mono" href={homeHref} aria-label={labels.brand}>luca·fregoso</a>
 
     <nav class="desktop-navigation" aria-label={labels.primary}>
       {navItems.map((item) => <a href={item.href}>{item.label}</a>)}
@@ -45,8 +47,9 @@ const navItems = Astro.props.navItems ?? defaultNav;
         data-label-open={labels.openMenu}
         data-label-close={labels.closeMenu}
       >
-        <span aria-hidden="true"></span>
-        <span aria-hidden="true"></span>
+        <span aria-hidden="true" class="menu-line menu-line-top"></span>
+        <span aria-hidden="true" class="menu-line menu-line-middle"></span>
+        <span aria-hidden="true" class="menu-line menu-line-bottom"></span>
       </button>
     </div>
   </div>
@@ -136,15 +139,33 @@ const navItems = Astro.props.navItems ?? defaultNav;
     transition: min-height .2s ease;
   }
   [data-compact='true'] .site-header-inner { min-height: 62px; }
-  .site-brand { min-height: 44px; display: inline-flex; align-items: center; color: var(--text); font-size: .82rem; letter-spacing: .04em; }
+  .site-brand { width: fit-content; min-height: 44px; justify-self: start; display: inline-flex; align-items: center; color: var(--text); font-size: .82rem; letter-spacing: .04em; }
   .desktop-navigation { display: flex; align-items: center; gap: 1.35rem; }
   .desktop-navigation a { min-height: 44px; display: inline-flex; align-items: center; color: var(--text-muted); font: 500 .78rem/1 var(--font-mono); }
   .desktop-navigation a:hover { color: var(--text); }
   .header-actions { display: flex; align-items: center; gap: .35rem; }
-  .menu-toggle { display: none; width: 44px; height: 44px; padding: 0; border: 1px solid var(--border); border-radius: 50%; background: transparent; }
-  .menu-toggle span { display: block; width: 17px; height: 1px; margin: 5px auto; background: currentColor; transition: transform .2s ease; }
-  .menu-toggle[aria-expanded='true'] span:first-child { transform: translateY(3px) rotate(45deg); }
-  .menu-toggle[aria-expanded='true'] span:last-child { transform: translateY(-3px) rotate(-45deg); }
+  .menu-toggle {
+    position: relative; display: none; width: 44px; height: 44px; padding: 0; align-items: center; justify-content: center;
+    border: 1px solid var(--border); border-radius: 8px; color: var(--text-muted); background: var(--surface);
+    cursor: pointer;
+  }
+  .menu-toggle:hover, .menu-toggle[aria-expanded='true'] { color: var(--text); border-color: var(--lime); }
+  .menu-line {
+    position: absolute;
+    display: block;
+    width: 18px;
+    height: 1.5px;
+    border-radius: var(--radius-pill);
+    background: currentColor;
+    transform-origin: center;
+    transition: transform .2s var(--ease-out), opacity .16s var(--ease-out);
+  }
+  .menu-line-top { transform: translateY(-6px); }
+  .menu-line-middle { transform: translateY(0); }
+  .menu-line-bottom { transform: translateY(6px); }
+  .menu-toggle[aria-expanded='true'] .menu-line-top { transform: translateY(0) rotate(45deg); }
+  .menu-toggle[aria-expanded='true'] .menu-line-middle { opacity: 0; transform: scaleX(.3); }
+  .menu-toggle[aria-expanded='true'] .menu-line-bottom { transform: translateY(0) rotate(-45deg); }
   .mobile-navigation { width: min(1180px, calc(100% - 3rem)); margin: 0 auto; padding: .5rem 0 1.5rem; border-top: 1px solid var(--border); }
   .mobile-navigation a { min-height: 48px; display: flex; align-items: center; font: 600 1rem/1 var(--font-mono); }
   .mobile-navigation[hidden] { display: none; }
@@ -152,7 +173,7 @@ const navItems = Astro.props.navItems ?? defaultNav;
   @media (max-width: 900px) {
     .desktop-navigation { display: none; }
     .site-header-inner { grid-template-columns: 1fr auto; }
-    .menu-toggle { display: block; }
+    .menu-toggle { display: inline-flex; }
     .site-header[data-hidden='true'] { transform: translateY(-101%); }
   }
   @media (max-width: 520px) {
@@ -161,7 +182,7 @@ const navItems = Astro.props.navItems ?? defaultNav;
     .header-actions { gap: .1rem; }
   }
   @media (prefers-reduced-motion: reduce) {
-    .site-header, .site-header-inner, .menu-toggle span { transition: none; }
+    .site-header, .site-header-inner, .menu-line { transition: none; }
   }
   @media (forced-colors: active) {
     .site-header { background: Canvas; border-color: CanvasText; }

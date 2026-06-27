@@ -5,11 +5,17 @@ Personal site built with [Astro](https://astro.build). Static output — fast, a
 ## Run locally
 
 ```bash
-npm install
-npm run dev      # http://localhost:4321
-npm run build    # outputs to ./dist
-npm run preview  # preview the production build
+pnpm install
+pnpm run dev      # http://localhost:4321
+pnpm run check    # Astro + TypeScript diagnostics
+pnpm test         # Playwright suite; builds and previews with PLAYWRIGHT_TEST=1
+pnpm run build    # outputs to ./dist
+pnpm run preview  # preview the production build
 ```
+
+The project is pinned to pnpm in `package.json`. Build scripts for `esbuild`
+and `sharp` are approved in `pnpm-workspace.yaml`, so a fresh install should not
+require an interactive `pnpm approve-builds` step.
 
 ## How it's organised
 
@@ -87,14 +93,15 @@ platformId: "provider-id"
 externalUrl: "https://..."
 poster: /media/local-poster.png
 startAtSeconds: 1060   # optional, YouTube only
-mobilePresentation: row # row | above | text-only
+mobilePresentation: stamp # stamp | poster | text-only
 ---
 ```
 
 The permanent Media archive merges articles and appearances newest-first.
-Thumbnails and explicit watch/listen actions open the original platform in a
-new tab. On phones, `row` keeps a 96px thumbnail beside the copy, `above` uses
-a left-aligned thumbnail capped at 180px, and `text-only` hides the thumbnail.
+Titles, cards and explicit watch/listen actions open the original platform in a
+new tab. On phones, `stamp` keeps the copy dominant and uses the poster as a
+small editorial stamp, `poster` leads with a restrained image, and `text-only`
+hides the thumbnail for dense future entries.
 
 ## Where to extend next
 
@@ -211,3 +218,8 @@ declares a `publication` (e.g. "Codemotion Magazine", "Medium") shown as a badge
 and an external `url`; `src/content/appearances/` contributes recordings and
 podcasts without duplicating content files. The site remains the hub for work
 published elsewhere, and external links open in a new tab automatically.
+
+The Field notes archive lives at `/archive/` and `/it/archive/`. Home-page labels
+link to filtered archive views such as `?type=podcast` or `?type=speaking`; the
+archive remains readable without JavaScript and enhances filtering/pagination on
+the client.

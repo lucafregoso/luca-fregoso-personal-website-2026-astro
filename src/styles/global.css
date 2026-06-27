@@ -22,6 +22,10 @@
   --text-faint: #6a6a63;
   --border: #e3e3d8;
   --border-strong: #cfcfc2;
+  --surface-elevated: #ffffff;
+  --surface-accent: color-mix(in srgb, var(--surface) 86%, var(--lime) 14%);
+  --badge-bg: color-mix(in srgb, var(--surface-2) 88%, var(--bg) 12%);
+  --badge-border: #8d923e;
   --accent-text: var(--accent-text-light);
   --focus-ring: #5b6300;
 
@@ -47,6 +51,10 @@
   --text-faint: #8a93a0;
   --border: #2a313c;
   --border-strong: #3a424e;
+  --surface-elevated: #1c232d;
+  --surface-accent: color-mix(in srgb, var(--surface) 76%, var(--lime) 24%);
+  --badge-bg: color-mix(in srgb, var(--surface-2) 88%, #ffffff 12%);
+  --badge-border: #737a45;
   --accent-text: var(--accent-text-dark);
   --focus-ring: #d0db02;
 }
@@ -138,6 +146,47 @@ h1, h2, h3 { font-weight: 600; letter-spacing: -0.02em; line-height: 1.2; }
   border-radius: 6px;
   padding: 2px 8px;
   margin: 2px 4px 2px 0;
+}
+
+.meta-badge {
+  width: fit-content;
+  min-height: 1.55rem;
+  padding: .18rem .52rem;
+  display: inline-flex;
+  align-items: center;
+  gap: .35rem;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-pill);
+  color: var(--accent-text);
+  background: var(--badge-bg);
+  font: 650 .62rem/1 var(--font-mono);
+  text-transform: uppercase;
+  letter-spacing: .065em;
+}
+.meta-badge-neutral {
+  color: var(--accent-text);
+  border-color: var(--badge-border);
+  background: var(--badge-bg);
+}
+.meta-badge-status {
+  color: #171715;
+  border-color: color-mix(in srgb, var(--lime), #171715 10%);
+  background: var(--lime);
+}
+.meta-badge-accent {
+  color: var(--accent-text);
+  border-color: color-mix(in srgb, var(--lime), var(--border-strong) 45%);
+  background: var(--surface-accent);
+}
+a.meta-badge {
+  transition: border-color .15s ease, color .15s ease, background .15s ease, transform .15s var(--ease-out);
+}
+a.meta-badge:hover,
+a.meta-badge:focus-visible {
+  color: #171715;
+  border-color: var(--lime);
+  background: var(--lime);
+  transform: translateY(-1px);
 }
 
 /* Focus visibility for keyboard users */
