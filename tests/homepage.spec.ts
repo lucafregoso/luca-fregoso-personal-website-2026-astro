@@ -53,6 +53,15 @@ test.describe('homepage content contract', () => {
     await expect(page.getByRole('link', { name: 'View all field notes' })).toHaveAttribute('href', /\/archive\/$/);
   });
 
+  test('lately updated date reflects the build day', async ({ page }) => {
+    const buildDay = new Date().toLocaleDateString('en-GB', {
+      day: '2-digit',
+      month: 'short',
+      timeZone: 'Europe/Rome',
+    });
+    await expect(page.locator('#lately .updated')).toHaveText(`Updated ${buildDay}`);
+  });
+
   test('linked badges recover a full lime hover treatment in dark mode', async ({ page }) => {
     await page.locator('html').evaluate((element) => element.setAttribute('data-theme', 'dark'));
     const badge = page.locator('#lately .feed-meta a.meta-badge').first();
