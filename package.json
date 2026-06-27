@@ -8,7 +8,10 @@
     "dev": "astro dev",
     "build": "astro build",
     "build:test": "PLAYWRIGHT_TEST=1 astro build",
-    "check": "astro check",
+    "astro:check": "astro check",
+    "cms:check": "node scripts/check-cms.mjs",
+    "cms:serve": "python3 -m http.server 8080 --directory admin",
+    "check": "pnpm run astro:check && pnpm run cms:check",
     "preview": "astro preview",
     "preview:test": "PLAYWRIGHT_TEST=1 astro preview",
     "astro": "astro",
@@ -26,6 +29,7 @@
     "@astrojs/check": "^0.9.9",
     "@playwright/test": "^1.61.0",
     "typescript": "^5.9.3",
-    "vite": "6.4.3"
+    "vite": "6.4.3",
+    "yaml": "2.9.0"
   }
 }
