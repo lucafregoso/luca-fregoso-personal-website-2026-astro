@@ -28,6 +28,28 @@ test.describe('homepage content contract', () => {
     await expect(page.locator('#media .writing-item').first()).toBeVisible();
   });
 
+  test('uses stronger career-wide proof and semantic section glyphs', async ({ page }) => {
+    await expect(page.locator('.metrics')).toContainText('300+ devs');
+    await expect(page.locator('.metrics')).toContainText('7');
+    await expect(page.locator('.metrics')).toContainText('Codemotion editions');
+    await expect(page.locator('.section-glyph')).toHaveCount(5);
+    for (let index = 0; index < await page.locator('.section-glyph').count(); index += 1) {
+      await expect(page.locator('.section-glyph').nth(index)).toHaveAttribute('aria-hidden', 'true');
+    }
+  });
+
+  test('labels point to the filtered archive and upcoming remains prominent', async ({ page }) => {
+    const upcoming = page.locator('.upcoming li');
+    if (await upcoming.count()) {
+      await expect(upcoming.locator('.meta-badge-status').first()).toBeVisible();
+      const upcomingBackground = await upcoming.first().evaluate((element) => getComputedStyle(element).backgroundColor);
+      expect(upcomingBackground).not.toBe('rgba(0, 0, 0, 0)');
+    }
+    await expect(page.locator('.meta-badge').first()).toBeVisible();
+    await expect(page.locator('#lately .feed-meta a[href*="/archive/"][href*="type="]').first()).toBeVisible();
+    await expect(page.getByRole('link', { name: 'View all field notes' })).toHaveAttribute('href', /\/archive\/$/);
+  });
+
   test('offers clear primary profile and conversion paths', async ({ page }) => {
     const introNav = page.locator('.utility-links');
     await expect(introNav.getByRole('link', { name: 'LinkedIn' })).toHaveAttribute(
@@ -89,7 +111,7 @@ test.describe('homepage responsive contract', () => {
   test('primary compact controls meet the 44px target size', async ({ page }) => {
     await page.setViewportSize({ width: 390, height: 844 });
     await page.goto('/');
-    const selectors = ['#theme-toggle', '.hero-actions a', '.social-links a'];
+    const selectors = ['#theme-toggle', '.menu-toggle', '[data-language-switcher] button', '.hero-actions a', '.social-links a'];
     for (const selector of selectors) {
       const boxes = await page.locator(selector).evaluateAll((elements) =>
         elements.map((element) => {

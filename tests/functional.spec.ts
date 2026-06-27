@@ -119,12 +119,15 @@ test.describe('links', () => {
     }
   });
 
-  test('the entry title is never an external link', async ({ page }) => {
-    // Design rule: titles never throw the reader off-site; the outbound
-    // link is always an explicit row below.
+  test('media and article titles use explicit secure external links', async ({ page }) => {
     await page.goto('/');
-    const titleLinks = page.locator('.feed-title a[href^="http"], .hero-title a[href^="http"]');
-    expect(await titleLinks.count()).toBe(0);
+    const titleLinks = page.locator('#media h3 a[href^="http"]');
+    expect(await titleLinks.count()).toBeGreaterThan(0);
+    for (let index = 0; index < await titleLinks.count(); index += 1) {
+      await expect(titleLinks.nth(index)).toHaveAttribute('target', '_blank');
+      await expect(titleLinks.nth(index)).toHaveAttribute('rel', /noopener/);
+      await expect(titleLinks.nth(index)).toHaveAttribute('rel', /noreferrer/);
+    }
   });
 });
 

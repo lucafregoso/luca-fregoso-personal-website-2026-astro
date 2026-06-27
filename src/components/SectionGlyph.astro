@@ -1,0 +1,84 @@
+---
+type Glyph = 'work' | 'lately' | 'talks' | 'media' | 'contact' | 'archive';
+
+interface Props {
+  name: Glyph;
+  class?: string;
+}
+
+const { name, class: className = '' } = Astro.props;
+---
+
+<svg
+  class:list={['section-glyph', className]}
+  aria-hidden="true"
+  focusable="false"
+  viewBox="0 0 48 48"
+  fill="none"
+  xmlns="http://www.w3.org/2000/svg"
+>
+  {name === 'work' && (
+    <>
+      <rect x="7" y="8" width="12" height="12" rx="2" />
+      <rect x="29" y="8" width="12" height="12" rx="2" />
+      <rect x="18" y="28" width="12" height="12" rx="2" />
+      <path d="M19 14h10M24 20v8" />
+    </>
+  )}
+  {name === 'lately' && (
+    <>
+      <path d="M12 9v30" />
+      <circle cx="12" cy="14" r="3" />
+      <circle cx="12" cy="24" r="3" />
+      <circle cx="12" cy="34" r="3" />
+      <path d="M18 14h18M18 24h12M18 34h20" />
+    </>
+  )}
+  {name === 'talks' && (
+    <>
+      <path d="M10 34h28" />
+      <path d="M16 34V19a8 8 0 0 1 16 0v15" />
+      <path d="M20 20h8M20 26h8" />
+      <path d="M24 34v6" />
+    </>
+  )}
+  {name === 'media' && (
+    <>
+      <rect x="8" y="12" width="32" height="24" rx="3" />
+      <path d="M21 20l9 5-9 5v-10Z" />
+      <path d="M11 40c6-3 20-3 26 0" />
+    </>
+  )}
+  {name === 'contact' && (
+    <>
+      <path d="M8 14h32v22H8z" />
+      <path d="m9 15 15 13 15-13" />
+      <path d="M17 30l-8 6M31 30l8 6" />
+    </>
+  )}
+  {name === 'archive' && (
+    <>
+      <path d="M10 12h28v7H10z" />
+      <path d="M13 19h22v19H13z" />
+      <path d="M19 26h10M19 32h7" />
+    </>
+  )}
+</svg>
+
+<style>
+  .section-glyph {
+    width: 2.35rem;
+    height: 2.35rem;
+    color: var(--accent-text);
+    stroke: currentColor;
+    stroke-width: 1.8;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    opacity: .9;
+  }
+  .section-glyph :global(rect),
+  .section-glyph :global(circle),
+  .section-glyph :global(path) {
+    vector-effect: non-scaling-stroke;
+  }
+</style>

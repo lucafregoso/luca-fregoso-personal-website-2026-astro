@@ -14,32 +14,28 @@ function appearanceFor(section: Locator, title: string) {
 
 test.describe('compact media appearances', () => {
   for (const locale of locales) {
-    test(`${locale.path} renders compact appearances in Lately and Media`, async ({ page }) => {
+    test(`${locale.path} renders compact appearances in the editorial archive`, async ({ page }) => {
       await page.goto(locale.path);
       for (const example of examples) {
-        for (const sectionId of ['#lately', '#media']) {
-          const entry = appearanceFor(page.locator(sectionId), example.title);
-          await expect(entry).toHaveCount(1);
-          await expect(entry).toHaveAttribute('data-mobile-presentation', example.mobilePresentation);
-          await expect(entry).toContainText(example.publisher);
-          if (sectionId === '#lately') {
-            await expect(entry).toContainText(example.duration);
-          } else {
-            await expect(entry).not.toContainText(example.duration);
-          }
-        }
         const entry = appearanceFor(page.locator('#media'), example.title);
-        const thumbnail = entry.locator('a.appearance-thumbnail');
+        await expect(entry).toHaveCount(1);
+        await expect(entry).toHaveAttribute('data-mobile-presentation', example.mobilePresentation);
+        await expect(entry).toContainText(example.publisher);
+        await expect(entry).not.toContainText(example.duration);
+        const thumbnail = entry.locator('.appearance-thumbnail');
+        const title = entry.locator('a.appearance-title-link');
         const action = entry.locator('a.appearance-action');
         await expect(action).toContainText(example.action[locale.lang]);
-        for (const link of [thumbnail, action]) {
+        await expect(thumbnail.locator('img')).toHaveAttribute('src', /\/media\/.+\.png$/);
+        await expect(thumbnail).not.toHaveAttribute('href', /.*/);
+        for (const link of [title, action]) {
           await expect(link).toHaveAttribute('target', '_blank');
           await expect(link).toHaveAttribute('rel', /noopener/);
           await expect(link).toHaveAttribute('rel', /noreferrer/);
           await expect(link).toHaveAttribute('href', new RegExp(example.hrefPart));
         }
-        await expect(thumbnail.locator('img')).toHaveAttribute('src', /\/media\/.+\.png$/);
       }
+      await expect(page.getByRole('link', { name: locale.lang === 'it' ? 'Vedi tutto l’archivio' : 'View all field notes' })).toBeVisible();
     });
 
     test(`${locale.path} contains no embeds or provider requests`, async ({ page }) => {
@@ -71,8 +67,18 @@ test.describe('compact media appearances', () => {
 
   test('YouTube keeps the requested start time in its external URL', async ({ page }) => {
     await page.goto('/');
-    const href = await appearanceFor(page.locator('#media'), examples[0].title).locator('a.appearance-thumbnail').getAttribute('href');
+    const href = await appearanceFor(page.locator('#media'), examples[0].title).locator('a.appearance-title-link').getAttribute('href');
     expect(new URL(href!).searchParams.get('t')).toBe('1060s');
+  });
+
+  test('clicking a non-link area of a media row follows the title link', async ({ page }) => {
+    await page.goto('/');
+    const entry = appearanceFor(page.locator('#media'), examples[1].title);
+    const popupPromise = page.waitForEvent('popup');
+    await entry.locator('.appearance-thumbnail').click();
+    const popup = await popupPromise;
+    expect(popup.url()).toContain('open.spotify.com/episode');
+    await popup.close();
   });
 
   test('archive rows use the full content width and retain their separators', async ({ page }) => {

@@ -8,7 +8,9 @@ import ContactEmail from '../components/ContactEmail.astro';
 import SocialIcon from '../components/SocialIcon.astro';
 import ExternalLink from '../components/ExternalLink.astro';
 import AppearanceEntry from '../components/AppearanceEntry.astro';
+import SectionGlyph from '../components/SectionGlyph.astro';
 import { site } from '../data/site';
+import { archiveHref, type ArchiveType } from '../lib/archive';
 import { withBase } from '../lib/url';
 import { localize, translations, type Locale, type LocalizedText } from '../i18n';
 
@@ -88,6 +90,7 @@ const fullDate = (date: Date) =>
   date.toLocaleDateString(locale === 'it' ? 'it-IT' : 'en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
 
 const kindLabel: Record<string, string> = t.lately.kinds;
+const kindArchiveHref = (type: string) => archiveHref(locale, type as ArchiveType);
 
 function outlink(entry: { url?: string; urlLabel?: LocalizedText; urlStyle?: string }) {
   if (!entry.url) return null;
@@ -163,7 +166,7 @@ function caseHref(href: string) {
 
       <section class="section work" id="work" aria-labelledby="work-title">
         <div class="section-heading">
-          <p class="section-number mono">{t.work.number}</p>
+          <p class="section-number mono"><SectionGlyph name="work" />{t.work.number}</p>
           <h2 id="work-title">{t.work.title}</h2>
           <p>{t.work.intro}</p>
         </div>
@@ -198,7 +201,7 @@ function caseHref(href: string) {
 
       <section class="section stream tinted" id="lately" aria-labelledby="lately-title">
         <div class="section-heading compact">
-          <p class="section-number mono">{t.lately.number}</p>
+          <p class="section-number mono"><SectionGlyph name="lately" />{t.lately.number}</p>
           <div class="heading-row">
             <h2 id="lately-title">{t.lately.title}</h2>
             {heroEntry && <span class="updated mono">{t.lately.updated} {dayMonth(heroEntry.date)}</span>}
@@ -210,7 +213,7 @@ function caseHref(href: string) {
           <ul class="upcoming">
             {upcoming.map((entry) => (
               <li>
-                <span class="up-tag mono">{t.lately.upcoming}</span>
+                <span class="up-tag meta-badge meta-badge-status mono">{t.lately.upcoming}</span>
                 <span class="up-title">{localize(entry.data.title, locale)}</span>
                 {entry.data.location && <span class="up-location mono">{localize(entry.data.location, locale)}</span>}
                 <time class="up-date mono" datetime={entry.data.date.toISOString()}>{dayMonth(entry.data.date)}</time>
@@ -223,7 +226,7 @@ function caseHref(href: string) {
           <article data-reveal class={`featured-story media-presentation-${heroEntry.entry.data.mediaPresentation} ${heroEntry.entry.data.featured ? 'is-featured' : ''}`}>
             <div class="story-content">
               <div class="story-meta mono">
-                <span>{kindLabel[heroEntry.entry.data.kind] ?? heroEntry.entry.data.kind}</span>
+                <a class="meta-badge meta-badge-neutral" href={kindArchiveHref(heroEntry.entry.data.kind)}>{kindLabel[heroEntry.entry.data.kind] ?? heroEntry.entry.data.kind}</a>
                 <time datetime={heroEntry.date.toISOString()}>{fullDate(heroEntry.date)}</time>
               </div>
               <h3>{localize(heroEntry.entry.data.title, locale)}</h3>
@@ -245,7 +248,7 @@ function caseHref(href: string) {
             <li data-reveal class={`feed-item ${item.entry.data.featured ? 'is-featured' : ''}`}>
               <div class="feed-meta mono">
                 <time datetime={item.date.toISOString()}>{dayMonth(item.date)}</time>
-                <span>{kindLabel[item.entry.data.kind] ?? item.entry.data.kind}</span>
+                <a class="meta-badge meta-badge-neutral" href={kindArchiveHref(item.entry.data.kind)}>{kindLabel[item.entry.data.kind] ?? item.entry.data.kind}</a>
               </div>
               <div class={`feed-body media-presentation-${item.entry.data.mediaPresentation}`}>
                 <div class="feed-copy">
@@ -265,45 +268,22 @@ function caseHref(href: string) {
         </ol>
 
         {earlierEntries.length > 0 && (
-          <details class="earlier">
-            <summary class="mono">{t.lately.showEarlier(earlierEntries.length)}</summary>
-            <ol class="feed">
-              {earlierEntries.map((item) => item.type === 'update' ? (
-                <li class={`feed-item ${item.entry.data.featured ? 'is-featured' : ''}`}>
-                  <div class="feed-meta mono">
-                    <time datetime={item.date.toISOString()}>{dayMonth(item.date)}</time>
-                    <span>{kindLabel[item.entry.data.kind] ?? item.entry.data.kind}</span>
-                  </div>
-                  <div class={`feed-body media-presentation-${item.entry.data.mediaPresentation}`}>
-                    <div class="feed-copy">
-                      <h3>{localize(item.entry.data.title, locale)}</h3>
-                      {item.entry.data.location && <p class="feed-location mono">{localize(item.entry.data.location, locale)}</p>}
-                      {item.entry.data.blurb && <p>{localize(item.entry.data.blurb, locale)}</p>}
-                      {outlink(item.entry.data) && (
-                        <ExternalLink class="outlink mono" href={outlink(item.entry.data)!.href}>
-                          {outlink(item.entry.data)!.label}
-                        </ExternalLink>
-                      )}
-                    </div>
-                    <Media locale={locale} media={item.entry.data.media} presentation={item.entry.data.mediaPresentation} galleryId={`g-${item.entry.id}`} />
-                  </div>
-                </li>
-              ) : <AppearanceEntry appearance={item.entry.data} {locale} variant="feed" />)}
-            </ol>
-          </details>
+          <div class="earlier">
+            <a class="archive-cta mono" href={archiveHref(locale)}>{t.lately.archiveCta}</a>
+          </div>
         )}
       </section>
 
       <section class="section" id="talks" aria-labelledby="talks-title">
         <div class="section-heading compact">
-          <p class="section-number mono">{t.talks.number}</p>
+          <p class="section-number mono"><SectionGlyph name="talks" />{t.talks.number}</p>
           <h2 id="talks-title">{t.talks.title}</h2>
           <p>{t.talks.intro}</p>
         </div>
         <div class="talk-grid">
           {talks.map((talk) => (
             <article class="talk-card">
-              <span class="talk-status mono">{t.talks.status}</span>
+              <span class="talk-status meta-badge meta-badge-neutral mono">{t.talks.status}</span>
               <h3>{localize(talk.data.title, locale)}</h3>
               <p>{localize(talk.data.abstract, locale)}</p>
               <p class="talk-events mono">{talk.data.events.join(' · ')}</p>
@@ -318,7 +298,7 @@ function caseHref(href: string) {
 
       <section class="section writing tinted" id="media" aria-labelledby="writing-title">
         <div class="section-heading compact">
-          <p class="section-number mono">{t.writing.number}</p>
+          <p class="section-number mono"><SectionGlyph name="media" />{t.writing.number}</p>
           <h2 id="writing-title">{t.writing.title}</h2>
           <p>{t.writing.intro}</p>
         </div>
@@ -332,7 +312,7 @@ function caseHref(href: string) {
                 </div>
               </div>
               <div class="writing-body">
-                <div class="archive-badges mono"><span>{t.writing.article}</span></div>
+                <div class="archive-badges mono"><a class="meta-badge meta-badge-neutral" href={archiveHref(locale, 'article')}>{t.writing.article}</a></div>
                 <h3><ExternalLink href={item.entry.data.url}>{localize(item.entry.data.title, locale)}</ExternalLink></h3>
                 <p>{localize(item.entry.data.summary, locale)}</p>
               </div>
@@ -343,7 +323,7 @@ function caseHref(href: string) {
     </main>
 
     <footer class="contact" id="contact">
-      <p class="section-number mono">{t.contact.number}</p>
+      <p class="section-number mono"><SectionGlyph name="contact" />{t.contact.number}</p>
       <div class="contact-grid">
         <div>
           <h2>{t.contact.title}</h2>
@@ -404,6 +384,8 @@ function caseHref(href: string) {
   .section { padding: 7rem 0; position: relative; }
   .section-heading { display: grid; grid-template-columns: 1fr 2fr; column-gap: 3rem; margin-bottom: 3.5rem; }
   .section-heading .section-number { grid-row: 1 / span 2; }
+  .section-number { display: flex; align-items: center; gap: .8rem; color: var(--accent-text); }
+  .section-number :global(.section-glyph) { flex: none; width: 2rem; height: 2rem; }
   .section-heading h2 { max-width: 15ch; margin: 0; font-size: clamp(2.2rem, 4.5vw, 4rem); line-height: 1.05; letter-spacing: -.05em; text-wrap: balance; }
   .section-heading > p:last-child { max-width: 60ch; margin: 1.2rem 0 0; color: var(--text-muted); }
   .section-heading.compact { margin-bottom: 2.5rem; }
@@ -428,14 +410,12 @@ function caseHref(href: string) {
   .case-card a { width: fit-content; font: 600 .78rem/1.4 var(--font-mono); }
 
   .upcoming { margin: 0 0 2rem; padding: 0; list-style: none; }
-  .upcoming li { min-height: 60px; display: grid; grid-template-columns: auto 1fr auto auto; align-items: center; gap: 1rem; padding: .7rem .9rem; border: 1px dashed var(--border-strong); border-radius: var(--radius-md); background: var(--surface); }
-  .up-tag { padding: .15rem .45rem; border-radius: var(--radius-sm); color: #171715; background: var(--lime); font-size: .62rem; text-transform: uppercase; letter-spacing: .08em; }
+  .upcoming li { min-height: 68px; display: grid; grid-template-columns: auto 1fr auto auto; align-items: center; gap: 1rem; padding: .8rem 1rem; border: 1px solid color-mix(in srgb, var(--lime), var(--border) 62%); border-radius: var(--radius-md); background: var(--surface-accent); box-shadow: 0 12px 34px color-mix(in srgb, var(--text), transparent 94%); }
   .up-title { font-weight: 650; }
   .up-location, .up-date { color: var(--text-faint); font-size: .7rem; }
   .featured-story { padding: 2.5rem 0 3rem; border-bottom: 1px solid var(--border); }
   .featured-story.is-featured { padding-left: 1.25rem; border-left: 3px solid var(--lime); }
   .story-meta { display: flex; gap: 1rem; color: var(--text-faint); font-size: .68rem; text-transform: uppercase; letter-spacing: .07em; }
-  .story-meta span { color: var(--accent-text); }
   .featured-story h3 { max-width: 25ch; margin: .8rem 0 0; font-size: clamp(1.7rem, 3vw, 2.6rem); }
   .story-location, .feed-location { margin: .5rem 0 0; color: var(--text-faint); font-size: .72rem; }
   .story-copy { max-width: 68ch; font-size: 1.05rem; }
@@ -446,7 +426,6 @@ function caseHref(href: string) {
   .feed-item.is-featured { padding-left: 1.25rem; }
   .feed-item.is-featured::before { content: ''; position: absolute; inset: 1.6rem auto 1.6rem 0; width: 3px; border-radius: var(--radius-pill); background: var(--lime); }
   .feed-meta { display: flex; flex-direction: column; gap: .35rem; color: var(--text-faint); font-size: .68rem; text-transform: uppercase; letter-spacing: .07em; }
-  .feed-meta span { color: var(--accent-text); }
   .feed-body h3 { margin: 0; font-size: 1.15rem; }
   .feed-copy > p:not(.feed-location) { max-width: 66ch; margin: .55rem 0 0; color: var(--text-muted); font-size: .92rem; }
   .feed-body.media-presentation-sidecar { display: grid; grid-template-columns: minmax(0, 1fr) minmax(220px, .65fr); gap: 1.5rem; align-items: start; }
@@ -454,12 +433,10 @@ function caseHref(href: string) {
   :global(.outlink) { width: fit-content; margin-top: .9rem; display: inline-flex; gap: .35rem; font-size: .76rem; }
   :global(.outlink.is-strong) { min-height: 44px; padding: .45rem .8rem; align-items: center; border: 1px solid var(--border-strong); border-radius: var(--radius-md); }
   .earlier { margin-top: 1.5rem; }
-  .earlier summary { width: fit-content; min-height: 44px; display: flex; align-items: center; cursor: pointer; color: var(--accent-text); font-size: .76rem; }
-  .earlier[open] summary { margin-bottom: .5rem; }
+  .archive-cta { width: fit-content; min-height: 44px; display: inline-flex; align-items: center; color: var(--accent-text); font-size: .76rem; }
 
   .talk-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.2rem; }
   .talk-card { min-height: 380px; padding: 1.6rem; display: flex; flex-direction: column; border: 1px solid var(--border); border-radius: var(--radius-md); background: var(--surface); }
-  .talk-status { width: fit-content; padding: .2rem .5rem; color: #171715; background: var(--lime); border-radius: var(--radius-pill); font-size: .6rem; text-transform: uppercase; letter-spacing: .08em; }
   .talk-card h3 { margin: 2rem 0 1rem; font-size: 1.35rem; }
   .talk-card > p:not(.talk-events) { margin: 0; color: var(--text-muted); font-size: .88rem; }
   .talk-events { margin: auto 0 1rem; padding-top: 1.5rem; color: var(--text-faint); font-size: .67rem; }
@@ -471,7 +448,6 @@ function caseHref(href: string) {
   .writing-rail, .writing-body { min-width: 0; }
   .writing-item h3 { margin: 0; font-size: 1.15rem; }
   .archive-badges { margin-bottom: .55rem; display: flex; }
-  .archive-badges span { padding: .2rem .5rem; border: 1px solid var(--border-strong); border-radius: var(--radius-pill); color: var(--accent-text); font-size: .62rem; text-transform: uppercase; letter-spacing: .06em; }
   .writing-item h3 :global(a) { color: var(--text); }
   .writing-item p { max-width: 62ch; margin: .55rem 0 0; color: var(--text-muted); font-size: .9rem; }
   .writing-meta { display: flex; flex-direction: column; gap: .35rem; color: var(--text-faint); font-size: .68rem; text-align: left; }
@@ -531,6 +507,7 @@ function caseHref(href: string) {
     .metric:last-child { grid-column: 1 / -1; border-top: 1px solid var(--border); }
     .section { padding: 5rem 0; }
     .section-heading { display: block; margin-bottom: 2.5rem; }
+    .section-number { margin-bottom: .75rem; }
     .section-heading h2 { font-size: 2.6rem; }
     .heading-row { align-items: flex-start; flex-direction: column; gap: .6rem; }
     .case-grid { margin-top: 2.5rem; }

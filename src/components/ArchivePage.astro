@@ -1,0 +1,189 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import SiteHeader from './SiteHeader.astro';
+import ExternalLink from './ExternalLink.astro';
+import SectionGlyph from './SectionGlyph.astro';
+import { archiveHref, archivePath, archiveTypes, getArchiveItems, type ArchiveType } from '../lib/archive';
+import { withBase } from '../lib/url';
+import { translations, type Locale } from '../i18n';
+
+interface Props {
+  locale?: Locale;
+}
+
+const locale = Astro.props.locale ?? 'en';
+const t = translations[locale];
+const items = await getArchiveItems(locale);
+const pageSize = 20;
+const navItems = [
+  { href: withBase('/#work'), label: t.nav.work },
+  { href: withBase('/#lately'), label: t.nav.lately },
+  { href: withBase('/#talks'), label: t.nav.talks },
+  { href: withBase('/#media'), label: t.nav.writing },
+  { href: withBase('/#contact'), label: t.nav.contact },
+];
+---
+
+<BaseLayout
+  locale={locale}
+  title={t.archive.metaTitle}
+  description={t.archive.intro}
+  canonicalPath={archivePath(locale)}
+  alternatePaths={{ en: '/archive/', it: '/it/archive/' }}
+>
+  <SiteHeader {locale} {navItems} />
+  <main id="main" tabindex="-1" class="archive-page">
+    <section class="archive-shell" aria-labelledby="archive-title">
+      <div class="archive-heading">
+        <div class="archive-kicker mono">
+          <SectionGlyph name="archive" />
+          <span>{t.archive.number}</span>
+        </div>
+        <h1 id="archive-title">{t.archive.title}</h1>
+        <p>{t.archive.intro}</p>
+      </div>
+
+      <nav class="archive-filters" aria-label={t.archive.filterLabel}>
+        <a class="meta-badge meta-badge-accent" href={archiveHref(locale)} data-filter-link data-type="all">{t.archive.all}</a>
+        {archiveTypes.map((type) => (
+          <a class="meta-badge meta-badge-neutral" href={archiveHref(locale, type)} data-filter-link data-type={type}>
+            {t.archive.filters[type]}
+          </a>
+        ))}
+      </nav>
+
+      <p class="archive-status mono" data-archive-status aria-live="polite">
+        {t.archive.pageStatus(Math.min(items.length, pageSize), items.length)}
+      </p>
+
+      <ol class="archive-list" data-archive-list data-page-size={pageSize}>
+        {items.map((item, index) => (
+          <li
+            class="archive-item"
+            data-archive-item
+            data-type={item.type}
+            data-page={Math.floor(index / pageSize) + 1}
+          >
+            <div class="archive-meta">
+              <a class="meta-badge meta-badge-neutral" href={archiveHref(locale, item.type as ArchiveType)}>
+                {item.typeLabel}
+              </a>
+              <time class="mono" datetime={item.date.toISOString()}>{item.dateLabel}</time>
+            </div>
+            <div class="archive-copy">
+              <h2>
+                {item.href && item.external ? (
+                  <ExternalLink href={item.href}>{item.title}</ExternalLink>
+                ) : item.href ? (
+                  <a href={withBase(item.href)}>{item.title}</a>
+                ) : (
+                  item.title
+                )}
+              </h2>
+              {item.summary && <p>{item.summary}</p>}
+              <p class="archive-source mono">{item.source}</p>
+            </div>
+          </li>
+        ))}
+      </ol>
+
+      <p class="archive-empty" data-archive-empty hidden>{t.archive.empty}</p>
+      <div class="archive-pagination" data-archive-pagination>
+        <button type="button" data-page-prev>{t.archive.previous}</button>
+        <span class="mono" data-page-current>1</span>
+        <button type="button" data-page-next>{t.archive.next}</button>
+      </div>
+    </section>
+  </main>
+</BaseLayout>
+
+<script>
+  (function () {
+    const list = document.querySelector('[data-archive-list]') as HTMLElement | null;
+    if (!list) return;
+    const items = Array.from(list.querySelectorAll('[data-archive-item]')) as HTMLElement[];
+    const links = Array.from(document.querySelectorAll('[data-filter-link]')) as HTMLAnchorElement[];
+    const empty = document.querySelector('[data-archive-empty]') as HTMLElement | null;
+    const status = document.querySelector('[data-archive-status]') as HTMLElement | null;
+    const pagination = document.querySelector('[data-archive-pagination]') as HTMLElement | null;
+    const previous = document.querySelector('[data-page-prev]') as HTMLButtonElement | null;
+    const next = document.querySelector('[data-page-next]') as HTMLButtonElement | null;
+    const current = document.querySelector('[data-page-current]') as HTMLElement | null;
+    const pageSize = Number(list.dataset.pageSize || 20);
+    let page = 1;
+    const labels = {
+      status: (shown: number, total: number) => `${shown} ${document.documentElement.lang === 'it' ? 'di' : 'of'} ${total} ${document.documentElement.lang === 'it' ? 'voci mostrate' : 'entries shown'}`,
+    };
+
+    function selectedType() {
+      const value = new URLSearchParams(window.location.search).get('type');
+      return value || 'all';
+    }
+
+    function apply() {
+      const type = selectedType();
+      const matching = items.filter((item) => type === 'all' || item.dataset.type === type);
+      const totalPages = Math.max(1, Math.ceil(matching.length / pageSize));
+      page = Math.min(page, totalPages);
+      const first = (page - 1) * pageSize;
+      const last = first + pageSize;
+      items.forEach((item) => { item.hidden = true; });
+      matching.forEach((item, index) => { item.hidden = index < first || index >= last; });
+      links.forEach((link) => {
+        const active = link.dataset.type === type;
+        link.setAttribute('aria-current', active ? 'page' : 'false');
+      });
+      if (empty) empty.hidden = matching.length > 0;
+      if (status) status.textContent = labels.status(Math.min(matching.length, pageSize), matching.length);
+      if (pagination) pagination.hidden = matching.length <= pageSize;
+      if (previous) previous.disabled = page <= 1;
+      if (next) next.disabled = page >= totalPages;
+      if (current) current.textContent = String(page);
+    }
+
+    links.forEach((link) => link.addEventListener('click', (event) => {
+      event.preventDefault();
+      const url = new URL(link.href);
+      history.pushState(null, '', `${url.pathname}${url.search}`);
+      page = 1;
+      apply();
+    }));
+    previous?.addEventListener('click', () => { page -= 1; apply(); });
+    next?.addEventListener('click', () => { page += 1; apply(); });
+    window.addEventListener('popstate', () => { page = 1; apply(); });
+    apply();
+  })();
+</script>
+
+<style>
+  .archive-page { min-height: 100vh; }
+  .archive-shell {
+    width: min(70rem, calc(100% - 3rem));
+    margin: 0 auto;
+    padding: 5.5rem 0 7rem;
+  }
+  .archive-heading { max-width: 48rem; margin-bottom: 2.5rem; }
+  .archive-kicker { display: flex; align-items: center; gap: .8rem; color: var(--accent-text); font-size: .72rem; text-transform: uppercase; letter-spacing: .08em; }
+  .archive-heading h1 { max-width: 14ch; margin: 1rem 0 0; font-size: clamp(2.6rem, 6vw, 5rem); line-height: .98; letter-spacing: -.06em; }
+  .archive-heading p { max-width: 58ch; color: var(--text-muted); }
+  .archive-filters { display: flex; flex-wrap: wrap; gap: .45rem; margin-bottom: 1.25rem; }
+  .archive-filters [aria-current='page'] { color: #171715; background: var(--lime); border-color: var(--lime); }
+  .archive-status { margin: 0 0 .75rem; color: var(--text-faint); font-size: .68rem; }
+  .archive-list { margin: 0; padding: 0; list-style: none; border-top: 1px solid var(--border); }
+  .archive-item { display: grid; grid-template-columns: clamp(180px, 20vw, 220px) minmax(0, 1fr); gap: 1.75rem; padding: 1.6rem 0; border-bottom: 1px solid var(--border); }
+  .archive-item[hidden] { display: none; }
+  .archive-meta { display: flex; flex-direction: column; gap: .65rem; align-items: flex-start; color: var(--text-faint); font-size: .68rem; }
+  .archive-copy h2 { margin: 0; font-size: 1.15rem; }
+  .archive-copy h2 :global(a) { color: var(--text); }
+  .archive-copy p { max-width: 66ch; margin: .55rem 0 0; color: var(--text-muted); font-size: .9rem; }
+  .archive-source { color: var(--text-faint) !important; font-size: .68rem !important; }
+  .archive-empty { padding: 2rem 0; color: var(--text-muted); }
+  .archive-pagination { margin-top: 1.5rem; display: flex; align-items: center; gap: .8rem; }
+  .archive-pagination button { min-height: 44px; padding: .55rem .8rem; border: 1px solid var(--border); border-radius: 8px; color: var(--text); background: var(--surface); font: 650 .76rem/1 var(--font-mono); cursor: pointer; }
+  .archive-pagination button:disabled { opacity: .45; cursor: not-allowed; }
+  @media (max-width: 620px) {
+    .archive-shell { width: min(calc(100% - 2rem), 70rem); padding-top: 4rem; }
+    .archive-item { grid-template-columns: 1fr; gap: .8rem; }
+    .archive-meta { flex-direction: row; flex-wrap: wrap; align-items: center; }
+  }
+</style>
