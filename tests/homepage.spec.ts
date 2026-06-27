@@ -6,7 +6,7 @@ test.describe('homepage content contract', () => {
   });
 
   test('communicates identity, positioning, and proof in page order', async ({ page }) => {
-    await expect(page.getByRole('link', { name: /Luca Fregoso, back to top/i })).toBeVisible();
+    await expect(page.getByRole('link', { name: /Luca Fregoso, home/i })).toHaveAttribute('href', /\/$/);
     await expect(
       page.getByRole('heading', { level: 1, name: 'I design technical programs people trust.' })
     ).toBeVisible();
@@ -29,9 +29,10 @@ test.describe('homepage content contract', () => {
   });
 
   test('uses stronger career-wide proof and semantic section glyphs', async ({ page }) => {
-    await expect(page.locator('.metrics')).toContainText('300+ devs');
-    await expect(page.locator('.metrics')).toContainText('7');
-    await expect(page.locator('.metrics')).toContainText('Codemotion editions');
+    await expect(page.locator('.metrics')).toContainText('20+ paths');
+    await expect(page.locator('.metrics')).toContainText('7 editions');
+    await expect(page.locator('.metrics')).toContainText('Presales');
+    await expect(page.locator('.metrics')).toContainText('Mentoring');
     await expect(page.locator('.section-glyph')).toHaveCount(5);
     for (let index = 0; index < await page.locator('.section-glyph').count(); index += 1) {
       await expect(page.locator('.section-glyph').nth(index)).toHaveAttribute('aria-hidden', 'true');
@@ -40,14 +41,47 @@ test.describe('homepage content contract', () => {
 
   test('labels point to the filtered archive and upcoming remains prominent', async ({ page }) => {
     const upcoming = page.locator('.upcoming li');
-    if (await upcoming.count()) {
-      await expect(upcoming.locator('.meta-badge-status').first()).toBeVisible();
+    const upcomingCount = await upcoming.count();
+    expect(upcomingCount).toBeLessThanOrEqual(1);
+    if (upcomingCount > 0) {
+      await expect(upcoming.first().locator('.meta-badge-status')).toBeVisible();
       const upcomingBackground = await upcoming.first().evaluate((element) => getComputedStyle(element).backgroundColor);
       expect(upcomingBackground).not.toBe('rgba(0, 0, 0, 0)');
     }
     await expect(page.locator('.meta-badge').first()).toBeVisible();
     await expect(page.locator('#lately .feed-meta a[href*="/archive/"][href*="type="]').first()).toBeVisible();
     await expect(page.getByRole('link', { name: 'View all field notes' })).toHaveAttribute('href', /\/archive\/$/);
+  });
+
+  test('linked badges recover a full lime hover treatment in dark mode', async ({ page }) => {
+    await page.locator('html').evaluate((element) => element.setAttribute('data-theme', 'dark'));
+    const badge = page.locator('#lately .feed-meta a.meta-badge').first();
+    await expect(badge).toBeVisible();
+    const initial = await badge.evaluate((element) => getComputedStyle(element).backgroundColor);
+    await badge.hover();
+    const hovered = await badge.evaluate((element) => getComputedStyle(element).backgroundColor);
+    expect(initial).not.toBe('rgba(0, 0, 0, 0)');
+    expect(hovered).not.toBe(initial);
+    expect(hovered).not.toBe('rgba(0, 0, 0, 0)');
+  });
+
+  test('linked media badges render as pills, not underlined links', async ({ page }) => {
+    await page.locator('html').evaluate((element) => element.setAttribute('data-theme', 'dark'));
+    const linked = page.locator('#media a.meta-badge').first();
+    await expect(linked).toBeVisible();
+    const border = await linked.evaluate((element) => {
+      const computed = getComputedStyle(element);
+      return {
+        topColor: computed.borderTopColor,
+        bottomColor: computed.borderBottomColor,
+        topWidth: computed.borderTopWidth,
+        bottomWidth: computed.borderBottomWidth,
+        bottomStyle: computed.borderBottomStyle,
+      };
+    });
+    expect(border.topColor).toBe(border.bottomColor);
+    expect(border.topWidth).toBe(border.bottomWidth);
+    expect(border.bottomStyle).toBe('solid');
   });
 
   test('offers clear primary profile and conversion paths', async ({ page }) => {
@@ -61,14 +95,14 @@ test.describe('homepage content contract', () => {
       'https://sessionize.com/luca-fregoso/'
     );
     await expect(introNav.getByRole('link', { name: 'CV (PDF)' })).toHaveAttribute('href', /\/cv\.pdf$/);
-    await expect(page.locator('.hero-actions').getByRole('link', { name: 'Discuss a leadership role' })).toHaveAttribute(
+    await expect(page.locator('.hero-actions').getByRole('link', { name: 'Discuss a complex brief' })).toHaveAttribute(
       'href',
       '#contact'
     );
     await expect(page.getByRole('link', { name: 'See selected work' })).toHaveAttribute('href', '#work');
 
     const contact = page.locator('#contact');
-    await expect(contact).toContainText(/senior.*roles.*technical content.*presales/i);
+    await expect(contact).toContainText(/developer program.*technical proposal.*event.*learning path/i);
     await expect(contact.getByRole('button', { name: /email/i })).toBeVisible();
     await expect(contact.getByRole('link', { name: 'View CV (PDF)' })).toHaveAttribute('href', /\/cv\.pdf$/);
   });

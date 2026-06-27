@@ -25,6 +25,7 @@
   --surface-elevated: #ffffff;
   --surface-accent: color-mix(in srgb, var(--surface) 86%, var(--lime) 14%);
   --badge-bg: color-mix(in srgb, var(--surface-2) 88%, var(--bg) 12%);
+  --badge-border: #8d923e;
   --accent-text: var(--accent-text-light);
   --focus-ring: #5b6300;
 
@@ -53,6 +54,7 @@
   --surface-elevated: #1c232d;
   --surface-accent: color-mix(in srgb, var(--surface) 76%, var(--lime) 24%);
   --badge-bg: color-mix(in srgb, var(--surface-2) 88%, #ffffff 12%);
+  --badge-border: #737a45;
   --accent-text: var(--accent-text-dark);
   --focus-ring: #d0db02;
 }
@@ -162,8 +164,9 @@ h1, h2, h3 { font-weight: 600; letter-spacing: -0.02em; line-height: 1.2; }
   letter-spacing: .065em;
 }
 .meta-badge-neutral {
-  color: var(--text-muted);
-  background: transparent;
+  color: var(--accent-text);
+  border-color: var(--badge-border);
+  background: var(--badge-bg);
 }
 .meta-badge-status {
   color: #171715;
@@ -176,14 +179,14 @@ h1, h2, h3 { font-weight: 600; letter-spacing: -0.02em; line-height: 1.2; }
   background: var(--surface-accent);
 }
 a.meta-badge {
-  border-bottom: 1px solid var(--border-strong);
-  transition: border-color .15s ease, color .15s ease, background .15s ease;
+  transition: border-color .15s ease, color .15s ease, background .15s ease, transform .15s var(--ease-out);
 }
 a.meta-badge:hover,
 a.meta-badge:focus-visible {
-  color: var(--text);
+  color: #171715;
   border-color: var(--lime);
-  background: var(--surface-accent);
+  background: var(--lime);
+  transform: translateY(-1px);
 }
 
 /* Focus visibility for keyboard users */

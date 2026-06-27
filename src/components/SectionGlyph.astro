@@ -36,10 +36,12 @@ const { name, class: className = '' } = Astro.props;
   )}
   {name === 'talks' && (
     <>
-      <path d="M10 34h28" />
-      <path d="M16 34V19a8 8 0 0 1 16 0v15" />
-      <path d="M20 20h8M20 26h8" />
-      <path d="M24 34v6" />
+      <g transform="rotate(-32 24 24)">
+        <rect x="18" y="7" width="12" height="20" rx="6" />
+        <path d="M20 13h8M20 18h8" />
+        <path d="M24 27v13" />
+        <path d="M18 40h12" />
+      </g>
     </>
   )}
   {name === 'media' && (
