@@ -39,6 +39,7 @@ const past = timeline.filter((item) => item.date.valueOf() <= todayMs);
 const heroEntry = past[0];
 const recentEntries = past.slice(1, 4);
 const earlierEntries = past.slice(4);
+const buildDate = new Date();
 
 const talks = (await getCollection('talks')).filter((entry) => entry.data.locales.includes(locale)).sort((a, b) => a.data.order - b.data.order);
 const writing = (await getCollection('writing')).filter((entry) => entry.data.locales.includes(locale)).sort(
@@ -86,7 +87,7 @@ const appearanceStructuredData = appearances
 const monthYear = (date: Date) =>
   date.toLocaleDateString(locale === 'it' ? 'it-IT' : 'en-GB', { year: 'numeric', month: 'short' });
 const dayMonth = (date: Date) =>
-  date.toLocaleDateString(locale === 'it' ? 'it-IT' : 'en-GB', { day: '2-digit', month: 'short' });
+  date.toLocaleDateString(locale === 'it' ? 'it-IT' : 'en-GB', { day: '2-digit', month: 'short', timeZone: 'Europe/Rome' });
 const fullDate = (date: Date) =>
   date.toLocaleDateString(locale === 'it' ? 'it-IT' : 'en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
 
@@ -205,7 +206,7 @@ function caseHref(href: string) {
           <p class="section-number mono"><SectionGlyph name="lately" />{t.lately.number}</p>
           <div class="heading-row">
             <h2 id="lately-title">{t.lately.title}</h2>
-            {heroEntry && <span class="updated mono">{t.lately.updated} {dayMonth(heroEntry.date)}</span>}
+            <span class="updated mono">{t.lately.updated} {dayMonth(buildDate)}</span>
           </div>
           <p>{t.lately.intro}</p>
         </div>
