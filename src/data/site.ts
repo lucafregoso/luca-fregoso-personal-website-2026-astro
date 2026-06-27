@@ -53,11 +53,11 @@ export const site = {
     'Fifteen years building software gives me the technical depth to lead content, presales, learning programs and rooms full of developers.',
 
   metrics: [
-    { value: '15 years', label: 'building software' },
+    { value: '15 years', label: 'building software and technical programs' },
+    { value: '300+ devs', label: 'company ecosystem behind an academy business unit' },
+    { value: '7', label: 'Codemotion editions shaped across Milan, Madrid and Rome' },
     { value: '~600', label: 'CFP proposals reviewed per edition' },
-    { value: '~90', label: 'sessions shaped per conference' },
-    { value: '2–3k', label: 'developers reached per event' },
-    { value: '~200', label: 'people trained in an academy built from zero' },
+    { value: 'MC', label: 'for tech events beyond Codemotion' },
   ],
 
   capabilities: [
@@ -86,7 +86,7 @@ export const site = {
       label: 'Conference programs',
       title: 'Shaping trusted agendas across Europe',
       description:
-        'I coordinate international committees and turn roughly 600 submissions into a balanced ~90-session program for Codemotion editions in Rome, Madrid and Milan.',
+        'I coordinate international committees and turn roughly 600 submissions into balanced programs for seven Codemotion editions: three in Milan, two in Madrid and two in Rome.',
       outcome: '2,000–3,000 developers served at each event',
       href: '#talks',
       linkLabel: 'Explore speaking work',
@@ -104,8 +104,8 @@ export const site = {
       label: 'Learning programs',
       title: 'Building a technical academy from zero',
       description:
-        'I designed the program, teaching model and operating rhythm for an academy that helped people enter and grow in technical careers.',
-      outcome: '~200 people trained',
+        'I led the program, teaching model and operating rhythm for an academy business unit inside a company ecosystem of more than 300 developers.',
+      outcome: '~200 people trained for technical careers',
       href: '/cv.pdf',
       linkLabel: 'Read the full CV',
       download: true,
