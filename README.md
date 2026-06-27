@@ -7,7 +7,8 @@ Personal site built with [Astro](https://astro.build). Static output — fast, a
 ```bash
 pnpm install
 pnpm run dev      # http://localhost:4321
-pnpm run check    # Astro + TypeScript diagnostics
+pnpm run check    # Astro + TypeScript diagnostics + private CMS config checks
+pnpm run cms:serve # private Sveltia CMS UI at http://localhost:8080
 pnpm test         # Playwright suite; builds and previews with PLAYWRIGHT_TEST=1
 pnpm run build    # outputs to ./dist
 pnpm run preview  # preview the production build
@@ -28,6 +29,26 @@ Everything you'll want to change lives in a few predictable places:
 - `src/content/appearances/` — one bilingual source per video, live recording or podcast; placements control whether it appears in Lately, Media, or both.
 - `src/styles/global.css` — design tokens. The lime accent (`--lime: #d0db02`) is used only for borders, prompts and the cursor; readable accent text uses a darker derived green so it passes contrast checks in both themes.
 - `public/cv.pdf` — your CV. Replace this file to update the download.
+
+## Private CMS tooling
+
+Sveltia CMS lives in `admin/` as repository tooling, not in `public/`.
+Astro does not copy it into `dist/`, so `/admin/` is not publicly accessible in
+the static site. The CMS configuration mirrors the Astro Content Collections in
+`src/content.config.ts` and writes Markdown files under `src/content/**`.
+
+If you want to use the CMS locally, serve the `admin/` folder with a local static
+server or connect it to the configured GitHub backend. Publishing remains
+Git-based: CMS edit → Git commit on `develop` → Astro build → static deploy.
+
+```bash
+pnpm run cms:serve
+```
+
+Then open `http://localhost:8080`. The private admin UI is intentionally served
+from a separate local process, not from Astro and not from the production build.
+`pnpm run check` validates that `admin/config.yml` still matches the site
+content model and that neither `public/admin` nor `dist/admin` exists.
 
 ### Adding a talk
 
