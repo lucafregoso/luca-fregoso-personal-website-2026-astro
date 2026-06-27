@@ -40,6 +40,11 @@ test.describe('locale metadata and switching', () => {
       await page.goto(locale.path);
 
       await expect(page.locator('html')).toHaveAttribute('lang', locale.lang);
+      const brand = page.locator('.site-brand');
+      await expect(brand).toHaveAttribute('href', locale.path);
+      const brandBox = await brand.boundingBox();
+      expect(brandBox).not.toBeNull();
+      expect(brandBox!.width).toBeLessThan(180);
 
       const canonical = await page.locator('link[rel="canonical"]').getAttribute('href');
       expect(new URL(canonical!).pathname).toBe(locale.path);
