@@ -16,7 +16,7 @@ export default defineConfig({
     { name: 'desktop-chromium', use: { ...devices['Desktop Chrome'] } },
   ],
   webServer: {
-    command: 'npm run build:test && npm run preview -- --host 127.0.0.1 --port 4399',
+    command: 'pnpm run build:test && pnpm run preview:test --host 127.0.0.1 --port 4399',
     url: 'http://127.0.0.1:4399',
     reuseExistingServer: false,
     timeout: 120_000,

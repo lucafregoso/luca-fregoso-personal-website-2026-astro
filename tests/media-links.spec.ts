@@ -3,8 +3,8 @@ import fs from 'node:fs';
 
 const providerRequest = /(?:youtube(?:-nocookie)?\.com|ytimg\.com|googlevideo\.com|spotify\.com|scdn\.co)/i;
 const examples = [
-  { title: 'Tech Chat – AI & Open Source', publisher: 'Codemotion', duration: '1:03:23', hrefPart: 'youtube.com/watch', action: { en: 'Watch on YouTube', it: 'Guarda su YouTube' } },
-  { title: 'Spotlight #11 – Luca Fregoso (Codemotion)', publisher: 'Il Podcast Open Source', duration: '44:01', hrefPart: 'open.spotify.com/episode', action: { en: 'Listen on Spotify', it: 'Ascolta su Spotify' } },
+  { title: 'Tech Chat – AI & Open Source', publisher: 'Codemotion', duration: '1:03:23', hrefPart: 'youtube.com/watch', mobilePresentation: 'poster', action: { en: 'Watch on YouTube', it: 'Guarda su YouTube' } },
+  { title: 'Spotlight #11 – Luca Fregoso (Codemotion)', publisher: 'Il Podcast Open Source', duration: '44:01', hrefPart: 'open.spotify.com/episode', mobilePresentation: 'stamp', action: { en: 'Listen on Spotify', it: 'Ascolta su Spotify' } },
 ] as const;
 const locales = [{ path: '/', lang: 'en' }, { path: '/it/', lang: 'it' }] as const;
 
@@ -14,32 +14,28 @@ function appearanceFor(section: Locator, title: string) {
 
 test.describe('compact media appearances', () => {
   for (const locale of locales) {
-    test(`${locale.path} renders compact appearances in Lately and Media`, async ({ page }) => {
+    test(`${locale.path} renders compact appearances in the editorial archive`, async ({ page }) => {
       await page.goto(locale.path);
       for (const example of examples) {
-        for (const sectionId of ['#lately', '#media']) {
-          const entry = appearanceFor(page.locator(sectionId), example.title);
-          await expect(entry).toHaveCount(1);
-          await expect(entry).toHaveAttribute('data-mobile-presentation', 'row');
-          await expect(entry).toContainText(example.publisher);
-          if (sectionId === '#lately') {
-            await expect(entry).toContainText(example.duration);
-          } else {
-            await expect(entry).not.toContainText(example.duration);
-          }
-        }
         const entry = appearanceFor(page.locator('#media'), example.title);
-        const thumbnail = entry.locator('a.appearance-thumbnail');
+        await expect(entry).toHaveCount(1);
+        await expect(entry).toHaveAttribute('data-mobile-presentation', example.mobilePresentation);
+        await expect(entry).toContainText(example.publisher);
+        await expect(entry).not.toContainText(example.duration);
+        const thumbnail = entry.locator('.appearance-thumbnail');
+        const title = entry.locator('a.appearance-title-link');
         const action = entry.locator('a.appearance-action');
         await expect(action).toContainText(example.action[locale.lang]);
-        for (const link of [thumbnail, action]) {
+        await expect(thumbnail.locator('img')).toHaveAttribute('src', /\/media\/.+\.png$/);
+        await expect(thumbnail).not.toHaveAttribute('href', /.*/);
+        for (const link of [title, action]) {
           await expect(link).toHaveAttribute('target', '_blank');
           await expect(link).toHaveAttribute('rel', /noopener/);
           await expect(link).toHaveAttribute('rel', /noreferrer/);
           await expect(link).toHaveAttribute('href', new RegExp(example.hrefPart));
         }
-        await expect(thumbnail.locator('img')).toHaveAttribute('src', /\/media\/.+\.png$/);
       }
+      await expect(page.getByRole('link', { name: locale.lang === 'it' ? 'Vedi tutto l’archivio' : 'View all field notes' })).toBeVisible();
     });
 
     test(`${locale.path} contains no embeds or provider requests`, async ({ page }) => {
@@ -71,8 +67,18 @@ test.describe('compact media appearances', () => {
 
   test('YouTube keeps the requested start time in its external URL', async ({ page }) => {
     await page.goto('/');
-    const href = await appearanceFor(page.locator('#media'), examples[0].title).locator('a.appearance-thumbnail').getAttribute('href');
+    const href = await appearanceFor(page.locator('#media'), examples[0].title).locator('a.appearance-title-link').getAttribute('href');
     expect(new URL(href!).searchParams.get('t')).toBe('1060s');
+  });
+
+  test('clicking a non-link area of a media row follows the title link', async ({ page }) => {
+    await page.goto('/');
+    const entry = appearanceFor(page.locator('#media'), examples[1].title);
+    const popupPromise = page.waitForEvent('popup');
+    await entry.locator('.appearance-thumbnail').click();
+    const popup = await popupPromise;
+    expect(popup.url()).toContain('open.spotify.com/episode');
+    await popup.close();
   });
 
   test('archive rows use the full content width and retain their separators', async ({ page }) => {
@@ -96,10 +102,55 @@ test.describe('compact media appearances', () => {
     await expect(firstEntry.locator('.appearance-thumbnail')).toHaveCSS('border-color', borderBefore);
   });
 
+  for (const width of [390, 320]) {
+    test(`phone stamp layout uses full-width copy at ${width}px`, async ({ page }) => {
+      await page.setViewportSize({ width, height: 900 });
+      await page.goto('/');
+      const entry = appearanceFor(page.locator('#media'), examples[1].title);
+      const thumbnailBox = await entry.locator('.appearance-thumbnail').boundingBox();
+      const titleBox = await entry.locator('h3').boundingBox();
+      const summaryBox = await entry.locator('.appearance-details p').boundingBox();
+      const copyBox = await entry.locator('.appearance-copy').boundingBox();
+      expect(thumbnailBox).not.toBeNull();
+      expect(titleBox).not.toBeNull();
+      expect(summaryBox).not.toBeNull();
+      expect(copyBox).not.toBeNull();
+      expect(titleBox!.y).toBeLessThan(thumbnailBox!.y);
+      expect(Math.abs(titleBox!.x - copyBox!.x)).toBeLessThanOrEqual(1);
+      expect(summaryBox!.width / copyBox!.width).toBeGreaterThan(.85);
+      await expect(entry).not.toContainText(examples[1].duration);
+    });
+
+    test(`phone poster layout keeps the image restrained at ${width}px`, async ({ page }) => {
+      await page.setViewportSize({ width, height: 900 });
+      await page.goto('/');
+      const entry = appearanceFor(page.locator('#media'), examples[0].title);
+      const thumbnailBox = await entry.locator('.appearance-thumbnail').boundingBox();
+      const titleBox = await entry.locator('h3').boundingBox();
+      const copyBox = await entry.locator('.appearance-copy').boundingBox();
+      expect(thumbnailBox).not.toBeNull();
+      expect(titleBox).not.toBeNull();
+      expect(copyBox).not.toBeNull();
+      expect(thumbnailBox!.y).toBeLessThan(titleBox!.y);
+      expect(thumbnailBox!.height).toBeLessThanOrEqual(153);
+      expect(thumbnailBox!.width / copyBox!.width).toBeGreaterThan(.9);
+      await expect(entry).not.toContainText(examples[0].duration);
+    });
+  }
+
+  test('text-only mobile mode remains available', async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 900 });
+    await page.goto('/');
+    const entry = appearanceFor(page.locator('#media'), examples[1].title);
+    await entry.evaluate((element) => element.setAttribute('data-mobile-presentation', 'text-only'));
+    await expect(entry.locator('.appearance-thumbnail')).toBeHidden();
+    await expect(entry.locator('h3')).toBeVisible();
+  });
+
   test('all Markdown presentation modes remain available', () => {
     const schema = fs.readFileSync('src/content.config.ts', 'utf8');
     expect(schema).toContain("['contact-sheet', 'lead', 'sidecar']");
-    expect(schema).toContain("['row', 'above', 'text-only']");
+    expect(schema).toContain("['stamp', 'poster', 'text-only']");
   });
 });
 
