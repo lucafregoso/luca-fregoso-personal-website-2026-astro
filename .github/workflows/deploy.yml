@@ -1,16 +1,13 @@
-name: CI and deploy to GitHub Pages
+name: Deploy to GitHub Pages
 
 on:
   push:
     branches:
       - develop
-  pull_request:
-    branches:
-      - develop
   workflow_dispatch:
 
-# Validation only needs repository read access. Deployment permissions are
-# granted to the deploy job below, after all quality checks pass.
+# Deployment starts only after code reaches develop, either by direct commit or
+# by merging a pull request.
 permissions:
   contents: read
 
@@ -19,8 +16,8 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  build-and-test:
-    name: Build and test
+  build:
+    name: Build production site
     runs-on: ubuntu-latest
     timeout-minutes: 15
     env:
@@ -52,24 +49,19 @@ jobs:
       - name: Check Astro and TypeScript
         run: pnpm run check
 
-      - name: Run end-to-end tests
-        run: pnpm test
-
-      # Playwright builds with a root base path for local tests. Build again
-      # with the production GitHub Pages base path before uploading dist/.
       - name: Build production site
         run: pnpm run build
 
       - name: Upload GitHub Pages artifact
-        if: github.ref == 'refs/heads/develop' && github.event_name != 'pull_request'
+        if: github.ref == 'refs/heads/develop'
         uses: actions/upload-pages-artifact@v3
         with:
           path: dist
 
   deploy:
     name: Deploy
-    if: github.ref == 'refs/heads/develop' && github.event_name != 'pull_request'
-    needs: build-and-test
+    if: github.ref == 'refs/heads/develop'
+    needs: build
     runs-on: ubuntu-latest
     timeout-minutes: 10
     permissions:

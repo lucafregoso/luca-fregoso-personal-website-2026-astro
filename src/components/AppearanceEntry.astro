@@ -27,7 +27,7 @@ interface Appearance {
 interface Props {
   appearance: Appearance;
   locale: Locale;
-  variant?: 'featured' | 'feed' | 'archive';
+  variant?: 'featured' | 'feed' | 'archive' | 'card';
   anchorId?: string;
 }
 
@@ -36,7 +36,7 @@ const t = translations[locale];
 const title = localize(appearance.title, locale);
 const summary = localize(appearance.summary, locale);
 const dateLocale = locale === 'it' ? 'it-IT' : 'en-GB';
-const dateLabel = appearance.date.toLocaleDateString(dateLocale, variant === 'archive'
+const dateLabel = appearance.date.toLocaleDateString(dateLocale, variant === 'archive' || variant === 'card'
   ? { year: 'numeric', month: 'short' }
   : { day: 'numeric', month: 'long', year: 'numeric' });
 const Tag = variant === 'feed' ? 'li' : 'article';
@@ -48,40 +48,64 @@ const actionLabel = appearance.platform === 'youtube' ? t.appearances.watch : t.
   variant === 'featured' && 'featured-story appearance-featured',
   variant === 'feed' && 'feed-item appearance-feed',
   variant === 'archive' && 'writing-item appearance-archive',
+  variant === 'card' && 'appearance-card',
 ]} data-appearance-entry data-format={appearance.format} data-mobile-presentation={appearance.mobilePresentation} id={anchorId}>
-  <div class:list={['appearance-copy', variant === 'feed' && 'feed-body']}>
-    <div class:list={['appearance-media', variant === 'archive' && 'appearance-rail']}>
-      <div
-        class="appearance-thumbnail"
-        title={`${actionLabel}: ${title}`}
-        aria-hidden="true"
-      >
+  {variant === 'card' ? (
+    <>
+      <div class="appearance-thumbnail card-thumb" title={`${actionLabel}: ${title}`} aria-hidden="true">
         <img src={withBase(appearance.poster)} alt="" width="1200" height="675" loading="lazy" />
       </div>
-      {variant === 'archive' && (
+      <div class="card-body">
         <div class="appearance-meta mono">
           <span>{appearance.publisher}</span>
           <time datetime={appearance.date.toISOString()}>{dateLabel}</time>
         </div>
-      )}
-    </div>
-    <div class="appearance-details">
-      <div class="appearance-badges mono" aria-label={locale === 'it' ? 'Tipo di contenuto e ruolo' : 'Content format and role'}>
-        <a class="meta-badge meta-badge-neutral" href={archiveHref(locale, appearance.format as ArchiveType)}>{t.appearances.formats[appearance.format]}</a>
-        <span class="meta-badge meta-badge-neutral">{t.appearances.roles[appearance.role]}</span>
+        <h3><ExternalLink class="appearance-title-link" href={appearance.externalUrl}>{title}</ExternalLink></h3>
+        <p class="card-summary">{summary}</p>
+        <ExternalLink class="appearance-action mono" href={appearance.externalUrl}>{actionLabel}</ExternalLink>
+        <div class="appearance-badges mono card-badges" aria-label={locale === 'it' ? 'Tipo di contenuto e ruolo' : 'Content format and role'}>
+          <a class="meta-badge meta-badge-neutral" href={archiveHref(locale, appearance.format as ArchiveType)}>{t.appearances.formats[appearance.format]}</a>
+          <span class="meta-badge meta-badge-neutral">{t.appearances.roles[appearance.role]}</span>
+        </div>
       </div>
-      <h3><ExternalLink class="appearance-title-link" href={appearance.externalUrl}>{title}</ExternalLink></h3>
-      <p>{summary}</p>
-      <ExternalLink class="appearance-action mono" href={appearance.externalUrl}>{actionLabel}</ExternalLink>
-    </div>
-  </div>
+    </>
+  ) : (
+    <>
+      <div class:list={['appearance-copy', variant === 'feed' && 'feed-body']}>
+        <div class:list={['appearance-media', variant === 'archive' && 'appearance-rail']}>
+          <div
+            class="appearance-thumbnail"
+            title={`${actionLabel}: ${title}`}
+            aria-hidden="true"
+          >
+            <img src={withBase(appearance.poster)} alt="" width="1200" height="675" loading="lazy" />
+          </div>
+          {variant === 'archive' && (
+            <div class="appearance-meta mono">
+              <span>{appearance.publisher}</span>
+              <time datetime={appearance.date.toISOString()}>{dateLabel}</time>
+            </div>
+          )}
+        </div>
+        <div class="appearance-details">
+          <div class="appearance-badges mono" aria-label={locale === 'it' ? 'Tipo di contenuto e ruolo' : 'Content format and role'}>
+            <a class="meta-badge meta-badge-neutral" href={archiveHref(locale, appearance.format as ArchiveType)}>{t.appearances.formats[appearance.format]}</a>
+            <span class="meta-badge meta-badge-neutral">{t.appearances.roles[appearance.role]}</span>
+          </div>
+          <h3><ExternalLink class="appearance-title-link" href={appearance.externalUrl}>{title}</ExternalLink></h3>
+          <p>{summary}</p>
+          <ExternalLink class="appearance-action mono" href={appearance.externalUrl}>{actionLabel}</ExternalLink>
+        </div>
+      </div>
 
-  {variant !== 'archive' && (
-    <div class:list={['appearance-meta', 'mono', variant === 'feed' && 'feed-meta']}>
-      <span>{appearance.publisher}</span>
-      <time datetime={appearance.date.toISOString()}>{dateLabel}</time>
-      <span>{appearance.duration}</span>
-    </div>
+      {variant !== 'archive' && (
+        <div class:list={['appearance-meta', 'mono', variant === 'feed' && 'feed-meta']}>
+          <span>{appearance.publisher}</span>
+          <time datetime={appearance.date.toISOString()}>{dateLabel}</time>
+          <span>{appearance.duration}</span>
+        </div>
+      )}
+    </>
   )}
 </Tag>
 
@@ -89,6 +113,9 @@ const actionLabel = appearance.platform === 'youtube' ? t.appearances.watch : t.
   document.addEventListener('click', (event) => {
     if (!(event.target instanceof Element)) return;
     if (event.target.closest('a, button')) return;
+    if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey || event.button !== 0) return;
+    const selection = window.getSelection();
+    if (selection && !selection.isCollapsed) return;
     const entry = event.target.closest('[data-appearance-entry]');
     const link = entry?.querySelector('.appearance-title-link') as HTMLAnchorElement | null;
     if (link) link.click();
@@ -120,18 +147,29 @@ const actionLabel = appearance.platform === 'youtube' ? t.appearances.watch : t.
   .appearance-details h3 :global(a) { color: var(--text); }
   .appearance-entry:hover .appearance-details h3 :global(a),
   .appearance-entry:focus-within .appearance-details h3 :global(a) { border-bottom-color: var(--lime); }
-  .appearance-details > p { max-width: 66ch; margin: .55rem 0 0; color: var(--text-muted); font-size: .92rem; }
+  .appearance-details > p { max-width: 66ch; margin: .55rem 0 0; color: var(--text-muted); font-size: var(--text-body-sm); }
+
+  /* ---- Card variant: thumbnail-led, whole card clickable ---- */
+  .appearance-card { display: flex; flex-direction: column; align-items: stretch; overflow: hidden; border: 1px solid var(--border); border-radius: var(--radius-md); background: var(--surface); cursor: pointer; transition: transform .22s var(--ease-out), border-color .22s var(--ease-out), box-shadow .22s var(--ease-out); }
+  .appearance-card::after { content: none; }
+  .appearance-card:hover, .appearance-card:focus-within { transform: translateY(-3px); border-color: color-mix(in srgb, var(--lime), var(--border-strong) 40%); box-shadow: 0 14px 34px color-mix(in srgb, var(--text), transparent 92%); }
+  .appearance-card .card-thumb { border: 0; border-radius: 0; border-bottom: 1px solid var(--border); }
+  .appearance-card .card-body { flex: 1; display: flex; flex-direction: column; align-items: flex-start; padding: 1.2rem 1.4rem 1.4rem; }
+  .appearance-card .appearance-meta { flex-wrap: wrap; }
+  .appearance-card h3 { margin: .8rem 0 0; font-size: var(--text-h3); line-height: 1.3; }
+  .appearance-card .card-summary { display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; line-clamp: 2; overflow: hidden; max-width: none; margin: .6rem 0 0; color: var(--text-muted); font-size: var(--text-body-sm); }
+  .appearance-card .card-badges { margin-top: auto; padding-top: 1.1rem; }
   .appearance-thumbnail { display: block; overflow: hidden; aspect-ratio: 16 / 9; border: 1px solid var(--border); border-radius: 9px; background: var(--surface); cursor: pointer; transition: border-color .18s var(--ease-out); }
   .appearance-thumbnail:hover { border-color: var(--border); border-bottom-color: var(--border); }
   .appearance-thumbnail img { width: 100%; height: 100%; display: block; object-fit: cover; transition: transform .24s var(--ease-out), filter .24s var(--ease-out); }
   .appearance-entry:hover .appearance-thumbnail img,
   .appearance-entry:focus-within .appearance-thumbnail img { transform: scale(1.018); filter: saturate(1.04); }
-  :global(.appearance-action) { width: fit-content; min-height: 44px; margin-top: .55rem; display: inline-flex; align-items: center; gap: .35rem; font-size: .74rem; }
+  :global(.appearance-action) { width: fit-content; min-height: 44px; margin-top: .55rem; display: inline-flex; align-items: center; gap: .35rem; font-size: var(--text-ui); }
   :global(.appearance-action .external-arrow) { display: inline-block; transition: transform .16s var(--ease-out); }
   :global(.appearance-action:hover .external-arrow),
   :global(.appearance-action:focus-visible .external-arrow) { transform: translate(2px, -2px); }
   .appearance-badges { display: flex; flex-wrap: wrap; gap: .4rem; }
-  .appearance-meta { display: flex; gap: .45rem; color: var(--text-faint); font-size: .68rem; }
+  .appearance-meta { display: flex; gap: .45rem; color: var(--text-faint); font-size: var(--text-meta); }
   .appearance-featured { display: grid; grid-template-columns: minmax(0, 1fr) 180px; gap: 2rem; }
   .appearance-featured .appearance-details h3 { max-width: 25ch; font-size: clamp(1.4rem, 2.4vw, 2rem); }
   .appearance-featured .appearance-meta { flex-direction: column; text-align: right; }
@@ -154,7 +192,6 @@ const actionLabel = appearance.platform === 'youtube' ? t.appearances.watch : t.
     .appearance-archive .appearance-rail { display: contents; }
     .appearance-archive .appearance-meta { margin-top: 0; grid-column: 1; grid-row: 3; flex-direction: row; flex-wrap: wrap; text-align: left; }
     .appearance-badges { gap: .3rem; }
-    .appearance-badges .meta-badge { font-size: .58rem; }
     .appearance-entry[data-mobile-presentation='stamp'] .appearance-copy,
     .appearance-entry[data-mobile-presentation='poster'] .appearance-copy,
     .appearance-entry[data-mobile-presentation='text-only'] .appearance-copy { grid-template-columns: 1fr; }
@@ -172,7 +209,10 @@ const actionLabel = appearance.platform === 'youtube' ? t.appearances.watch : t.
     .appearance-entry[data-mobile-presentation='text-only']:not(.appearance-archive) .appearance-media { display: none; }
     .appearance-entry[data-mobile-presentation='text-only'] .appearance-details { grid-row: 1; }
     .appearance-entry[data-mobile-presentation='text-only'] .appearance-meta { grid-column: 1; grid-row: 2; }
-    .appearance-details h3 { font-size: 1rem; }
+    /* Cards stay uniform on phones: full-width thumbnail regardless of the
+       stamp/poster presentation hints (text-only may still hide it). */
+    .appearance-entry.appearance-card .appearance-thumbnail { width: 100%; max-height: none; border-radius: 0; }
+    .appearance-details h3 { font-size: var(--text-body); }
   }
   @media (prefers-reduced-motion: reduce) {
     .appearance-entry::after,

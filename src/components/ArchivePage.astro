@@ -2,7 +2,6 @@
 import BaseLayout from '../layouts/BaseLayout.astro';
 import SiteHeader from './SiteHeader.astro';
 import ExternalLink from './ExternalLink.astro';
-import SectionGlyph from './SectionGlyph.astro';
 import { archiveHref, archivePath, archiveTypes, getArchiveItems, type ArchiveType } from '../lib/archive';
 import { withBase } from '../lib/url';
 import { translations, type Locale } from '../i18n';
@@ -35,10 +34,6 @@ const navItems = [
   <main id="main" tabindex="-1" class="archive-page">
     <section class="archive-shell" aria-labelledby="archive-title">
       <div class="archive-heading">
-        <div class="archive-kicker mono">
-          <SectionGlyph name="archive" />
-          <span>{t.archive.number}</span>
-        </div>
         <h1 id="archive-title">{t.archive.title}</h1>
         <p>{t.archive.intro}</p>
       </div>
@@ -163,23 +158,22 @@ const navItems = [
     padding: 5.5rem 0 7rem;
   }
   .archive-heading { max-width: 48rem; margin-bottom: 2.5rem; }
-  .archive-kicker { display: flex; align-items: center; gap: .8rem; color: var(--accent-text); font-size: .72rem; text-transform: uppercase; letter-spacing: .08em; }
-  .archive-heading h1 { max-width: 14ch; margin: 1rem 0 0; font-size: clamp(2.6rem, 6vw, 5rem); line-height: .98; letter-spacing: -.06em; }
+  .archive-heading h1 { max-width: 14ch; margin: 0; font-size: var(--text-h2); line-height: 1.02; letter-spacing: -.03em; }
   .archive-heading p { max-width: 58ch; color: var(--text-muted); }
   .archive-filters { display: flex; flex-wrap: wrap; gap: .45rem; margin-bottom: 1.25rem; }
   .archive-filters [aria-current='page'] { color: #171715; background: var(--lime); border-color: var(--lime); }
-  .archive-status { margin: 0 0 .75rem; color: var(--text-faint); font-size: .68rem; }
+  .archive-status { margin: 0 0 .75rem; color: var(--text-faint); font-size: var(--text-meta); }
   .archive-list { margin: 0; padding: 0; list-style: none; border-top: 1px solid var(--border); }
   .archive-item { display: grid; grid-template-columns: clamp(180px, 20vw, 220px) minmax(0, 1fr); gap: 1.75rem; padding: 1.6rem 0; border-bottom: 1px solid var(--border); }
   .archive-item[hidden] { display: none; }
-  .archive-meta { display: flex; flex-direction: column; gap: .65rem; align-items: flex-start; color: var(--text-faint); font-size: .68rem; }
-  .archive-copy h2 { margin: 0; font-size: 1.15rem; }
+  .archive-meta { display: flex; flex-direction: column; gap: .65rem; align-items: flex-start; color: var(--text-faint); font-size: var(--text-meta); }
+  .archive-copy h2 { margin: 0; font-size: var(--text-h3); }
   .archive-copy h2 :global(a) { color: var(--text); }
-  .archive-copy p { max-width: 66ch; margin: .55rem 0 0; color: var(--text-muted); font-size: .9rem; }
-  .archive-source { color: var(--text-faint) !important; font-size: .68rem !important; }
+  .archive-copy p { max-width: 66ch; margin: .55rem 0 0; color: var(--text-muted); font-size: var(--text-body-sm); }
+  .archive-source { color: var(--text-faint) !important; font-size: var(--text-meta) !important; }
   .archive-empty { padding: 2rem 0; color: var(--text-muted); }
   .archive-pagination { margin-top: 1.5rem; display: flex; align-items: center; gap: .8rem; }
-  .archive-pagination button { min-height: 44px; padding: .55rem .8rem; border: 1px solid var(--border); border-radius: 8px; color: var(--text); background: var(--surface); font: 650 .76rem/1 var(--font-mono); cursor: pointer; }
+  .archive-pagination button { min-height: 44px; padding: .55rem .8rem; border: 1px solid var(--border); border-radius: 8px; color: var(--text); background: var(--surface); font: 400 var(--text-ui)/1 var(--font-mono); cursor: pointer; }
   .archive-pagination button:disabled { opacity: .45; cursor: not-allowed; }
   @media (max-width: 620px) {
     .archive-shell { width: min(calc(100% - 2rem), 70rem); padding-top: 4rem; }
