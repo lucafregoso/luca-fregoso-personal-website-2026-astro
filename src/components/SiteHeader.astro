@@ -139,9 +139,13 @@ const homeHref = withBase(locale === 'it' ? '/it/' : '/');
     transition: min-height .2s ease;
   }
   [data-compact='true'] .site-header-inner { min-height: 62px; }
-  .site-brand { width: fit-content; min-height: 44px; justify-self: start; display: inline-flex; align-items: center; color: var(--text); font-size: .82rem; letter-spacing: .04em; }
+  .site-brand { width: fit-content; min-height: 44px; justify-self: start; display: inline-flex; align-items: center; color: var(--text); font-size: var(--text-ui); letter-spacing: 0; }
+  /* Terminal caret on hover — a small egg for people who notice */
+  .site-brand::after { content: '▊'; margin-left: .2rem; color: var(--accent-text); opacity: 0; }
+  .site-brand:hover::after, .site-brand:focus-visible::after { opacity: 1; animation: brand-caret 1.1s steps(1) infinite; }
+  @keyframes brand-caret { 50% { opacity: 0; } }
   .desktop-navigation { display: flex; align-items: center; gap: 1.35rem; }
-  .desktop-navigation a { min-height: 44px; display: inline-flex; align-items: center; color: var(--text-muted); font: 500 .78rem/1 var(--font-mono); }
+  .desktop-navigation a { min-height: 44px; display: inline-flex; align-items: center; color: var(--text-muted); font: 400 var(--text-meta)/1 var(--font-mono); }
   .desktop-navigation a:hover { color: var(--text); }
   .header-actions { display: flex; align-items: center; gap: .35rem; }
   .menu-toggle {
@@ -167,7 +171,7 @@ const homeHref = withBase(locale === 'it' ? '/it/' : '/');
   .menu-toggle[aria-expanded='true'] .menu-line-middle { opacity: 0; transform: scaleX(.3); }
   .menu-toggle[aria-expanded='true'] .menu-line-bottom { transform: translateY(0) rotate(-45deg); }
   .mobile-navigation { width: min(1180px, calc(100% - 3rem)); margin: 0 auto; padding: .5rem 0 1.5rem; border-top: 1px solid var(--border); }
-  .mobile-navigation a { min-height: 48px; display: flex; align-items: center; font: 600 1rem/1 var(--font-mono); }
+  .mobile-navigation a { min-height: 48px; display: flex; align-items: center; font: 400 var(--text-ui)/1 var(--font-mono); }
   .mobile-navigation[hidden] { display: none; }
 
   @media (max-width: 900px) {
@@ -183,6 +187,7 @@ const homeHref = withBase(locale === 'it' ? '/it/' : '/');
   }
   @media (prefers-reduced-motion: reduce) {
     .site-header, .site-header-inner, .menu-line { transition: none; }
+    .site-brand:hover::after, .site-brand:focus-visible::after { animation: none; }
   }
   @media (forced-colors: active) {
     .site-header { background: Canvas; border-color: CanvasText; }

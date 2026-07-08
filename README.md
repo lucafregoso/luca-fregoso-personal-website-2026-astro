@@ -119,10 +119,12 @@ mobilePresentation: stamp # stamp | poster | text-only
 ```
 
 The permanent Media archive merges articles and appearances newest-first.
-Titles, cards and explicit watch/listen actions open the original platform in a
-new tab. On phones, `stamp` keeps the copy dominant and uses the poster as a
-small editorial stamp, `poster` leads with a restrained image, and `text-only`
-hides the thumbnail for dense future entries.
+The home-page Media deck is editorially capped at five cards: it keeps current
+appearances visible for interaction review, then fills the remaining slots with
+the newest articles. Titles, cards and explicit watch/listen actions open the
+original platform in a new tab. On phones, `stamp` keeps the copy dominant and
+uses the poster as a small editorial stamp, `poster` leads with a restrained
+image, and `text-only` hides the thumbnail for dense future entries.
 
 ## Where to extend next
 
