@@ -12,123 +12,133 @@
 
 export const site = {
   // ---- Identity ----
-  name: 'Luca Fregoso',
-  tagline: 'Developer Programs & Content Lead',
-  location: 'La Spezia, Italy — working with remote teams',
+  name: "Luca Fregoso",
+  tagline: "Developer Programs & Content Lead",
+  location: "La Spezia, Italy — working with remote teams",
 
   // ---- Technical / SEO / social metadata ----
   meta: {
     // Language + locale of the content.
-    lang: 'en',
-    ogLocale: 'en_US',
+    lang: "en",
+    ogLocale: "en_US",
 
     // The <title> pattern. {name} and {tagline} are filled in.
     // Pages can override the whole title via the layout prop.
-    titlePattern: '{name} — {tagline}',
+    titlePattern: "{name} — {tagline}",
 
     // Default meta description (search results + social preview).
     description:
-      'Developer programs, technical content and presales lead with 15 years in software. ' +
-      'Luca Fregoso shapes conference agendas, learning paths, technical narratives and developer-facing programs.',
+      "Developer programs, technical content and presales lead with 20+ years in tech, 15 of them building software. " +
+      "Luca Fregoso shapes conference agendas, learning paths, technical narratives and developer-facing programs.",
 
-    author: 'Luca Fregoso',
+    author: "Luca Fregoso",
 
     // Social share image. Put the file in /public and set the path
     // here (with a leading slash). RECOMMENDED SIZE: 1200×630 px.
     // The stage photograph is local, so social crawlers never depend on a
     // third-party media host. It is deliberately large enough for rich cards.
-    ogImage: '/hackathon-2026.jpg' as string | null,
+    ogImage: "/hackathon-2026.jpg" as string | null,
 
     // Browser UI / mobile address-bar tint.
-    themeColor: '#d0db02',
+    themeColor: "#d0db02",
   },
 
   // ---- Page content ----
-  eyebrow: 'Developer programs · technical presales · community stages',
-  headline: 'I design technical programs people trust.',
+  headline: "I design technical programs people trust.",
   intro:
-    'From European conference agendas to enterprise solutions, I turn hundreds of inputs, competing priorities and vague promises into clear programs that can actually ship.',
+    "From European conference agendas to enterprise solutions, I turn hundreds of inputs, competing priorities and vague promises into clear programs that can actually ship.",
   proof:
-    'Fifteen years building software let me move between code, content, presales, learning programs and rooms full of developers without losing the technical thread.',
+    "More than twenty years in tech — fifteen of them building software — let me move between code, content, presales, learning programs and rooms full of developers without losing the technical thread.",
 
+  // Exactly three true numbers spanning the three worlds (career /
+  // conferences / training), none repeated as an intersection stat.
   metrics: [
-    { value: '15 years', label: 'building software and technical programs' },
-    { value: '20+ paths', label: 'custom learning paths designed while leading an academy business unit' },
-    { value: '7 editions', label: 'Codemotion agendas, speakers and content shaped across Milan, Madrid and Rome' },
-    { value: 'MC', label: 'hosting tech events and keeping complex rooms moving' },
-    { value: 'Presales', label: 'supporting sales teams with credible technical narratives' },
-    { value: 'Mentoring', label: 'supporting startups on product direction and technical planning' },
-  ],
-
-  capabilities: [
     {
-      number: '01',
-      title: 'Developer programs & content',
-      description:
-        'Content strategy, CFP and speaker curation, committee leadership, agenda design and quality standards for technical audiences.',
+      value: "20+ years",
+      label: "in tech — 15 of them building software and technical programs",
     },
     {
-      number: '02',
-      title: 'Presales, products & scope',
-      description:
-        'Turning business intent, sales conversations and early product ideas into credible technical scope, delivery plans and narratives teams can stand behind.',
+      value: "5,000+",
+      label: "conference proposals evaluated across CFPs and committees",
     },
     {
-      number: '03',
-      title: 'Stages & learning',
-      description:
-        'MC and moderation, conference speaking, academy design and developer education that keeps complex rooms moving with clarity.',
+      value: "20+ paths",
+      label:
+        "custom learning paths designed while leading an academy business unit",
     },
   ],
 
-  caseStudies: [
+  // The Work section: three intersections where being the glue between
+  // tech, business and community produced measurable results. Compact by
+  // design — one axis label, one title, one sentence, one display stat.
+  intersections: [
     {
-      label: 'Conference programs',
-      title: 'Shaping trusted agendas across Europe',
-      description:
-        'I coordinate international committees and turn roughly 600 submissions per edition into balanced agendas for seven Codemotion editions: three in Milan, two in Madrid and two in Rome.',
-      outcome: '2,000–3,000 developers served at each event',
-      href: '#talks',
-      linkLabel: 'Explore speaking work',
+      id: "business",
+      axis: "Business × Engineering",
+      title: "The glue between strategy and delivery",
+      summary:
+        "I sit between clients, sales and engineering as translator and orchestrator: surfacing the real need, pressure-testing assumptions, shaping work that moves from pitch to production.",
+      stat: {
+        value: "pitch → prod",
+        label: "sales conversations translated into credible technical plans",
+      },
+      href: "#contact",
+      linkLabel: "Discuss a complex brief",
     },
     {
-      label: 'Enterprise presales',
-      title: 'Making ambitious promises deliverable',
-      description:
-        'I sit between clients, sales and delivery teams to uncover the real need, challenge assumptions and shape technical work that can move from pitch to production.',
-      outcome: 'Sales conversations translated into credible technical plans',
-      href: '#contact',
-      linkLabel: 'Discuss a complex brief',
+      id: "community",
+      axis: "Community × Engineering",
+      title: "Shaping trusted agendas across Europe",
+      summary:
+        "International committees, CFP and speaker curation for seven Codemotion editions across Milan, Madrid and Rome.",
+      stat: {
+        value: "600 → 1",
+        label: "submissions per edition, shaped into one balanced agenda",
+      },
+      href: "#talks",
+      linkLabel: "Explore speaking work",
     },
     {
-      label: 'Learning programs',
-      title: 'Building a technical academy from zero',
-      description:
-        'I led the program, teaching model and operating rhythm for an academy business unit, designing more than twenty custom learning paths for technical careers.',
-      outcome: '20+ learning paths designed for people entering tech',
-      href: '/cv.pdf',
-      linkLabel: 'Read the full CV',
+      id: "people",
+      axis: "People × Engineering",
+      title: "Building a technical academy from zero",
+      summary:
+        "Program, teaching model and operating rhythm created from scratch for an academy business unit.",
+      stat: {
+        value: "0 → 1",
+        label:
+          "an academy that didn't exist, built into a running business unit",
+      },
+      href: "/cv.pdf",
+      linkLabel: "Read the full CV",
       download: true,
     },
   ],
 
   links: {
-    linkedin: 'https://www.linkedin.com/in/lucafregoso',
-    sessionize: 'https://sessionize.com/luca-fregoso/',
+    linkedin: "https://www.linkedin.com/in/lucafregoso",
+    sessionize: "https://sessionize.com/luca-fregoso/",
   },
 
   // Only verified public profiles belong here. Placeholder links are never
   // rendered: trust is more valuable than a row of empty social icons.
   socials: [
-    { name: 'LinkedIn', url: 'https://www.linkedin.com/in/lucafregoso', primary: true },
-    { name: 'Bluesky', url: 'https://bsky.app/profile/lucafregoso.bsky.social' },
-    { name: 'Mastodon', url: 'https://fosstodon.org/@scakko' },
-    { name: 'X', url: 'https://x.com/scakko' },
-    { name: 'Instagram', url: 'https://www.instagram.com/lucafregoso' },
+    {
+      name: "LinkedIn",
+      url: "https://www.linkedin.com/in/lucafregoso",
+      primary: true,
+    },
+    {
+      name: "Bluesky",
+      url: "https://bsky.app/profile/lucafregoso.bsky.social",
+    },
+    { name: "Mastodon", url: "https://fosstodon.org/@scakko" },
+    { name: "X", url: "https://x.com/scakko" },
+    { name: "Instagram", url: "https://www.instagram.com/lucafregoso" },
   ],
 
   // Email, stored split so it never appears as a harvestable string in
   // the HTML. The UI reassembles it on interaction (see ContactEmail).
-  emailUser: 'hello',
-  emailDomain: 'luca-fregoso.com',
+  emailUser: "hello",
+  emailDomain: "luca-fregoso.com",
 };
