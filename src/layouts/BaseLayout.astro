@@ -1,5 +1,9 @@
 ---
 import '../styles/global.css';
+// Hashed URLs for the two latin font files so they can be preloaded —
+// skips the HTML → CSS → font discovery chain on first paint.
+import sansWoff2 from '@fontsource-variable/schibsted-grotesk/files/schibsted-grotesk-latin-wght-normal.woff2?url';
+import monoWoff2 from '@fontsource/fragment-mono/files/fragment-mono-latin-400-normal.woff2?url';
 import { site } from '../data/site';
 import { isLocale, translations, type Locale } from '../i18n';
 import { getLocaleAlternates } from '../lib/i18n';
@@ -38,6 +42,8 @@ const alternateOgLocale = translations[locale === 'en' ? 'it' : 'en'].meta.ogLoc
     <meta name="theme-color" content={m.themeColor} />
     <meta name="author" content={m.author} />
     <link rel="icon" href={withBase('/favicon.svg')} type="image/svg+xml" />
+    <link rel="preload" as="font" type="font/woff2" href={sansWoff2} crossorigin />
+    <link rel="preload" as="font" type="font/woff2" href={monoWoff2} crossorigin />
     <title>{title}</title>
     <meta name="description" content={description} />
     <link rel="canonical" href={canonical} />

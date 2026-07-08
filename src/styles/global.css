@@ -4,7 +4,18 @@
    prompts, underlines, the cursor) — never as body text, where
    its contrast is too low to be readable.
    For readable accent text we use a darker derived green.
+
+   Two voices, one grammar:
+   Schibsted Grotesk (sans) is the boardroom voice — prose and
+   display, with weight carrying heading presence.
+   Fragment Mono (single 400 weight) is the terminal voice —
+   labels, badges, buttons, easter eggs. The mono layer runs
+   weight 400 only (the face has no other weights) with
+   tracking 0. Both self-hosted via Fontsource.
    ============================================================ */
+
+@import '@fontsource-variable/schibsted-grotesk/index.css';
+@import '@fontsource/fragment-mono/index.css';
 
 :root {
   /* Brand */
@@ -16,7 +27,7 @@
   /* Light theme (default) */
   --bg: #fbfbf7;
   --surface: #ffffff;
-  --surface-2: #f0f0ee;
+  --surface-2: #ebebe5; /* tinted band — a visible step from --bg, not a whisper */
   --text: #1a1a1a;
   --text-muted: #5f5f5a;
   --text-faint: #6a6a63;
@@ -29,8 +40,24 @@
   --accent-text: var(--accent-text-light);
   --focus-ring: #5b6300;
 
-  --font-sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-  --font-mono: ui-monospace, "SF Mono", "JetBrains Mono", "Fira Code", Menlo, Consolas, monospace;
+  --font-sans: "Schibsted Grotesk Variable", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  --font-mono: "Fragment Mono", ui-monospace, "SF Mono", "JetBrains Mono", "Fira Code", Menlo, Consolas, monospace;
+
+  /* Type scale — the whole site uses these steps and nothing else. */
+  --text-meta: 0.72rem;     /* mono labels: badges, dates, nav */
+  --text-ui: 0.85rem;       /* mono UI: buttons, strong links */
+  --text-body-sm: 0.92rem;  /* card / feed body copy */
+  --text-body: 1rem;        /* default prose (17px root) */
+  --text-lead: clamp(1.15rem, 2vw, 1.35rem); /* hero intro + proof */
+  --text-h3: 1.25rem;
+  --text-h2: clamp(2.2rem, 4vw, 3.6rem);
+  --text-h1: clamp(3.1rem, 6.5vw, 5.7rem);
+  --text-sub: clamp(1.35rem, 2.6vw, 1.9rem);        /* hero sub-headline */
+  --text-display-sm: clamp(1.6rem, 3vw, 2.4rem);    /* featured-entry titles */
+  --text-stat: clamp(1.9rem, 3.2vw, 2.6rem);        /* display numerals (stats, metrics) */
+
+  /* Display voice: Schibsted has no width axis — weight carries it */
+  --display-weight: 800;
 
   --maxw: 760px;
   --shell: 70rem;
@@ -45,7 +72,7 @@
 :root[data-theme="dark"] {
   --bg: #0d1117;
   --surface: #161b22;
-  --surface-2: #171c24;
+  --surface-2: #182230; /* tinted band — clearly lifted from --bg in dark mode too */
   --text: #e6edf3;
   --text-muted: #9aa4b1;
   --text-faint: #8a93a0;
@@ -94,12 +121,6 @@ body {
   transition: background 0.25s ease, color 0.25s ease;
 }
 
-.wrap {
-  max-width: var(--maxw);
-  margin: 0 auto;
-  padding: 0 1.5rem;
-}
-
 a {
   color: var(--accent-text);
   text-decoration: none;
@@ -109,44 +130,13 @@ a {
 a:hover { border-bottom-color: var(--lime); }
 
 h1, h2, h3 { font-weight: 600; letter-spacing: -0.02em; line-height: 1.2; }
+h1, h2 { font-weight: var(--display-weight); letter-spacing: -.025em; }
+
+/* Selecting any text reveals the brand color — a quiet egg */
+::selection { background: var(--lime); color: #171715; }
 
 /* Mono accents for technical metadata */
 .mono { font-family: var(--font-mono); }
-.prompt { color: var(--accent-text); font-family: var(--font-mono); }
-
-/* Section header: $ ./section-name */
-.section { padding: 3.5rem 0; border-top: 1px solid var(--border); }
-.section:first-of-type { border-top: none; }
-.section-label {
-  font-family: var(--font-mono);
-  font-size: 0.85rem;
-  color: var(--text-faint);
-  margin-bottom: 1.5rem;
-}
-.section-label .dir { color: var(--accent-text); }
-.section h2 { font-size: 1.6rem; margin: 0 0 0.5rem; }
-
-/* Cards */
-.card {
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  padding: 1.25rem 1.4rem;
-  transition: border-color 0.15s ease, transform 0.15s ease;
-}
-.card:hover { border-color: var(--border-strong); }
-
-.tag {
-  display: inline-block;
-  font-family: var(--font-mono);
-  font-size: 0.72rem;
-  color: var(--text-muted);
-  background: var(--surface-2);
-  border: 1px solid var(--border);
-  border-radius: 6px;
-  padding: 2px 8px;
-  margin: 2px 4px 2px 0;
-}
 
 .meta-badge {
   width: fit-content;
@@ -159,9 +149,9 @@ h1, h2, h3 { font-weight: 600; letter-spacing: -0.02em; line-height: 1.2; }
   border-radius: var(--radius-pill);
   color: var(--accent-text);
   background: var(--badge-bg);
-  font: 650 .62rem/1 var(--font-mono);
+  font: 400 var(--text-meta)/1 var(--font-mono);
   text-transform: uppercase;
-  letter-spacing: .065em;
+  letter-spacing: 0;
 }
 .meta-badge-neutral {
   color: var(--accent-text);
@@ -255,20 +245,3 @@ a.meta-badge:focus-visible {
   .js-reveal [data-reveal] { opacity: 1; transform: none; transition: none; }
 }
 
-/* ---- Live badge: pulsing lime dot ---- */
-.pulse { position: relative; }
-.pulse::before {
-  content: '';
-  display: inline-block;
-  width: 7px; height: 7px; border-radius: 50%;
-  background: var(--lime);
-  margin-right: 6px;
-  vertical-align: middle;
-}
-@media (prefers-reduced-motion: no-preference) {
-  .pulse::before { animation: live-pulse 1.8s ease-in-out infinite; }
-  @keyframes live-pulse {
-    0%, 100% { box-shadow: 0 0 0 0 rgba(208, 219, 2, 0.5); }
-    50%      { box-shadow: 0 0 0 5px rgba(208, 219, 2, 0); }
-  }
-}

@@ -2,7 +2,7 @@
   "name": "lucafregoso-site",
   "type": "module",
   "version": "1.0.0",
-  "packageManager": "pnpm@10.33.2",
+  "packageManager": "pnpm@11.10.0",
   "description": "Personal site of Luca Fregoso — Developer Programs & Content Lead",
   "scripts": {
     "dev": "astro dev",
@@ -21,6 +21,8 @@
   },
   "dependencies": {
     "@astrojs/sitemap": "^3.7.3",
+    "@fontsource-variable/schibsted-grotesk": "^5.2.8",
+    "@fontsource/fragment-mono": "^5.2.8",
     "astro": "^5.2.0",
     "axe-core": "^4.12.1",
     "sharp": "^0.35.2"
