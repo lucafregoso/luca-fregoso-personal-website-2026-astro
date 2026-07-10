@@ -15,6 +15,7 @@ duration: "44:01"
 publisher: Il Podcast Open Source
 platformId: 2v0czUX9Pory1EdWmFvCo7
 externalUrl: https://open.spotify.com/episode/2v0czUX9Pory1EdWmFvCo7
+lang: it
 poster: /media/spotlight-luca-fregoso.png
 mobilePresentation: stamp
 ---

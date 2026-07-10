@@ -15,6 +15,7 @@ duration: "1:03:23"
 publisher: Codemotion
 platformId: hexh4KEy2Lo
 externalUrl: https://www.youtube.com/watch?v=hexh4KEy2Lo&t=1060s
+lang: it
 poster: /media/tech-chat-ai-open-source.png
 startAtSeconds: 1060
 mobilePresentation: poster

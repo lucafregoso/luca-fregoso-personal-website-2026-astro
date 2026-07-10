@@ -8,6 +8,7 @@ summary:
 locales: [en, it]
 publication: "Codemotion Magazine"
 url: "https://www.codemotion.com/magazine/it/dev-life-it/futuro-verso-tecnologia-sostenibile/"
+lang: it
 date: 2024-05-01
 tags: ["sustainability", "dev-culture"]
 ---

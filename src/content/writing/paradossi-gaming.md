@@ -8,6 +8,7 @@ summary:
 locales: [en, it]
 publication: "Codemotion Magazine"
 url: "https://www.codemotion.com/magazine/it/frontend-it/sviluppo-videogiochi/10-sorprese-e-paradossi-gaming/"
+lang: it
 date: 2024-04-01
 tags: ["gaming", "frontend"]
 ---

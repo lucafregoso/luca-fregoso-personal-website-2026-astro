@@ -6,7 +6,12 @@ title:
 locales: [en, it]
 kind: milestone
 blurb:
-  en: "Opened the Milan CFP. Every edition starts as ~600 proposals; the job is turning that into a program that earns a developer’s day."
-  it: "Abbiamo aperto la CFP di Milano. Ogni edizione parte da circa 600 proposte: il lavoro è trasformarle in un programma che meriti davvero una giornata del tempo di ogni developer."
+  en: "Opened the Milan CFP — the eighth edition I’ve curated. Thinking of submitting? I wrote up what the committee actually looks for."
+  it: "Abbiamo aperto la CFP di Milano — l’ottava edizione che curo. Vuoi proporre un talk? Ho raccontato che cosa guarda davvero il comitato."
+url: "https://www.codemotion.com/magazine/it/dev-life-it/codemotion-anatomia-proposta-vincente-comitato-tecnico/"
+urlLang: it
+urlLabel:
+  en: "What the committee actually looks for"
+  it: "Che cosa guarda davvero il comitato"
 featured: false
 ---

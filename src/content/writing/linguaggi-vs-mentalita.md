@@ -8,6 +8,7 @@ summary:
 locales: [en, it]
 publication: "Codemotion Magazine"
 url: "https://www.codemotion.com/magazine/it/dev-life-it/linguaggi-programmazione-vs-mentalita-sviluppatore/"
+lang: it
 date: 2024-03-15
 tags: ["dev-culture", "programming-languages"]
 ---

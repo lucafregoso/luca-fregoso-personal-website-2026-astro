@@ -17,6 +17,8 @@ test.describe("homepage content contract", () => {
     await expect(page.locator(".hero-role")).toContainText(
       "Developer Programs & Content Lead",
     );
+    // the remote signal must be visible above the fold
+    await expect(page.locator(".hero-role")).toContainText(/remote/i);
     await expect(page.locator(".hero-headline")).toHaveText(
       "I design technical programs people trust.",
     );
@@ -24,7 +26,7 @@ test.describe("homepage content contract", () => {
       /clear programs.*actually ship/i,
     );
     await expect(page.locator(".hero-proof")).toContainText(
-      /twenty years in tech.*fifteen of them building software/i,
+      /written production code and sold it/i,
     );
 
     const sectionHeadings = await page.locator("h2").allTextContents();
@@ -45,11 +47,17 @@ test.describe("homepage content contract", () => {
   test("frames work as intersections, business-report style, glue first", async ({
     page,
   }) => {
+    // the glue framing leads the section intro; the first card is the
+    // business-side proof with the program-management keyword
+    await expect(page.locator("#work .section-heading")).toContainText(
+      /I am the glue/i,
+    );
     const intersections = page.locator("#work .intersection");
     await expect(intersections).toHaveCount(3);
     await expect(intersections.first()).toContainText(
-      "The glue between strategy and delivery",
+      "Turning sales promises into shipped software",
     );
+    await expect(intersections.first()).toContainText(/program management/i);
     await expect(intersections.nth(2)).toContainText(/from zero/i);
     // each intersection card: axis label, one summary, display stat, CTA
     for (let index = 0; index < 3; index += 1) {
@@ -217,13 +225,28 @@ test.describe("homepage content contract", () => {
       introNav.getByRole("link", { name: "CV (PDF)" }),
     ).toHaveAttribute("href", /\/cv\.pdf$/);
     await expect(
-      page
-        .locator(".hero-actions")
-        .getByRole("link", { name: "Discuss a complex brief" }),
+      page.locator(".hero-actions").getByRole("link", { name: "Work with me" }),
     ).toHaveAttribute("href", "#contact");
+    // the availability statement lives at the conversion point
+    await expect(page.locator("#contact")).toContainText(/remote by default/i);
     await expect(
       page.getByRole("link", { name: "See selected work" }),
     ).toHaveAttribute("href", "#work");
+
+    const contact = page.locator("#contact");
+    await expect(contact).toContainText(
+      /developer program.*technical proposal.*event.*learning path/i,
+    );
+    await expect(introNav.getByRole('link', { name: 'Sessionize' })).toHaveAttribute(
+      'href',
+      'https://sessionize.com/luca-fregoso/'
+    );
+    await expect(introNav.getByRole('link', { name: 'CV (PDF)' })).toHaveAttribute('href', /\/cv\.pdf$/);
+    await expect(page.locator('.hero-actions').getByRole('link', { name: 'Discuss a complex brief' })).toHaveAttribute(
+      'href',
+      '#contact'
+    );
+    await expect(page.getByRole('link', { name: 'See selected work' })).toHaveAttribute('href', '#work');
 
     const contact = page.locator("#contact");
     await expect(contact).toContainText(

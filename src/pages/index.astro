@@ -93,16 +93,20 @@ const fullDate = (date: Date) =>
 const kindLabel: Record<string, string> = t.lately.kinds;
 const kindArchiveHref = (type: string) => archiveHref(locale, type as ArchiveType);
 
-function outlink(entry: { url?: string; urlLabel?: LocalizedText; urlStyle?: string }) {
+function outlink(entry: { url?: string; urlLabel?: LocalizedText; urlStyle?: string; urlLang?: string }) {
   if (!entry.url) return null;
   let host = '';
   try { host = new URL(entry.url).hostname.replace(/^www\./, ''); } catch {}
   const platform = host.includes('linkedin') ? 'LinkedIn' : host;
+  const base =
+    (entry.urlLabel ? localize(entry.urlLabel, locale) : undefined) ??
+    (entry.urlStyle === 'strong' ? t.lately.readFull(platform) : t.lately.read(platform));
+  // Flag destinations whose language differs from the reader's locale,
+  // so international readers aren't surprised by an Italian page.
+  const marker = entry.urlLang && entry.urlLang !== locale ? ` ${t.lately.inItalian}` : '';
   return {
     href: entry.url,
-    label:
-      (entry.urlLabel ? localize(entry.urlLabel, locale) : undefined) ??
-      (entry.urlStyle === 'strong' ? t.lately.readFull(platform) : t.lately.read(platform)),
+    label: `${base}${marker}`,
     strong: entry.urlStyle === 'strong',
   };
 }
@@ -145,7 +149,7 @@ function caseHref(href: string) {
 
         <figure class="hero-visual">
           <img
-            src={withBase('/hackathon-2026.jpg')}
+            src={withBase('/images/luca-fregoso-codemotion-milan-2025.jpg')}
             alt={t.hero.imageAlt}
             width="1200"
             height="900"
@@ -311,7 +315,7 @@ function caseHref(href: string) {
           {library.map((item) => item.type === 'article' ? (
             <article class="media-card media-card-article" data-media-card>
               <div class="media-card-meta mono">
-                <span>{item.entry.data.publication}</span>
+                <span>{item.entry.data.publication}{item.entry.data.lang && item.entry.data.lang !== locale ? ` · ${t.writing.inItalian}` : ''}</span>
                 <time datetime={item.entry.data.date.toISOString()}>{monthYear(item.entry.data.date)}</time>
               </div>
               <h3><ExternalLink class="media-card-link" href={item.entry.data.url}>{localize(item.entry.data.title, locale)}</ExternalLink></h3>
