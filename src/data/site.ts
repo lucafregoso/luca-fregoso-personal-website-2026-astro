@@ -14,7 +14,6 @@ export const site = {
   // ---- Identity ----
   name: "Luca Fregoso",
   tagline: "Developer Programs & Content Lead",
-  location: "La Spezia, Italy — working with remote teams",
 
   // ---- Technical / SEO / social metadata ----
   meta: {
@@ -37,7 +36,7 @@ export const site = {
     // here (with a leading slash). RECOMMENDED SIZE: 1200×630 px.
     // The stage photograph is local, so social crawlers never depend on a
     // third-party media host. It is deliberately large enough for rich cards.
-    ogImage: "/hackathon-2026.jpg" as string | null,
+    ogImage: "/images/luca-fregoso-codemotion-milan-2025.jpg" as string | null,
 
     // Browser UI / mobile address-bar tint.
     themeColor: "#d0db02",
@@ -46,9 +45,9 @@ export const site = {
   // ---- Page content ----
   headline: "I design technical programs people trust.",
   intro:
-    "From European conference agendas to enterprise solutions, I turn hundreds of inputs, competing priorities and vague promises into clear programs that can actually ship.",
+    "From European conference agendas to enterprise solutions, I turn hundreds of inputs, competing priorities and half-formed ideas into clear programs that actually ship.",
   proof:
-    "More than twenty years in tech — fifteen of them building software — let me move between code, content, presales, learning programs and rooms full of developers without losing the technical thread.",
+    "I've written production code and sold it — in web agencies first, then running my own — before moving to programs. Engineers, sales teams and speakers get the same straight answer from me.",
 
   // Exactly three true numbers spanning the three worlds (career /
   // conferences / training), none repeated as an intersection stat.
@@ -75,12 +74,13 @@ export const site = {
     {
       id: "business",
       axis: "Business × Engineering",
-      title: "The glue between strategy and delivery",
+      title: "Turning sales promises into shipped software",
       summary:
-        "I sit between clients, sales and engineering as translator and orchestrator: surfacing the real need, pressure-testing assumptions, shaping work that moves from pitch to production.",
+        "I sit between clients, sales and engineering — I find the real ask, test the promises against reality, and scope a plan engineering can commit to.",
       stat: {
         value: "pitch → prod",
-        label: "sales conversations translated into credible technical plans",
+        label:
+          "program management, from the first sales call to a delivery plan that holds",
       },
       href: "#contact",
       linkLabel: "Discuss a complex brief",
@@ -103,7 +103,7 @@ export const site = {
       axis: "People × Engineering",
       title: "Building a technical academy from zero",
       summary:
-        "Program, teaching model and operating rhythm created from scratch for an academy business unit.",
+        "Program design, teaching model and the day-to-day running of an academy business unit.",
       stat: {
         value: "0 → 1",
         label:

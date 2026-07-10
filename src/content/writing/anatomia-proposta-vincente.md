@@ -8,6 +8,7 @@ summary:
 locales: [en, it]
 publication: "Codemotion Magazine"
 url: "https://www.codemotion.com/magazine/it/dev-life-it/codemotion-anatomia-proposta-vincente-comitato-tecnico/"
+lang: it
 date: 2025-02-17
 tags: ["events", "cfp", "speaking"]
 ---

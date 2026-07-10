@@ -12,6 +12,7 @@ blurb:
   it: 'Ho partecipato per Codemotion al roadshow nella sede Google di Milano: strumenti di AI provati sul campo e un cambio di prospettiva sul nostro lavoro, sempre meno centrato sullo scrivere codice e sempre più sul coordinare gli agenti che lo scrivono. Da qui è nata l’idea del prossimo Builders Lab di Codemotion.'
 url: https://www.linkedin.com/posts/lucafregoso_luned%C3%AC-ho-avuto-lopportunit%C3%A0-di-passare-activity-7440004262325010433-A0y4
 urlStyle: subtle
+urlLang: it
 location:
   en: Google, Milan
   it: Google, Milano

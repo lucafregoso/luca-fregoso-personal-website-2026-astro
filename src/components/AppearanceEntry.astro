@@ -19,6 +19,7 @@ interface Appearance {
   publisher: string;
   platformId: string;
   externalUrl: string;
+  lang?: 'en' | 'it';
   poster: string;
   startAtSeconds?: number;
   mobilePresentation: 'stamp' | 'poster' | 'text-only';
@@ -57,7 +58,7 @@ const actionLabel = appearance.platform === 'youtube' ? t.appearances.watch : t.
       </div>
       <div class="card-body">
         <div class="appearance-meta mono">
-          <span>{appearance.publisher}</span>
+          <span>{appearance.publisher}{appearance.lang && appearance.lang !== locale ? ` · ${t.appearances.inItalian}` : ''}</span>
           <time datetime={appearance.date.toISOString()}>{dateLabel}</time>
         </div>
         <h3><ExternalLink class="appearance-title-link" href={appearance.externalUrl}>{title}</ExternalLink></h3>
@@ -82,7 +83,7 @@ const actionLabel = appearance.platform === 'youtube' ? t.appearances.watch : t.
           </div>
           {variant === 'archive' && (
             <div class="appearance-meta mono">
-              <span>{appearance.publisher}</span>
+              <span>{appearance.publisher}{appearance.lang && appearance.lang !== locale ? ` · ${t.appearances.inItalian}` : ''}</span>
               <time datetime={appearance.date.toISOString()}>{dateLabel}</time>
             </div>
           )}
@@ -100,7 +101,7 @@ const actionLabel = appearance.platform === 'youtube' ? t.appearances.watch : t.
 
       {variant !== 'archive' && (
         <div class:list={['appearance-meta', 'mono', variant === 'feed' && 'feed-meta']}>
-          <span>{appearance.publisher}</span>
+          <span>{appearance.publisher}{appearance.lang && appearance.lang !== locale ? ` · ${t.appearances.inItalian}` : ''}</span>
           <time datetime={appearance.date.toISOString()}>{dateLabel}</time>
           <span>{appearance.duration}</span>
         </div>

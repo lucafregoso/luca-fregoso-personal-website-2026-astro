@@ -10,5 +10,6 @@ blurb:
   it: "Per lanciare la Bug Buster Week di Codemotion ho raccontato il deploy del 2012 che, per qualche minuto, mise a €0 un intero e-commerce, scarpe in edizione limitata comprese. Nel post ho nascosto anche un bug intenzionale: chi lo ha trovato per primo ha vinto un premio."
 url: "https://www.linkedin.com/posts/lucafregoso_ho-mandato-in-produzione-un-bug-che-azzerava-share-7467980371381411840-AXJ-"
 urlStyle: strong
+urlLang: it
 featured: true
 ---

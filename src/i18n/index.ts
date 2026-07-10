@@ -38,25 +38,25 @@ const en = {
   externalNewTab: "opens in a new tab",
   hero: {
     name: site.name,
-    role: `${site.tagline} — La Spezia, Italy`,
+    role: `${site.tagline} — Italy · working remote with international teams`,
     headline: site.headline,
     intro: site.intro,
     proof: site.proof,
-    primary: "Discuss a complex brief",
+    primary: "Work with me",
     secondary: "See selected work",
     profileLinks: "Profile links",
     cv: "CV (PDF)",
     imageAlt:
-      "Luca Fregoso hosting on stage at Docebo GAME UP! Product Power Up 2026.",
+      "Luca Fregoso hosting on stage at Codemotion Conference Milan 2025.",
     imageContext: "On stage",
-    imagePlace: "Docebo · Milan · 2026",
+    imagePlace: "Codemotion · Milan · 2025",
   },
   metrics: site.metrics,
   intersections: site.intersections,
   work: {
     title: "Work",
     intro:
-      "I am the glue between tech, business and community. Code, sales rooms, conference stages and classrooms — the same job every time: joining sides that don't speak each other's language, with results to show for it.",
+      "I am the glue between tech, business and community. Code, sales rooms, conference stages and classrooms — same job every time: getting worlds that don't speak the same language to ship one thing together.",
   },
   lately: {
     title: "Lately",
@@ -74,11 +74,12 @@ const en = {
     },
     read: (platform: string) => `Read it on ${platform}`,
     readFull: (platform: string) => `Read the full post on ${platform}`,
+    inItalian: "(in Italian)",
   },
   talks: {
     title: "Talks",
     intro:
-      "Talks for people navigating change: selected sessions about technical careers, hiring and the tools we use to think.",
+      "Selected sessions about tech careers, hiring and the tools we use to think — delivered in English or Italian.",
     status: "session",
     view: "View session",
     fullProfile: "Full speaker profile",
@@ -88,6 +89,7 @@ const en = {
     intro:
       "Recordings, podcasts and articles about developer careers, technology and the decisions behind good programs.",
     article: "article",
+    inItalian: "in Italian",
   },
   archive: {
     title: "Archive.",
@@ -122,11 +124,12 @@ const en = {
       podcast: "podcast",
     },
     roles: { host: "host", speaker: "speaker", guest: "guest" },
+    inItalian: "in Italian",
   },
   contact: {
     title: "Bring me the complicated brief.",
     intro:
-      "If you are shaping a developer program, a technical proposal, an event or a learning path that needs to hold up in front of skilled people, we can talk.",
+      "If you are shaping a developer program, a technical proposal, an event or a learning path that needs to hold up in front of skilled people, we can talk. I work remote by default — CET, with plenty of EU/US overlap — in English or Italian, as a consultant or embedded in your team.",
     linkedin: "Connect on LinkedIn",
     cv: "View CV (PDF)",
     socials: "Social profiles",
@@ -195,13 +198,13 @@ const it = {
   externalNewTab: "si apre in una nuova scheda",
   hero: {
     name: site.name,
-    role: `${site.tagline} — La Spezia, Italia`,
+    role: `${site.tagline} — Italia · lavoro da remoto con team internazionali`,
     headline: "Progetto programmi tecnici di cui le persone si fidano.",
     intro:
-      "Dalle agende delle conferenze europee alle soluzioni enterprise, trasformo centinaia di input, priorità in competizione e promesse ancora vaghe in programmi chiari che possono davvero essere realizzati.",
+      "Dalle agende delle conferenze europee alle soluzioni enterprise, trasformo centinaia di input, priorità in conflitto e idee ancora abbozzate in programmi chiari che vanno davvero in porto.",
     proof:
-      "Più di vent’anni nel tech — quindici passati a sviluppare software — mi permettono di muovermi tra codice, contenuti, prevendita, formazione e platee di developer senza perdere il filo tecnico.",
-    primary: "Parliamo di un brief complesso",
+      "Il codice l’ho scritto e venduto — prima nelle web agency, poi con la mia — prima di passare ai programmi. Engineer, commerciali e speaker ricevono da me la stessa risposta, senza giri di parole.",
+    primary: "Lavoriamo insieme",
     secondary: "Scopri i progetti selezionati",
     profileLinks: "Link professionali",
     cv: "CV (PDF in inglese)",
@@ -229,12 +232,13 @@ const it = {
     {
       id: "business",
       axis: "Business × Engineering",
-      title: "Il collante tra strategia e delivery",
+      title: "Trasformare le promesse commerciali in software consegnato",
       summary:
-        "Lavoro tra clienti, vendite ed engineering come traduttore e orchestratore: faccio emergere il bisogno reale, metto alla prova le ipotesi, do forma a un lavoro che passa dal pitch alla produzione.",
+        "Sto in mezzo tra clienti, commerciali ed engineering — trovo la richiesta vera, metto alla prova le promesse e definisco un piano su cui l'engineering può impegnarsi.",
       stat: {
         value: "pitch → prod",
-        label: "conversazioni commerciali tradotte in piani tecnici credibili",
+        label:
+          "program management: dalla prima telefonata commerciale a un piano di delivery che regge",
       },
       href: "#contact",
       linkLabel: "Parliamo di un brief complesso",
@@ -257,7 +261,7 @@ const it = {
       axis: "People × Engineering",
       title: "Creare un'academy tecnica da zero",
       summary:
-        "Programma, modello didattico e ritmo operativo creati da zero per una business unit academy.",
+        "Progettazione del programma, modello didattico e gestione quotidiana di una business unit academy.",
       stat: {
         value: "0 → 1",
         label:
@@ -271,7 +275,7 @@ const it = {
   work: {
     title: "Lavoro",
     intro:
-      "Sono il collante tra tech, business e community. Codice, sale vendita, palchi e aule — sempre lo stesso mestiere: unire mondi che non parlano la stessa lingua, con risultati alla mano.",
+      "Sono il collante tra tech, business e community. Codice, sale vendita, palchi e aule — sempre lo stesso mestiere: far costruire la stessa cosa a mondi che non parlano la stessa lingua.",
   },
   lately: {
     title: "Ultimamente",
@@ -290,11 +294,12 @@ const it = {
     },
     read: (platform: string) => `Leggi su ${platform}`,
     readFull: (platform: string) => `Leggi il post completo su ${platform}`,
+    inItalian: "(in italiano)",
   },
   talks: {
     title: "Talk",
     intro:
-      "Talk per chi affronta il cambiamento: una selezione di sessioni su carriere tech, recruiting e strumenti che usiamo per pensare.",
+      "Una selezione di sessioni su carriere tech, recruiting e strumenti che usiamo per pensare — in italiano o in inglese.",
     status: "sessione",
     view: "Vedi la sessione",
     fullProfile: "Profilo speaker completo",
@@ -304,6 +309,7 @@ const it = {
     intro:
       "Registrazioni, podcast e articoli su carriere tech, tecnologia e le decisioni che rendono efficace un buon programma.",
     article: "articolo",
+    inItalian: "in italiano",
   },
   archive: {
     title: "Archivio.",
@@ -338,11 +344,12 @@ const it = {
       podcast: "podcast",
     },
     roles: { host: "host", speaker: "speaker", guest: "ospite" },
+    inItalian: "in italiano",
   },
   contact: {
     title: "Portami il brief più complicato.",
     intro:
-      "Se stai costruendo un programma per developer, una proposta tecnica, un evento o un percorso formativo che deve reggere davanti a persone competenti, possiamo parlarne.",
+      "Se stai costruendo un programma per developer, una proposta tecnica, un evento o un percorso formativo che deve reggere davanti a persone competenti, possiamo parlarne. Lavoro da remoto — fuso CET, con ampia sovrapposizione su Europa e USA — in inglese o in italiano, come consulente o dentro il tuo team.",
     linkedin: "Collegati su LinkedIn",
     cv: "Vedi il CV (PDF in inglese)",
     socials: "Profili social",
@@ -352,7 +359,7 @@ const it = {
     aria: "Una nota di Luca",
     command: "whoami",
     output:
-      "Developer nel cuore, progettista di programmi di mestiere. Ancora qui? Mi piaci già — scrivimi ↓",
+      "Developer nell'anima, progettista di programmi di mestiere. Ancora qui? Mi piaci già — scrivimi ↓",
   },
   email: {
     reveal: "Scrivimi",
@@ -379,7 +386,7 @@ const it = {
     opened: "Visualizzatore immagini aperto.",
   },
   devtools:
-    "Hai aperto gli strumenti di sviluppo. Naturalmente.\nCostruito a mano con Astro. Scrivimi dalla sezione contatti.",
+    "Hai aperto i devtools. Ovvio che l'hai fatto.\nFatto a mano con Astro. Scrivimi dalla sezione contatti.",
 };
 
 export const translations = { en, it } as const;

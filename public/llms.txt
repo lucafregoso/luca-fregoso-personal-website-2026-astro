@@ -3,8 +3,8 @@
 > Developer Programs & Content Lead and Technical Presales at Codemotion.
 > Fifteen years as a full-stack developer, now leading content and speaker
 > curation for Europe's developer conferences and defining technical solutions
-> with enterprise clients. Bilingual (Italian/English), based in La Spezia,
-> Italy, open to full-remote roles internationally.
+> with enterprise clients. Bilingual (Italian/English), Italy,
+> open to full-remote roles internationally.
 
 ## About
 - Leads content, speaker curation (CFP) and technical presales at Codemotion.

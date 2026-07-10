@@ -6,7 +6,7 @@ title:
 locales: [en, it]
 kind: building
 blurb:
-  en: "The opening wave of the Milan line-up is live. The shape of a ~90-session program starts here, drawn from hundreds of proposals."
-  it: "È online il primo gruppo di speaker dell’edizione di Milano. Da qui prende forma un programma di circa 90 sessioni, selezionate tra centinaia di proposte."
+  en: "The opening wave of the Milan line-up is live — the program takes shape from here."
+  it: "È online il primo gruppo di speaker dell’edizione di Milano — da qui il programma prende forma."
 featured: false
 ---

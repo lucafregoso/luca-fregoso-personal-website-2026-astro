@@ -202,7 +202,10 @@ test.describe("compact media appearances", () => {
   });
 
   test("all Markdown presentation modes remain available", () => {
-    const schema = fs.readFileSync("src/content.config.ts", "utf8");
+    // quote-style agnostic: the formatter may rewrite ' to " in the schema
+    const schema = fs
+      .readFileSync("src/content.config.ts", "utf8")
+      .replaceAll('"', "'");
     expect(schema).toContain("['contact-sheet', 'lead', 'sidecar']");
     expect(schema).toContain("['stamp', 'poster', 'text-only']");
   });
