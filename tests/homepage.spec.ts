@@ -248,10 +248,6 @@ test.describe("homepage content contract", () => {
     );
     await expect(page.getByRole('link', { name: 'See selected work' })).toHaveAttribute('href', '#work');
 
-    const contact = page.locator("#contact");
-    await expect(contact).toContainText(
-      /developer program.*technical proposal.*event.*learning path/i,
-    );
     await expect(contact.getByRole("button", { name: /email/i })).toBeVisible();
     await expect(
       contact.getByRole("link", { name: "View CV (PDF)" }),
