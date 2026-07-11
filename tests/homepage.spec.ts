@@ -303,18 +303,22 @@ test.describe("homepage responsive contract", () => {
     const selectors = [
       "#theme-toggle",
       ".menu-toggle",
-      "[data-language-switcher] button",
       ".hero-actions a",
       ".social-links a",
     ];
-    for (const selector of selectors) {
+    // the language switcher is currently disabled (markup commented out);
+    // if it comes back, it must meet the target size like everything else
+    const optionalSelectors = ["[data-language-switcher] button"];
+    for (const selector of [...selectors, ...optionalSelectors]) {
       const boxes = await page.locator(selector).evaluateAll((elements) =>
         elements.map((element) => {
           const box = element.getBoundingClientRect();
           return { width: box.width, height: box.height };
         }),
       );
-      expect(boxes.length).toBeGreaterThan(0);
+      if (!optionalSelectors.includes(selector)) {
+        expect(boxes.length).toBeGreaterThan(0);
+      }
       for (const box of boxes) {
         expect(box.width).toBeGreaterThanOrEqual(44);
         expect(box.height).toBeGreaterThanOrEqual(44);
