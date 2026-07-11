@@ -1,5 +1,5 @@
 ---
-import LanguageSwitcher from './LanguageSwitcher.astro';
+{/* import LanguageSwitcher from './LanguageSwitcher.astro'; */}
 import ThemeToggle from './ThemeToggle.astro';
 import { translations, type Locale } from '../i18n';
 import { withBase } from '../lib/url';
@@ -36,7 +36,7 @@ const homeHref = withBase(locale === 'it' ? '/it/' : '/');
     </nav>
 
     <div class="header-actions">
-      <LanguageSwitcher {locale} />
+{/*   <LanguageSwitcher {locale} /> */}
       <ThemeToggle {locale} />
       <button
         class="menu-toggle"
