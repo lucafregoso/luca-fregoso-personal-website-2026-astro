@@ -6,8 +6,8 @@ title:
 locales: [en, it]
 kind: speaking
 blurb:
-  en: "Heading to Sardinia to help guide part of a tech event in Chia: MC work, facilitation and focus groups designed to turn conversations into useful signal."
-  it: "Sarò in Sardegna per gestire una parte di evento tech a Chia: conduzione, facilitazione e focus group pensati per trasformare le conversazioni in segnali utili."
+  en: "Guided part of a tech event in Chia, Sardinia: MC work, facilitation and focus groups that turned conversations into useful signal."
+  it: "Ho gestito una parte di evento tech a Chia, in Sardegna: conduzione, facilitazione e focus group che hanno trasformato le conversazioni in segnali utili."
 location:
   en: "Chia, Sardinia"
   it: "Chia, Sardegna"

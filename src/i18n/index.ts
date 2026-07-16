@@ -38,7 +38,7 @@ const en = {
   externalNewTab: "opens in a new tab",
   hero: {
     name: site.name,
-    role: `${site.tagline} — Italy · working remote with international teams`,
+    role: `${site.tagline} — DevRel, technical presales & training`,
     headline: site.headline,
     intro: site.intro,
     proof: site.proof,
@@ -56,7 +56,7 @@ const en = {
   work: {
     title: "Work",
     intro:
-      "I am the glue between tech, business and community. Code, sales rooms, conference stages and classrooms — same job every time: getting worlds that don't speak the same language to ship one thing together.",
+      "I am the glue between tech, business and community. Code, sales rooms, conference stages and classrooms — call it DevRel, presales or program management, the job is the same: getting worlds that don't speak the same language to ship one thing together.",
   },
   lately: {
     title: "Lately",
@@ -129,7 +129,7 @@ const en = {
   contact: {
     title: "Bring me the complicated brief.",
     intro:
-      "If you are shaping a developer program, a technical proposal, an event or a learning path that needs to hold up in front of skilled people, we can talk. I work remote by default — CET, with plenty of EU/US overlap — in English or Italian, as a consultant or embedded in your team.",
+      "If you are shaping a DevRel motion, a presales cycle, an event or a training program that needs to hold up in front of skilled people, we can talk. I work remote by default — CET, with plenty of EU/US overlap — in English or Italian, as a consultant or embedded in your team.",
     linkedin: "Connect on LinkedIn",
     cv: "View CV (PDF)",
     socials: "Social profiles",
@@ -174,7 +174,7 @@ const it = {
     ogLocale: "it_IT",
     title: `${site.name} — Programmi per developer e contenuti tecnici`,
     description:
-      "Programmi per developer, contenuti tecnici e prevendita con oltre 20 anni nel tech, 15 dei quali nello sviluppo software. Luca Fregoso progetta agende, percorsi formativi, narrative tecniche e programmi per community di developer.",
+      "Developer Relations (DevRel), presales tecnico e programmi per developer — oltre 20 anni nel tech, 15 dei quali nello sviluppo software. Luca Fregoso progetta agende per conferenze, percorsi di formazione, narrative tecniche e solution engineering per prodotti developer-facing.",
   },
   nav: {
     header: "Intestazione del sito",
@@ -198,10 +198,10 @@ const it = {
   externalNewTab: "si apre in una nuova scheda",
   hero: {
     name: site.name,
-    role: `${site.tagline} — Italia · lavoro da remoto con team internazionali`,
+    role: `${site.tagline} — DevRel, presales e formazione · Italia, da remoto con team internazionali`,
     headline: "Progetto programmi tecnici di cui le persone si fidano.",
     intro:
-      "Dalle agende delle conferenze europee alle soluzioni enterprise, trasformo centinaia di input, priorità in conflitto e idee ancora abbozzate in programmi chiari che vanno davvero in porto.",
+      "Dalle agende delle conferenze europee ai tavoli presales, trasformo centinaia di input, priorità in conflitto e idee ancora abbozzate in programmi chiari che vanno davvero in porto.",
     proof:
       "Il codice l’ho scritto e venduto — prima nelle web agency, poi con la mia — prima di passare ai programmi. Engineer, commerciali e speaker ricevono da me la stessa risposta, senza giri di parole.",
     primary: "Lavoriamo insieme",
@@ -209,9 +209,9 @@ const it = {
     profileLinks: "Link professionali",
     cv: "CV (PDF in inglese)",
     imageAlt:
-      "Luca Fregoso sul palco come host di Docebo GAME UP! Product Power Up 2026.",
+      "Luca Fregoso sul palco come host alla Codemotion Conference di Milano 2025.",
     imageContext: "Sul palco",
-    imagePlace: "Docebo · Milano · 2026",
+    imagePlace: "Codemotion · Milano · 2025",
   },
   metrics: [
     {
@@ -238,7 +238,7 @@ const it = {
       stat: {
         value: "pitch → prod",
         label:
-          "program management: dalla prima telefonata commerciale a un piano di delivery che regge",
+          "presales tecnico: dalla prima telefonata commerciale a un piano di delivery che regge",
       },
       href: "#contact",
       linkLabel: "Parliamo di un brief complesso",
@@ -248,7 +248,7 @@ const it = {
       axis: "Community × Engineering",
       title: "Costruire agende autorevoli in Europa",
       summary:
-        "Comitati internazionali, CFP e selezione speaker per sette edizioni Codemotion tra Milano, Madrid e Roma.",
+        "Comitati internazionali, CFP e selezione speaker per sette edizioni Codemotion tra Milano, Madrid e Roma — sale da 2.000–3.000 developer ogni volta.",
       stat: {
         value: "600 → 1",
         label: "proposte per edizione in un'unica agenda equilibrata",
@@ -261,7 +261,7 @@ const it = {
       axis: "People × Engineering",
       title: "Creare un'academy tecnica da zero",
       summary:
-        "Progettazione del programma, modello didattico e gestione quotidiana di una business unit academy.",
+        "Progettazione del programma, modello di formazione e gestione quotidiana di una business unit academy.",
       stat: {
         value: "0 → 1",
         label:
@@ -275,7 +275,7 @@ const it = {
   work: {
     title: "Lavoro",
     intro:
-      "Sono il collante tra tech, business e community. Codice, sale vendita, palchi e aule — sempre lo stesso mestiere: far costruire la stessa cosa a mondi che non parlano la stessa lingua.",
+      "Sono il collante tra tech, business e community. Codice, sale vendita, palchi e aule — chiamalo DevRel, presales o program management, il mestiere è lo stesso: far costruire la stessa cosa a mondi che non parlano la stessa lingua.",
   },
   lately: {
     title: "Ultimamente",
@@ -349,7 +349,7 @@ const it = {
   contact: {
     title: "Portami il brief più complicato.",
     intro:
-      "Se stai costruendo un programma per developer, una proposta tecnica, un evento o un percorso formativo che deve reggere davanti a persone competenti, possiamo parlarne. Lavoro da remoto — fuso CET, con ampia sovrapposizione su Europa e USA — in inglese o in italiano, come consulente o dentro il tuo team.",
+      "Se stai costruendo un'attività di DevRel, un ciclo di presales, un evento o un programma di formazione che deve reggere davanti a persone competenti, possiamo parlarne. Lavoro da remoto — fuso CET, con ampia sovrapposizione su Europa e USA — in inglese o in italiano, come consulente o dentro il tuo team.",
     linkedin: "Collegati su LinkedIn",
     cv: "Vedi il CV (PDF in inglese)",
     socials: "Profili social",
