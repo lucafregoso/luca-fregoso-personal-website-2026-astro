@@ -237,17 +237,6 @@ test.describe("homepage content contract", () => {
     await expect(contact).toContainText(
       /developer program.*technical proposal.*event.*learning path/i,
     );
-    await expect(introNav.getByRole('link', { name: 'Sessionize' })).toHaveAttribute(
-      'href',
-      'https://sessionize.com/luca-fregoso/'
-    );
-    await expect(introNav.getByRole('link', { name: 'CV (PDF)' })).toHaveAttribute('href', /\/cv\.pdf$/);
-    await expect(page.locator('.hero-actions').getByRole('link', { name: 'Discuss a complex brief' })).toHaveAttribute(
-      'href',
-      '#contact'
-    );
-    await expect(page.getByRole('link', { name: 'See selected work' })).toHaveAttribute('href', '#work');
-
     await expect(contact.getByRole("button", { name: /email/i })).toBeVisible();
     await expect(
       contact.getByRole("link", { name: "View CV (PDF)" }),

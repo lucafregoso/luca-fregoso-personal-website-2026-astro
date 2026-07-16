@@ -4,6 +4,12 @@ export const locales = ["en", "it"] as const;
 export type Locale = (typeof locales)[number];
 export type LocalizedText = Record<Locale, string>;
 
+// Locales currently routed and built. Italian is temporarily disabled:
+// its translations and content stay maintained below, but no /it/ pages
+// are generated and no hreflang alternates are emitted. To re-enable,
+// add "it" back here and restore src/pages/it/ (git history has them).
+export const activeLocales: Locale[] = ["en"];
+
 export const isLocale = (value: unknown): value is Locale =>
   typeof value === "string" && locales.includes(value as Locale);
 

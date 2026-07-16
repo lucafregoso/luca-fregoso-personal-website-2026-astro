@@ -9,14 +9,10 @@ const locales = [
     filteredText: "Spotlight #11",
     all: "All",
   },
-  {
-    path: "/it/archive/",
-    lang: "it",
-    title: "Archivio.",
-    filter: "podcast",
-    filteredText: "Spotlight #11",
-    all: "Tutto",
-  },
+  // The /it/ locale is temporarily disabled (see activeLocales in
+  // src/i18n). Restore this row together with src/pages/it/:
+  // { path: "/it/archive/", lang: "it", title: "Archivio.",
+  //   filter: "podcast", filteredText: "Spotlight #11", all: "Tutto" },
 ] as const;
 
 test.describe("archive", () => {

@@ -53,7 +53,9 @@ jobs:
 
       - name: Upload GitHub Pages artifact
         if: github.ref == 'refs/heads/develop'
-        uses: actions/upload-pages-artifact@v3
+        # deploy-pages@v4 below is the latest major and still targets Node 20
+        # upstream — its deprecation warning clears when GitHub updates the tag.
+        uses: actions/upload-pages-artifact@v4
         with:
           path: dist
 

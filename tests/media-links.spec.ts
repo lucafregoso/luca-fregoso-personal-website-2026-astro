@@ -21,10 +21,12 @@ const examples = [
     action: { en: "Listen on Spotify", it: "Ascolta su Spotify" },
   },
 ] as const;
-const locales = [
+// typed wide so the it-locale branches keep compiling while disabled
+const locales: ReadonlyArray<{ path: string; lang: "en" | "it" }> = [
   { path: "/", lang: "en" },
-  { path: "/it/", lang: "it" },
-] as const;
+  // /it/ temporarily disabled — restore with src/pages/it/:
+  // { path: "/it/", lang: "it" },
+];
 
 function appearanceFor(section: Locator, title: string) {
   return section.locator("[data-appearance-entry]").filter({ hasText: title });
