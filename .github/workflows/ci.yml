@@ -18,8 +18,8 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 15
     env:
-      SITE_URL: ${{ vars.SITE_URL || 'https://lucafregoso.github.io' }}
-      BASE_PATH: ${{ vars.BASE_PATH || '/luca-fregoso-personal-website-2026-astro/' }}
+      SITE_URL: ${{ vars.SITE_URL || 'https://luca-fregoso.me' }}
+      BASE_PATH: ${{ vars.BASE_PATH || '/' }}
 
     steps:
       - name: Checkout repository

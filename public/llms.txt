@@ -14,8 +14,8 @@
 - Experienced MC at European developer events (DevFest, Cloud Native Days, etc.).
 
 ## Links
-- Website (English): https://lucafregoso.github.io/luca-fregoso-personal-website-2026-astro/
-- Sito web (Italiano): https://lucafregoso.github.io/luca-fregoso-personal-website-2026-astro/it/
+- Website (English): https://luca-fregoso.me/
+- Sito web (Italiano): https://luca-fregoso.me/it/
 - LinkedIn: https://www.linkedin.com/in/lucafregoso
 - Speaker profile (Sessionize): https://sessionize.com/luca-fregoso/
 - Writing (Codemotion Magazine): https://www.codemotion.com/magazine/it/author/luca-fregoso/
@@ -27,9 +27,9 @@
 - Tech Chat - AI & Open Source — hosted for Codemotion,
   29 February 2024, live recording (1:03:23; playback starts at 17:40):
   https://www.youtube.com/watch?v=hexh4KEy2Lo&t=1060s
-- Media & writing archive (English): https://lucafregoso.github.io/luca-fregoso-personal-website-2026-astro/#media
-- Archivio media e articoli (Italiano): https://lucafregoso.github.io/luca-fregoso-personal-website-2026-astro/it/#media
+- Media & writing archive (English): https://luca-fregoso.me/#media
+- Archivio media e articoli (Italiano): https://luca-fregoso.me/it/#media
 
 ## Contact
-- Contact (English): https://lucafregoso.github.io/luca-fregoso-personal-website-2026-astro/#contact
-- Contatti (Italiano): https://lucafregoso.github.io/luca-fregoso-personal-website-2026-astro/it/#contact
+- Contact (English): https://luca-fregoso.me/#contact
+- Contatti (Italiano): https://luca-fregoso.me/it/#contact

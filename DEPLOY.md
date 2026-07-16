@@ -1,7 +1,7 @@
 # Deploying to GitHub Pages
 
 The repo includes a workflow at `.github/workflows/deploy.yml` that checks,
-tests, and builds every pull request. A push to `develop`
+tests, and builds every pull request. A push to `master`
 publishes the site only after those same quality gates pass. You only need to
 do two things.
 
@@ -20,22 +20,22 @@ These values are public deployment configuration, not secrets. Personal
 content and verified profile URLs remain in the typed `src/data/site.ts` file.
 
 GitHub serves this repository at
-`https://lucafregoso.github.io/luca-fregoso-personal-website-2026-astro/`.
+`https://luca-fregoso.me/`.
 All internal links, CSS, the CV and media respect `BASE_PATH` automatically.
 
 ## 2. Turn on Pages with GitHub Actions as the source
 
 On GitHub: **Settings → Pages → Build and deployment → Source → "GitHub Actions"**.
-That's it. Push to `develop` and the Actions tab will show the build; when it's
+That's it. Push to `master` and the Actions tab will show the build; when it's
 green, your site is live at `https://USERNAME.github.io/REPO/`.
 
 ```bash
 git add -A
 git commit -m "Deploy site"
-git push origin develop
+git push origin master
 ```
 
-Protect `develop` under **Settings → Branches** and require the
+Protect `master` under **Settings → Branches** and require the
 **Build and test** status check before merging. This keeps pull requests from
 bypassing the deployment gate.
 
@@ -51,6 +51,6 @@ When you're ready to use your own domain:
 4. At your domain registrar, point DNS at GitHub Pages
    (a `CNAME` record for `www` → `USERNAME.github.io`).
 
-After that, every push to `develop` rebuilds and republishes automatically —
+After that, every push to `master` rebuilds and republishes automatically —
 which is exactly what makes the "Lately" stream easy to keep fresh:
 add a markdown file in `src/content/now/`, commit, push, done.
