@@ -29,11 +29,11 @@ const isPlaywright = env.PLAYWRIGHT_TEST === '1';
 export default defineConfig({
   site: isPlaywright
     ? 'http://127.0.0.1:4399'
-    : env.SITE_URL || 'https://lucafregoso.github.io',
+    : env.SITE_URL || 'https://luca-fregoso.me',
   // Keep base directory-like to avoid slash/no-slash sitemap duplicates.
   base: isPlaywright
     ? '/'
-    : env.BASE_PATH || '/luca-fregoso-personal-website-2026-astro/',
+    : env.BASE_PATH || '/',
   i18n: {
     defaultLocale: 'en',
     locales: ['en', 'it'],
