@@ -34,7 +34,9 @@ async function settlePage(page: any, path: string, theme: 'light' | 'dark') {
   await page.waitForTimeout(200);
 }
 
-for (const locale of [{ path: '/', name: 'English' }, { path: '/it/', name: 'Italian' }] as const) {
+// /it/ temporarily disabled — restore { path: '/it/', name: 'Italian' }
+// together with src/pages/it/ (see activeLocales in src/i18n).
+for (const locale of [{ path: '/', name: 'English' }] as const) {
   for (const theme of ['light', 'dark'] as const) {
     test(`no WCAG 2.2 AA violations — ${locale.name}, ${theme} theme`, async ({ page }) => {
       await settlePage(page, locale.path, theme);
@@ -65,11 +67,16 @@ for (const locale of [{ path: '/', name: 'English' }, { path: '/it/', name: 'Ita
 
 for (const locale of [
   { path: '/', name: 'English', language: /Choose language/i },
-  { path: '/it/', name: 'Italian', language: /Scegli la lingua/i },
+  // /it/ temporarily disabled — restore with src/pages/it/:
+  // { path: '/it/', name: 'Italian', language: /Scegli la lingua/i },
 ] as const) {
   test(`open language disclosure has no WCAG 2.2 AA violations — ${locale.name}`, async ({ page }) => {
     await settlePage(page, locale.path, 'light');
-    await page.getByRole('button', { name: locale.language }).click();
+    const trigger = page.getByRole('button', { name: locale.language });
+    // the language switcher is currently disabled; this contract
+    // reactivates automatically if it returns
+    test.skip((await trigger.count()) === 0, 'language switcher currently disabled');
+    await trigger.click();
     const results = await runAxe(page);
     expect(results.violations).toEqual([]);
   });

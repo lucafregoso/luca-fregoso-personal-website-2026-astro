@@ -5,7 +5,7 @@ import '../styles/global.css';
 import sansWoff2 from '@fontsource-variable/schibsted-grotesk/files/schibsted-grotesk-latin-wght-normal.woff2?url';
 import monoWoff2 from '@fontsource/fragment-mono/files/fragment-mono-latin-400-normal.woff2?url';
 import { site } from '../data/site';
-import { isLocale, translations, type Locale } from '../i18n';
+import { activeLocales, isLocale, translations, type Locale } from '../i18n';
 import { getLocaleAlternates } from '../lib/i18n';
 import { withBase } from '../lib/url';
 
@@ -29,9 +29,12 @@ const {
   structuredData = [],
 } = Astro.props;
 const canonical = new URL(canonicalPath ? withBase(canonicalPath) : Astro.url.pathname, Astro.site);
-const localeAlternates = getLocaleAlternates(Astro.url.pathname, alternatePaths);
+// hreflang alternates and og:locale:alternate only make sense while more
+// than one locale is actually routed (see activeLocales in src/i18n).
+const multiLocale = activeLocales.length > 1;
+const localeAlternates = multiLocale ? getLocaleAlternates(Astro.url.pathname, alternatePaths) : [];
 const ogImageUrl = m.ogImage ? new URL(withBase(m.ogImage), Astro.site).toString() : null;
-const alternateOgLocale = translations[locale === 'en' ? 'it' : 'en'].meta.ogLocale;
+const alternateOgLocale = multiLocale ? translations[locale === 'en' ? 'it' : 'en'].meta.ogLocale : null;
 ---
 
 <!doctype html>
@@ -50,16 +53,18 @@ const alternateOgLocale = translations[locale === 'en' ? 'it' : 'en'].meta.ogLoc
     {localeAlternates.map(({ locale: alternateLocale, href }) => (
       <link rel="alternate" hreflang={alternateLocale} href={new URL(href, Astro.site)} />
     ))}
-    <link
-      rel="alternate"
-      hreflang="x-default"
-      href={new URL(localeAlternates.find((entry) => entry.locale === 'en')!.href, Astro.site)}
-    />
+    {multiLocale && (
+      <link
+        rel="alternate"
+        hreflang="x-default"
+        href={new URL(localeAlternates.find((entry) => entry.locale === 'en')!.href, Astro.site)}
+      />
+    )}
 
     <!-- Open Graph / Twitter -->
     <meta property="og:type" content="website" />
     <meta property="og:locale" content={t.meta.ogLocale} />
-    <meta property="og:locale:alternate" content={alternateOgLocale} />
+    {alternateOgLocale && <meta property="og:locale:alternate" content={alternateOgLocale} />}
     <meta property="og:title" content={title} />
     <meta property="og:description" content={description} />
     <meta property="og:url" content={canonical} />
