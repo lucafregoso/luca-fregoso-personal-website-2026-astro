@@ -39,7 +39,7 @@ the static site. The CMS configuration mirrors the Astro Content Collections in
 
 If you want to use the CMS locally, serve the `admin/` folder with a local static
 server or connect it to the configured GitHub backend. Publishing remains
-Git-based: CMS edit → Git commit on `develop` → Astro build → static deploy.
+Git-based: CMS edit → Git commit on `master` → Astro build → static deploy.
 
 ```bash
 pnpm run cms:serve
