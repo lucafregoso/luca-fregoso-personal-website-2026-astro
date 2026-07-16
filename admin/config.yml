@@ -1,0 +1,310 @@
+# yaml-language-server: $schema=https://unpkg.com/@sveltia/cms/schema/sveltia-cms.json
+
+backend:
+  name: github
+  repo: lucafregoso/luca-fregoso-personal-website-2026-astro
+  branch: develop
+
+local_backend: true
+
+media_folder: public/media
+public_folder: /media
+
+publish_mode: simple
+
+collections:
+  - name: now
+    label: Field notes
+    label_singular: Field note
+    folder: src/content/now
+    create: true
+    extension: md
+    format: frontmatter
+    identifier_field: title.en
+    slug: "{{year}}-{{month}}-{{day}}-{{slug}}"
+    sortable_fields: [date, title.en, kind]
+    view_filters:
+      - label: Featured
+        field: featured
+        pattern: true
+    fields:
+      - label: Date
+        name: date
+        widget: datetime
+        date_format: YYYY-MM-DD
+        time_format: false
+        format: YYYY-MM-DD
+      - label: Title
+        name: title
+        widget: object
+        collapsed: false
+        fields:
+          - { label: English, name: en, widget: string }
+          - { label: Italian, name: it, widget: string }
+      - label: Locales
+        name: locales
+        widget: select
+        multiple: true
+        min: 1
+        options:
+          - { label: English, value: en }
+          - { label: Italian, value: it }
+        default: [en, it]
+      - label: Kind
+        name: kind
+        widget: select
+        options:
+          - { label: On stage, value: speaking }
+          - { label: Wrote, value: writing }
+          - { label: Milestone, value: milestone }
+          - { label: Shipped, value: building }
+          - { label: Note, value: note }
+      - label: Blurb
+        name: blurb
+        widget: object
+        required: false
+        collapsed: false
+        fields:
+          - { label: English, name: en, widget: text, required: false }
+          - { label: Italian, name: it, widget: text, required: false }
+      - { label: External URL, name: url, widget: string, required: false }
+      - label: External URL style
+        name: urlStyle
+        widget: select
+        required: false
+        default: subtle
+        options:
+          - { label: Subtle, value: subtle }
+          - { label: Strong, value: strong }
+      - label: Custom external link label
+        name: urlLabel
+        widget: object
+        required: false
+        fields:
+          - { label: English, name: en, widget: string, required: false }
+          - { label: Italian, name: it, widget: string, required: false }
+      - label: Location
+        name: location
+        widget: object
+        required: false
+        fields:
+          - { label: English, name: en, widget: string, required: false }
+          - { label: Italian, name: it, widget: string, required: false }
+      - { label: Featured, name: featured, widget: boolean, default: false }
+      - label: Media presentation
+        name: mediaPresentation
+        widget: select
+        default: contact-sheet
+        options:
+          - { label: Contact sheet, value: contact-sheet }
+          - { label: Lead image, value: lead }
+          - { label: Sidecar, value: sidecar }
+      - label: Media
+        name: media
+        widget: list
+        required: false
+        summary: "{{fields.type}} · {{fields.src}}{{fields.url}}"
+        fields:
+          - label: Type
+            name: type
+            widget: select
+            options:
+              - { label: Image, value: image }
+              - { label: Video file, value: video }
+              - { label: Link card, value: link }
+          - { label: Image or video file, name: src, widget: image, required: false }
+          - { label: Link URL, name: url, widget: string, required: false }
+          - label: Alt text
+            name: alt
+            widget: object
+            required: false
+            fields:
+              - { label: English, name: en, widget: string, required: false }
+              - { label: Italian, name: it, widget: string, required: false }
+          - label: Link label
+            name: label
+            widget: object
+            required: false
+            fields:
+              - { label: English, name: en, widget: string, required: false }
+              - { label: Italian, name: it, widget: string, required: false }
+
+  - name: appearances
+    label: Media appearances
+    label_singular: Media appearance
+    folder: src/content/appearances
+    create: true
+    extension: md
+    format: frontmatter
+    identifier_field: title.en
+    slug: "{{year}}-{{month}}-{{day}}-{{slug}}"
+    sortable_fields: [date, title.en, format, platform, role]
+    fields:
+      - label: Title
+        name: title
+        widget: object
+        collapsed: false
+        fields:
+          - { label: English, name: en, widget: string }
+          - { label: Italian, name: it, widget: string }
+      - label: Summary
+        name: summary
+        widget: object
+        collapsed: false
+        fields:
+          - { label: English, name: en, widget: text }
+          - { label: Italian, name: it, widget: text }
+      - label: Locales
+        name: locales
+        widget: select
+        multiple: true
+        min: 1
+        options:
+          - { label: English, value: en }
+          - { label: Italian, value: it }
+        default: [en, it]
+      - label: Format
+        name: format
+        widget: select
+        options:
+          - { label: Video, value: video }
+          - { label: Live recording, value: live-recording }
+          - { label: Podcast, value: podcast }
+      - label: Platform
+        name: platform
+        widget: select
+        options:
+          - { label: YouTube, value: youtube }
+          - { label: Spotify, value: spotify }
+      - label: Role
+        name: role
+        widget: select
+        options:
+          - { label: Host, value: host }
+          - { label: Speaker, value: speaker }
+          - { label: Guest, value: guest }
+      - label: Placements
+        name: placements
+        widget: select
+        multiple: true
+        min: 1
+        options:
+          - { label: Lately, value: lately }
+          - { label: Media library, value: library }
+        default: [library]
+      - label: Date
+        name: date
+        widget: datetime
+        date_format: YYYY-MM-DD
+        time_format: false
+        format: YYYY-MM-DD
+      - { label: Duration, name: duration, widget: string, hint: "Use 44:01 or 1:03:23" }
+      - { label: Publisher / show, name: publisher, widget: string }
+      - { label: Platform ID, name: platformId, widget: string }
+      - { label: External URL, name: externalUrl, widget: string }
+      - { label: Local poster, name: poster, widget: image }
+      - { label: YouTube start time, name: startAtSeconds, widget: number, value_type: int, required: false }
+      - label: Mobile presentation
+        name: mobilePresentation
+        widget: select
+        default: stamp
+        options:
+          - { label: Stamp, value: stamp }
+          - { label: Poster, value: poster }
+          - { label: Text only, value: text-only }
+
+  - name: writing
+    label: Articles
+    label_singular: Article
+    folder: src/content/writing
+    create: true
+    extension: md
+    format: frontmatter
+    identifier_field: title.en
+    slug: "{{year}}-{{month}}-{{day}}-{{slug}}"
+    sortable_fields: [date, title.en, publication]
+    fields:
+      - label: Title
+        name: title
+        widget: object
+        collapsed: false
+        fields:
+          - { label: English, name: en, widget: string }
+          - { label: Italian, name: it, widget: string }
+      - label: Summary
+        name: summary
+        widget: object
+        collapsed: false
+        fields:
+          - { label: English, name: en, widget: text }
+          - { label: Italian, name: it, widget: text }
+      - label: Locales
+        name: locales
+        widget: select
+        multiple: true
+        min: 1
+        options:
+          - { label: English, value: en }
+          - { label: Italian, value: it }
+        default: [en, it]
+      - { label: Publication, name: publication, widget: string, default: "Codemotion Magazine" }
+      - { label: External URL, name: url, widget: string }
+      - label: Date
+        name: date
+        widget: datetime
+        date_format: YYYY-MM-DD
+        time_format: false
+        format: YYYY-MM-DD
+      - label: Tags
+        name: tags
+        widget: list
+        required: false
+        field: { label: Tag, name: tag, widget: string }
+
+  - name: talks
+    label: Talks
+    label_singular: Talk
+    folder: src/content/talks
+    create: true
+    extension: md
+    format: frontmatter
+    identifier_field: title.en
+    slug: "{{slug}}"
+    sortable_fields: [order, title.en]
+    fields:
+      - label: Title
+        name: title
+        widget: object
+        collapsed: false
+        fields:
+          - { label: English, name: en, widget: string }
+          - { label: Italian, name: it, widget: string }
+      - label: Abstract
+        name: abstract
+        widget: object
+        collapsed: false
+        fields:
+          - { label: English, name: en, widget: text }
+          - { label: Italian, name: it, widget: text }
+      - label: Locales
+        name: locales
+        widget: select
+        multiple: true
+        min: 1
+        options:
+          - { label: English, value: en }
+          - { label: Italian, value: it }
+        default: [en, it]
+      - label: Events
+        name: events
+        widget: list
+        required: false
+        field: { label: Event, name: event, widget: string }
+      - label: Tags
+        name: tags
+        widget: list
+        required: false
+        field: { label: Tag, name: tag, widget: string }
+      - { label: Sessionize URL, name: sessionizeUrl, widget: string, required: false }
+      - { label: Display order, name: order, widget: number, value_type: int, default: 99 }
+      - { label: Body, name: body, widget: markdown, required: false }

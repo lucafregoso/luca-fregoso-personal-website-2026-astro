@@ -1,0 +1,113 @@
+---
+import { withBase } from '../lib/url';
+import ExternalLink from './ExternalLink.astro';
+import { localize, translations, type Locale, type LocalizedText } from '../i18n';
+
+interface MediaImage { type: 'image'; src: string; alt?: LocalizedText }
+interface MediaVideo { type: 'video'; src: string; poster?: string }
+interface MediaLink  { type: 'link';  url: string; label?: LocalizedText }
+type MediaItem = MediaImage | MediaVideo | MediaLink;
+
+interface Props {
+  media: MediaItem[];
+  presentation?: 'contact-sheet' | 'lead' | 'sidecar';
+  galleryId: string; // unique per entry, groups images into one lightbox gallery
+  locale?: Locale;
+}
+const { media, presentation = 'contact-sheet', galleryId, locale = 'en' } = Astro.props;
+const labels = translations[locale].media;
+
+const images = media.filter((m): m is MediaImage => m.type === 'image');
+const videos = media.filter((m): m is MediaVideo => m.type === 'video');
+const links  = media.filter((m): m is MediaLink  => m.type === 'link');
+const galleryClass = images.length > 1 ? 'is-gallery' : 'is-single';
+---
+
+{media.length > 0 && (
+  <div class={`media media-${presentation}`} data-media-presentation={presentation}>
+    {/* IMAGES — open in an in-page lightbox (no new tab, no raw .jpg) */}
+    {images.length > 0 && (
+      <div class={`media-images ${galleryClass}`}>
+        {images.map((img, i) => (
+          <button
+            type="button"
+            class:list={['media-img-wrap', presentation === 'lead' && i > 0 && 'lead-gallery-data']}
+            hidden={presentation === 'lead' && i > 0}
+            tabindex={presentation === 'lead' && i > 0 ? -1 : undefined}
+            data-lightbox={galleryId}
+            data-index={i}
+            data-src={withBase(img.src)}
+            data-alt={img.alt ? localize(img.alt, locale) : ''}
+            aria-label={`${labels.openImage}${img.alt ? `: ${localize(img.alt, locale)}` : ''}`}
+          >
+            <img class="media-img" src={withBase(img.src)} alt={img.alt ? localize(img.alt, locale) : ''} loading="lazy" />
+            {presentation === 'lead' && i === 0 && images.length > 1 && (
+              <span class="photo-count mono">{labels.viewPhotos(images.length)}</span>
+            )}
+          </button>
+        ))}
+      </div>
+    )}
+
+    {/* VIDEOS — self-hosted, native controls, no third-party tracking */}
+    {videos.map((v) => (
+      <video class="media-video" controls preload="metadata"
+             poster={v.poster ? withBase(v.poster) : undefined}>
+        <source src={withBase(v.src)} />
+      </video>
+    ))}
+
+    {/* LINKS — clean cards (e.g. a LinkedIn post); no iframe, no cookies */}
+    {links.map((l) => (
+      <ExternalLink class="media-link" href={l.url}>
+        <span class="media-link-label">{l.label ? localize(l.label, locale) : labels.readFull}</span>
+      </ExternalLink>
+    ))}
+  </div>
+)}
+
+<style>
+  .media { margin-top: 1rem; }
+
+  /* image triggers are <button>s — reset native styling */
+  .media-img-wrap {
+    appearance: none; border: 1px solid var(--border); background: none;
+    padding: 0; margin: 0; cursor: zoom-in; display: block; width: 100%;
+    border-radius: 12px; overflow: hidden;
+  }
+
+  .media-images { display: grid; gap: 8px; }
+  .media-contact-sheet .media-images { width: min(100%, 560px); grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .media-contact-sheet .media-images.is-single { grid-template-columns: minmax(0, 280px); }
+  .media-contact-sheet .media-img-wrap { aspect-ratio: 4 / 3; }
+  .media-lead .media-images { width: min(100%, 640px); grid-template-columns: 1fr; }
+  .media-lead .media-img-wrap { position: relative; aspect-ratio: 16 / 9; }
+  .media-sidecar .media-images { grid-template-columns: 1fr; }
+  .media-sidecar .media-img-wrap { aspect-ratio: 4 / 3; }
+  .lead-gallery-data[hidden] { display: none; }
+  .media-img { display: block; width: 100%; height: 100%; object-fit: cover; transition: transform .2s var(--ease-out); }
+  .media-img-wrap:hover .media-img { transform: scale(1.015); }
+  .photo-count { position: absolute; right: .65rem; bottom: .65rem; min-height: 36px; padding: .4rem .65rem; display: inline-flex; align-items: center; border: 1px solid rgba(255,255,255,.62); border-radius: var(--radius-pill); color: #fff; background: rgba(8,10,14,.82); font-size: .66rem; }
+
+  .media-video {
+    display: block; width: 100%; height: auto; margin-top: 8px;
+    border-radius: 12px; border: 1px solid var(--border); background: #000;
+  }
+
+  :global(.media-link) {
+    display: inline-flex; align-items: center; gap: 0.5rem; margin-top: 0.6rem;
+    font-family: var(--font-mono); font-size: var(--text-ui);
+    border: 1px solid var(--border-strong); border-radius: 8px; padding: 0.45rem 0.85rem;
+  }
+  :global(.media-link:hover) { border-color: var(--lime); background: var(--surface-2); }
+  :global(.media-link .external-arrow) { color: var(--accent-text); }
+
+  @media (max-width: 620px) {
+    .media-contact-sheet .media-images { width: 100%; }
+    .media-contact-sheet .media-img-wrap, .media-sidecar .media-img-wrap { max-height: 180px; }
+    .media-lead .media-img-wrap { max-height: 190px; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .media-img { transition: none; }
+  }
+</style>

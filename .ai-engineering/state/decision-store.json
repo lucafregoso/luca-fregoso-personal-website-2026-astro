@@ -1,0 +1,82 @@
+{
+  "active_decisions": [
+    {
+      "acceptedBy": "luca.fregoso@gmail.com",
+      "context": "finding:sentinel-malicious_domains-.work",
+      "contextHash": "9cb7986d76ab094cc719e09cbcf6e70358a3a46b51d7b663adf1d25000f0ede2",
+      "decidedAt": "2026-07-04T17:26:00Z",
+      "decision": "False positive: the .work suspicious-TLD IOC matches benign source tokens (i18n key t.work, CSS class .work) in the personal-site homepage code. No network access to any .work domain is involved.",
+      "expiresAt": "2026-07-19T17:26:00Z",
+      "findingId": "sentinel-malicious_domains-.work",
+      "followUpAction": "Scope the suspicious-TLD matcher to URL contexts (scheme or host boundary) so bare code tokens like t.work stop matching; revisit when upstream ships the fix.",
+      "id": "DEC-2026-07-04-7ED335FE",
+      "renewalCount": 0,
+      "riskCategory": "risk-acceptance",
+      "severity": "critical",
+      "source": "website-redesign-2026",
+      "spec": "website-redesign-2026",
+      "status": "active"
+    },
+    {
+      "acceptedBy": "luca.fregoso@gmail.com",
+      "context": "finding:sentinel-malicious_domains-.click",
+      "contextHash": "12650210014754620bc7ffbb2879b1ebf8b38faca5403b7b20bee2c8917e376c",
+      "decidedAt": "2026-07-06T12:45:09Z",
+      "decision": "False positive: the .click suspicious-TLD IOC matches the DOM API call link.click() in component scripts. No network access to any .click domain is involved.",
+      "expiresAt": "2026-07-21T12:45:09Z",
+      "findingId": "sentinel-malicious_domains-.click",
+      "followUpAction": "Scope the suspicious-TLD matcher to URL contexts (scheme or host boundary) so DOM API tokens like element.click() stop matching; covered by the same upstream bug report as the .work finding.",
+      "id": "DEC-2026-07-06-E74949B6",
+      "prevEventHash": "d7d30c433d9b3bbdbb91e2287e93d46cc0cf97243e763a43d7871bf80523e10d",
+      "renewalCount": 0,
+      "riskCategory": "risk-acceptance",
+      "severity": "critical",
+      "source": "website-redesign-2026",
+      "spec": "website-redesign-2026",
+      "status": "active"
+    }
+  ],
+  "decisions": [
+    {
+      "acceptedBy": "luca.fregoso@gmail.com",
+      "context": "finding:sentinel-malicious_domains-.work",
+      "contextHash": "9cb7986d76ab094cc719e09cbcf6e70358a3a46b51d7b663adf1d25000f0ede2",
+      "decidedAt": "2026-07-04T17:26:00Z",
+      "decision": "False positive: the .work suspicious-TLD IOC matches benign source tokens (i18n key t.work, CSS class .work) in the personal-site homepage code. No network access to any .work domain is involved.",
+      "expiresAt": "2026-07-19T17:26:00Z",
+      "findingId": "sentinel-malicious_domains-.work",
+      "followUpAction": "Scope the suspicious-TLD matcher to URL contexts (scheme or host boundary) so bare code tokens like t.work stop matching; revisit when upstream ships the fix.",
+      "id": "DEC-2026-07-04-7ED335FE",
+      "renewalCount": 0,
+      "riskCategory": "risk-acceptance",
+      "severity": "critical",
+      "source": "website-redesign-2026",
+      "spec": "website-redesign-2026",
+      "status": "active"
+    },
+    {
+      "acceptedBy": "luca.fregoso@gmail.com",
+      "context": "finding:sentinel-malicious_domains-.click",
+      "contextHash": "12650210014754620bc7ffbb2879b1ebf8b38faca5403b7b20bee2c8917e376c",
+      "decidedAt": "2026-07-06T12:45:09Z",
+      "decision": "False positive: the .click suspicious-TLD IOC matches the DOM API call link.click() in component scripts. No network access to any .click domain is involved.",
+      "expiresAt": "2026-07-21T12:45:09Z",
+      "findingId": "sentinel-malicious_domains-.click",
+      "followUpAction": "Scope the suspicious-TLD matcher to URL contexts (scheme or host boundary) so DOM API tokens like element.click() stop matching; covered by the same upstream bug report as the .work finding.",
+      "id": "DEC-2026-07-06-E74949B6",
+      "prevEventHash": "d7d30c433d9b3bbdbb91e2287e93d46cc0cf97243e763a43d7871bf80523e10d",
+      "renewalCount": 0,
+      "riskCategory": "risk-acceptance",
+      "severity": "critical",
+      "source": "website-redesign-2026",
+      "spec": "website-redesign-2026",
+      "status": "active"
+    }
+  ],
+  "schemaVersion": "1.1",
+  "updateMetadata": {
+    "expectedGain": "consistent framework state tracking",
+    "potentialImpact": "framework tools depend on this file",
+    "rationale": "initialize decision store"
+  }
+}

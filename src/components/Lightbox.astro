@@ -1,0 +1,198 @@
+---
+// Native modal dialog enhanced with gallery navigation, announcements and
+// reliable focus restoration.
+import { translations, type Locale } from '../i18n';
+
+interface Props { locale?: Locale }
+const { locale = 'en' } = Astro.props;
+const labels = translations[locale].lightbox;
+---
+
+<dialog
+  class="lb" id="lightbox" aria-label={labels.viewer}
+  data-image-word={locale === 'it' ? 'Immagine' : 'Image'}
+  data-of-word={locale === 'it' ? 'di' : 'of'}
+  data-opened-label={labels.opened}
+>
+  <button class="lb-close" type="button" aria-label={labels.close}>✕</button>
+  <button class="lb-nav lb-prev" type="button" aria-label={labels.previous}>‹</button>
+  <figure class="lb-stage">
+    <img class="lb-img" src="" alt="" />
+    <figcaption class="lb-cap mono"></figcaption>
+  </figure>
+  <button class="lb-nav lb-next" type="button" aria-label={labels.next}>›</button>
+  <div class="lb-count mono" aria-hidden="true"></div>
+  <p class="sr-only lb-status" role="status" aria-live="polite" aria-atomic="true"></p>
+</dialog>
+
+<style>
+  .lb {
+    position: fixed; inset: 0; width: 100vw; height: 100dvh; max-width: none;
+    max-height: none; margin: 0; padding: 4vh 4vw; border: 0;
+    align-items: center; justify-content: center; overflow: hidden;
+    color: #e6edf3; background: transparent;
+  }
+  .lb[open] { display: flex; }
+  .lb::backdrop { background: rgba(8, 10, 14, 0.92); }
+  @media (prefers-reduced-motion: no-preference) {
+    .lb[open] { animation: lb-fade 0.18s ease; }
+    @keyframes lb-fade { from { opacity: 0; } to { opacity: 1; } }
+  }
+
+  .lb-stage {
+    margin: 0; max-width: 100%; max-height: 100%; display: flex;
+    flex-direction: column; align-items: center; gap: 0.8rem;
+  }
+  .lb-img {
+    max-width: 100%; max-height: 84vh; width: auto; height: auto;
+    border-radius: 8px; box-shadow: 0 8px 40px rgba(0,0,0,0.5);
+    object-fit: contain; touch-action: pan-y;
+  }
+  /* Solid ink chips: the dialog surface is transparent (only ::backdrop is
+     dark), so text needs its own opaque background to guarantee contrast. */
+  .lb-cap { color: #e6edf3; background: #0b0e13; padding: .35rem .7rem; border-radius: var(--radius-sm); font-size: 0.8rem; text-align: center; max-width: 60ch; }
+
+  .lb-close, .lb-nav {
+    position: absolute; background: rgba(255,255,255,0.08); color: #e6edf3;
+    border: 1px solid rgba(255,255,255,0.35); cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    border-radius: 50%; transition: background 0.15s, border-color 0.15s;
+  }
+  .lb-close:hover, .lb-nav:hover { background: rgba(208,219,2,0.2); border-color: var(--lime); }
+  .lb-close { top: 3vh; right: 3vw; width: 44px; height: 44px; font-size: 1.1rem; }
+  .lb-nav { top: 50%; transform: translateY(-50%); width: 52px; height: 52px; font-size: 2rem; line-height: 1; }
+  .lb-prev { left: 2vw; }
+  .lb-next { right: 2vw; }
+  .lb-nav[disabled] { opacity: 0.42; cursor: default; }
+  .lb-nav[hidden] { display: none; }
+  .lb-count {
+    position: absolute; bottom: 3vh; left: 50%; transform: translateX(-50%);
+    color: #e6edf3; background: #0b0e13; padding: .2rem .6rem;
+    border-radius: var(--radius-pill); font-size: 0.8rem;
+  }
+
+  @media (max-width: 600px) {
+    .lb-nav { width: 44px; height: 44px; font-size: 1.5rem; }
+    .lb-close { top: 2vh; right: 4vw; }
+  }
+</style>
+
+<script>
+  (function () {
+    const dialogElement = document.getElementById('lightbox');
+    if (!(dialogElement instanceof HTMLDialogElement)) return;
+    const dialog = dialogElement;
+    const imgEl = dialog.querySelector('.lb-img') as HTMLImageElement;
+    const capEl = dialog.querySelector('.lb-cap') as HTMLElement;
+    const countEl = dialog.querySelector('.lb-count') as HTMLElement;
+    const statusEl = dialog.querySelector('.lb-status') as HTMLElement;
+    const btnClose = dialog.querySelector('.lb-close') as HTMLButtonElement;
+    const btnPrev = dialog.querySelector('.lb-prev') as HTMLButtonElement;
+    const btnNext = dialog.querySelector('.lb-next') as HTMLButtonElement;
+
+    let gallery: { src: string; alt: string }[] = [];
+    let index = 0;
+    let lastFocused: HTMLElement | null = null;
+
+    function announce(message: string) {
+      statusEl.textContent = '';
+      window.setTimeout(() => { statusEl.textContent = message; }, 20);
+    }
+
+    function positionLabel(position: number, total: number) {
+      return `${dialog.dataset.imageWord} ${position} ${dialog.dataset.ofWord} ${total}`;
+    }
+
+    function render(shouldAnnounce = true) {
+      const item = gallery[index];
+      if (!item) return;
+      imgEl.src = item.src;
+      imgEl.alt = item.alt;
+      capEl.textContent = item.alt || '';
+      capEl.hidden = !item.alt;
+      const multi = gallery.length > 1;
+      btnPrev.hidden = !multi;
+      btnNext.hidden = !multi;
+      countEl.textContent = multi ? `${index + 1} / ${gallery.length}` : '';
+      btnPrev.disabled = index === 0;
+      btnNext.disabled = index === gallery.length - 1;
+      if (shouldAnnounce) {
+        announce(`${positionLabel(index + 1, gallery.length)}${item.alt ? `: ${item.alt}` : ''}`);
+      }
+    }
+
+    function open(galleryId: string, startIndex: number, trigger: HTMLElement) {
+      lastFocused = trigger;
+      const nodes = Array.from(document.querySelectorAll(`[data-lightbox="${galleryId}"]`)) as HTMLElement[];
+      gallery = nodes
+        .sort((a, b) => Number(a.dataset.index) - Number(b.dataset.index))
+        .map((node) => ({ src: node.dataset.src || '', alt: node.dataset.alt || '' }));
+      index = startIndex;
+      render(false);
+      document.body.style.overflow = 'hidden';
+      dialog.showModal();
+      btnClose.focus();
+      announce(`${dialog.dataset.openedLabel} ${positionLabel(index + 1, gallery.length)}${gallery[index]?.alt ? `: ${gallery[index].alt}` : ''}`);
+    }
+
+    function close() {
+      if (dialog.open) dialog.close();
+      document.body.style.overflow = '';
+      statusEl.textContent = '';
+      lastFocused?.focus();
+    }
+
+    function next() { if (index < gallery.length - 1) { index += 1; render(); } }
+    function prev() { if (index > 0) { index -= 1; render(); } }
+
+    function focusableControls() {
+      return [btnClose, btnPrev, btnNext].filter((button) => !button.hidden && !button.disabled);
+    }
+
+    function onKey(event: KeyboardEvent) {
+      if (event.key === 'ArrowRight') next();
+      else if (event.key === 'ArrowLeft') prev();
+      else if (event.key === 'Tab') {
+        const controls = focusableControls();
+        const first = controls[0];
+        const last = controls[controls.length - 1];
+        if (!first || !last) return;
+        if (event.shiftKey && document.activeElement === first) {
+          event.preventDefault();
+          last.focus();
+        } else if (!event.shiftKey && document.activeElement === last) {
+          event.preventDefault();
+          first.focus();
+        }
+      }
+    }
+
+    document.querySelectorAll('[data-lightbox]').forEach((element) => {
+      element.addEventListener('click', () => {
+        const trigger = element as HTMLElement;
+        open(trigger.dataset.lightbox || '', Number(trigger.dataset.index) || 0, trigger);
+      });
+    });
+
+    btnClose.addEventListener('click', close);
+    btnNext.addEventListener('click', next);
+    btnPrev.addEventListener('click', prev);
+    dialog.addEventListener('keydown', onKey);
+    dialog.addEventListener('cancel', (event) => { event.preventDefault(); close(); });
+    dialog.addEventListener('click', (event) => { if (event.target === dialog) close(); });
+
+    let startX = 0;
+    let startY = 0;
+    imgEl.addEventListener('touchstart', (event) => {
+      startX = event.touches[0].clientX;
+      startY = event.touches[0].clientY;
+    }, { passive: true });
+    imgEl.addEventListener('touchend', (event) => {
+      const dx = event.changedTouches[0].clientX - startX;
+      const dy = event.changedTouches[0].clientY - startY;
+      if (Math.abs(dx) > 50 && Math.abs(dx) > Math.abs(dy)) {
+        if (dx < 0) next(); else prev();
+      }
+    }, { passive: true });
+  })();
+</script>
