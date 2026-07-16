@@ -1,0 +1,37 @@
+{
+  "name": "lucafregoso-site",
+  "type": "module",
+  "version": "1.0.0",
+  "packageManager": "pnpm@11.10.0",
+  "description": "Personal site of Luca Fregoso — Developer Programs & Content Lead",
+  "scripts": {
+    "dev": "astro dev",
+    "build": "astro build",
+    "build:test": "PLAYWRIGHT_TEST=1 astro build",
+    "astro:check": "astro check",
+    "cms:check": "node scripts/check-cms.mjs",
+    "cms:serve": "python3 -m http.server 8080 --directory admin",
+    "check": "pnpm run astro:check && pnpm run cms:check",
+    "preview": "astro preview",
+    "preview:test": "PLAYWRIGHT_TEST=1 astro preview",
+    "astro": "astro",
+    "test": "playwright test --workers=1",
+    "test:ui": "playwright test --ui",
+    "test:report": "playwright show-report"
+  },
+  "dependencies": {
+    "@astrojs/sitemap": "^3.7.3",
+    "@fontsource-variable/schibsted-grotesk": "^5.2.8",
+    "@fontsource/fragment-mono": "^5.2.8",
+    "astro": "^5.2.0",
+    "axe-core": "^4.12.1",
+    "sharp": "^0.35.2"
+  },
+  "devDependencies": {
+    "@astrojs/check": "^0.9.9",
+    "@playwright/test": "^1.61.0",
+    "typescript": "^5.9.3",
+    "vite": "6.4.3",
+    "yaml": "2.9.0"
+  }
+}

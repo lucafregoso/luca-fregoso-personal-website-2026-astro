@@ -1,0 +1,48 @@
+---
+import { translations, type Locale } from '../i18n';
+
+interface Props {
+  locale?: Locale;
+}
+
+const { locale = 'en' } = Astro.props;
+const labels = translations[locale].theme;
+---
+<button
+  class="theme-toggle"
+  id="theme-toggle"
+  type="button"
+  aria-label={labels.dark}
+  title={labels.dark}
+  data-label-dark={labels.dark}
+  data-label-light={labels.light}
+>
+  <span id="theme-icon" aria-hidden="true">◐</span>
+</button>
+
+<script is:inline>
+  (function () {
+    var btn = document.getElementById('theme-toggle');
+    var icon = document.getElementById('theme-icon');
+    function sync() {
+      var t = document.documentElement.getAttribute('data-theme');
+      if (icon) icon.textContent = t === 'dark' ? '☾' : '☀';
+      if (btn) {
+        var label = t === 'dark' ? btn.dataset.labelLight : btn.dataset.labelDark;
+        if (!label) return;
+        btn.setAttribute('aria-label', label);
+        btn.setAttribute('title', label);
+      }
+    }
+    sync();
+    if (btn) {
+      btn.addEventListener('click', function () {
+        var cur = document.documentElement.getAttribute('data-theme');
+        var next = cur === 'dark' ? 'light' : 'dark';
+        document.documentElement.setAttribute('data-theme', next);
+        try { localStorage.setItem('theme', next); } catch (e) {}
+        sync();
+      });
+    }
+  })();
+</script>

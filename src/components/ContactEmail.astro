@@ -1,0 +1,116 @@
+---
+// The alias is deliberately revealed only after user activation. This deters
+// basic static scrapers without pretending that client-side data is secret.
+import { site } from '../data/site';
+import { translations, type Locale } from '../i18n';
+
+interface Props {
+  id?: string;
+  locale?: Locale;
+}
+
+const { id = 'contact-email', locale = 'en' } = Astro.props;
+const labels = translations[locale].email;
+const actionsId = `${id}-actions`;
+const statusId = `${id}-status`;
+---
+
+<div
+  class="contact-email" data-contact-email data-u={site.emailUser} data-d={site.emailDomain}
+  data-revealed={labels.revealed} data-copied-status={labels.copiedStatus} data-failed={labels.failed}
+  data-copied-label={labels.copied}
+>
+  <button
+    type="button"
+    class="email-reveal"
+    aria-expanded="false"
+    aria-controls={actionsId}
+    data-email-reveal
+  >
+    {labels.reveal}
+  </button>
+
+  <div class="email-actions" id={actionsId} hidden data-email-actions>
+    <p class="email-address mono" data-email-address></p>
+    <div class="email-buttons">
+      <a class="email-link" href="#" data-email-link>{labels.action}</a>
+      <button type="button" class="email-copy" aria-describedby={statusId} data-email-copy>
+        {labels.copy}
+      </button>
+    </div>
+  </div>
+
+  <p class="sr-only" id={statusId} role="status" aria-live="polite" aria-atomic="true" data-email-status></p>
+</div>
+
+<script is:inline>
+  document.querySelectorAll('[data-contact-email]').forEach(function (root) {
+    var reveal = root.querySelector('[data-email-reveal]');
+    var actions = root.querySelector('[data-email-actions]');
+    var address = root.querySelector('[data-email-address]');
+    var emailLink = root.querySelector('[data-email-link]');
+    var copy = root.querySelector('[data-email-copy]');
+    var status = root.querySelector('[data-email-status]');
+    if (!reveal || !actions || !address || !emailLink || !copy || !status) return;
+
+    function getAddress() {
+      return root.getAttribute('data-u') + '@' + root.getAttribute('data-d');
+    }
+
+    function announce(message) {
+      status.textContent = '';
+      window.setTimeout(function () { status.textContent = message; }, 20);
+    }
+
+    reveal.addEventListener('click', function () {
+      var value = getAddress();
+      address.textContent = value;
+      emailLink.setAttribute('href', 'mailto:' + value);
+      actions.hidden = false;
+      reveal.setAttribute('aria-expanded', 'true');
+      reveal.hidden = true;
+      announce(root.getAttribute('data-revealed') || '');
+      emailLink.focus();
+    });
+
+    copy.addEventListener('click', async function () {
+      var value = getAddress();
+      try {
+        await navigator.clipboard.writeText(value);
+        copy.textContent = root.getAttribute('data-copied-label') || copy.textContent;
+        announce(root.getAttribute('data-copied-status') || '');
+      } catch (error) {
+        announce(root.getAttribute('data-failed') || '');
+      }
+    });
+  });
+</script>
+
+<style>
+  .contact-email { display: grid; gap: .75rem; }
+  .email-reveal, .email-link, .email-copy {
+    min-height: 48px; padding: .7rem 1.15rem; border-radius: var(--radius-md);
+    display: inline-flex; align-items: center; justify-content: center;
+    font: 400 var(--text-ui)/1.2 var(--font-mono); cursor: pointer;
+  }
+  .email-reveal[hidden] { display: none; }
+  .email-reveal, .email-link {
+    color: #171715; background: var(--lime); border: 1px solid var(--lime);
+  }
+  .email-reveal:hover, .email-link:hover {
+    color: #171715; background: var(--lime-dim); border-color: var(--lime);
+  }
+  .email-actions { display: grid; gap: .75rem; }
+  .email-actions[hidden] { display: none; }
+  .email-address {
+    margin: 0; padding: .65rem .8rem; color: #f3f5f7; background: #151a22;
+    border: 1px solid #353d49; border-radius: var(--radius-sm);
+    font-size: var(--text-ui); text-align: center; user-select: all;
+  }
+  .email-buttons { display: grid; grid-template-columns: 1fr 1fr; gap: .75rem; }
+  .email-copy { color: #f3f5f7; background: #151a22; border: 1px solid #353d49; }
+  .email-copy:hover { border-color: var(--lime); }
+  @media (max-width: 420px) {
+    .email-buttons { grid-template-columns: 1fr; }
+  }
+</style>

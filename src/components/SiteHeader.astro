@@ -1,0 +1,196 @@
+---
+{/* import LanguageSwitcher from './LanguageSwitcher.astro'; */}
+import ThemeToggle from './ThemeToggle.astro';
+import { translations, type Locale } from '../i18n';
+import { withBase } from '../lib/url';
+
+interface NavItem {
+  href: string;
+  label: string;
+}
+
+interface Props {
+  locale?: Locale;
+  navItems?: NavItem[];
+}
+
+const { locale = 'en' } = Astro.props;
+const labels = translations[locale].nav;
+const defaultNav = [
+  { href: '#work', label: labels.work },
+  { href: '#lately', label: labels.lately },
+  { href: '#talks', label: labels.talks },
+  { href: '#media', label: labels.writing },
+  { href: '#contact', label: labels.contact },
+];
+const navItems = Astro.props.navItems ?? defaultNav;
+const homeHref = withBase(locale === 'it' ? '/it/' : '/');
+---
+
+<header class="site-header" aria-label={labels.header} data-site-header data-hidden="false" data-compact="false">
+  <div class="site-header-inner">
+    <a class="site-brand mono" href={homeHref} aria-label={labels.brand}>luca·fregoso</a>
+
+    <nav class="desktop-navigation" aria-label={labels.primary}>
+      {navItems.map((item) => <a href={item.href}>{item.label}</a>)}
+    </nav>
+
+    <div class="header-actions">
+{/*   <LanguageSwitcher {locale} /> */}
+      <ThemeToggle {locale} />
+      <button
+        class="menu-toggle"
+        type="button"
+        aria-expanded="false"
+        aria-controls="mobile-navigation"
+        aria-label={labels.openMenu}
+        data-label-open={labels.openMenu}
+        data-label-close={labels.closeMenu}
+      >
+        <span aria-hidden="true" class="menu-line menu-line-top"></span>
+        <span aria-hidden="true" class="menu-line menu-line-middle"></span>
+        <span aria-hidden="true" class="menu-line menu-line-bottom"></span>
+      </button>
+    </div>
+  </div>
+
+  <nav id="mobile-navigation" class="mobile-navigation" aria-label={labels.primary} hidden>
+    {navItems.map((item) => <a href={item.href}>{item.label}</a>)}
+  </nav>
+</header>
+
+<script>
+  (function () {
+    const header = document.querySelector<HTMLElement>('[data-site-header]');
+    const button = header?.querySelector<HTMLButtonElement>('.menu-toggle');
+    const panel = document.getElementById('mobile-navigation');
+    if (!header || !button || !panel) return;
+
+    let evaluatedY = window.scrollY;
+    let open = false;
+    let externalOverlayOpen = false;
+    let frame = 0;
+    const mobile = window.matchMedia('(max-width: 900px)');
+
+    const setOpen = (next: boolean, emit = true) => {
+      if (next === open) return;
+      open = next;
+      button.setAttribute('aria-expanded', String(next));
+      button.setAttribute('aria-label', next ? button.dataset.labelClose! : button.dataset.labelOpen!);
+      panel.hidden = !next;
+      header.dataset.hidden = 'false';
+      document.documentElement.classList.toggle('menu-open', next);
+      if (emit) document.dispatchEvent(new CustomEvent('site:overlay-change', {
+        detail: { source: 'navigation', open: next },
+      }));
+    };
+
+    button.addEventListener('click', () => setOpen(!open));
+    panel.querySelectorAll('a').forEach((link) => link.addEventListener('click', () => setOpen(false)));
+    document.addEventListener('pointerdown', (event) => {
+      if (open && event.target instanceof Node && !header.contains(event.target)) setOpen(false);
+    });
+    document.addEventListener('keydown', (event) => {
+      if (event.key === 'Escape' && open) { setOpen(false); button.focus(); }
+    });
+    header.addEventListener('focusin', () => { header.dataset.hidden = 'false'; });
+    document.addEventListener('site:overlay-change', ((event: CustomEvent<{ source: string; open: boolean }>) => {
+      if (event.detail.source === 'navigation') return;
+      externalOverlayOpen = event.detail.open;
+      if (externalOverlayOpen && open) setOpen(false);
+      header.dataset.hidden = 'false';
+    }) as EventListener);
+
+    const updateScrollState = () => {
+      frame = 0;
+      const currentY = Math.max(0, window.scrollY);
+      header.dataset.compact = String(currentY > 24);
+
+      if (!mobile.matches || open || externalOverlayOpen || currentY <= 76) {
+        header.dataset.hidden = 'false';
+        evaluatedY = currentY;
+      } else if (Math.abs(currentY - evaluatedY) >= 8) {
+        header.dataset.hidden = String(currentY > evaluatedY);
+        evaluatedY = currentY;
+      }
+    };
+
+    window.addEventListener('scroll', () => {
+      if (!frame) frame = window.requestAnimationFrame(updateScrollState);
+    }, { passive: true });
+    mobile.addEventListener('change', () => {
+      if (!mobile.matches && open) setOpen(false);
+      header.dataset.hidden = 'false';
+      updateScrollState();
+    });
+  })();
+</script>
+
+<style>
+  .site-header {
+    position: sticky; top: 0; z-index: 100; width: 100%; padding-top: env(safe-area-inset-top, 0);
+    border-bottom: 1px solid transparent; background: color-mix(in srgb, var(--bg) 88%, transparent);
+    backdrop-filter: blur(16px); transition: transform .22s ease, border-color .2s ease;
+  }
+  .site-header[data-compact='true'] { border-color: var(--border); }
+  .site-header-inner {
+    width: min(1180px, calc(100% - 3rem)); min-height: 76px; margin: 0 auto;
+    display: grid; grid-template-columns: 1fr auto auto; align-items: center; gap: 1.5rem;
+    transition: min-height .2s ease;
+  }
+  [data-compact='true'] .site-header-inner { min-height: 62px; }
+  .site-brand { width: fit-content; min-height: 44px; justify-self: start; display: inline-flex; align-items: center; color: var(--text); font-size: var(--text-ui); letter-spacing: 0; }
+  /* Terminal caret on hover — a small egg for people who notice */
+  .site-brand::after { content: '▊'; margin-left: .2rem; color: var(--accent-text); opacity: 0; }
+  .site-brand:hover::after, .site-brand:focus-visible::after { opacity: 1; animation: brand-caret 1.1s steps(1) infinite; }
+  @keyframes brand-caret { 50% { opacity: 0; } }
+  .desktop-navigation { display: flex; align-items: center; gap: 1.35rem; }
+  .desktop-navigation a { min-height: 44px; display: inline-flex; align-items: center; color: var(--text-muted); font: 400 var(--text-meta)/1 var(--font-mono); }
+  .desktop-navigation a:hover { color: var(--text); }
+  .header-actions { display: flex; align-items: center; gap: .35rem; }
+  .menu-toggle {
+    position: relative; display: none; width: 44px; height: 44px; padding: 0; align-items: center; justify-content: center;
+    border: 1px solid var(--border); border-radius: 8px; color: var(--text-muted); background: var(--surface);
+    cursor: pointer;
+  }
+  .menu-toggle:hover, .menu-toggle[aria-expanded='true'] { color: var(--text); border-color: var(--lime); }
+  .menu-line {
+    position: absolute;
+    display: block;
+    width: 18px;
+    height: 1.5px;
+    border-radius: var(--radius-pill);
+    background: currentColor;
+    transform-origin: center;
+    transition: transform .2s var(--ease-out), opacity .16s var(--ease-out);
+  }
+  .menu-line-top { transform: translateY(-6px); }
+  .menu-line-middle { transform: translateY(0); }
+  .menu-line-bottom { transform: translateY(6px); }
+  .menu-toggle[aria-expanded='true'] .menu-line-top { transform: translateY(0) rotate(45deg); }
+  .menu-toggle[aria-expanded='true'] .menu-line-middle { opacity: 0; transform: scaleX(.3); }
+  .menu-toggle[aria-expanded='true'] .menu-line-bottom { transform: translateY(0) rotate(-45deg); }
+  .mobile-navigation { width: min(1180px, calc(100% - 3rem)); margin: 0 auto; padding: .5rem 0 1.5rem; border-top: 1px solid var(--border); }
+  .mobile-navigation a { min-height: 48px; display: flex; align-items: center; font: 400 var(--text-ui)/1 var(--font-mono); }
+  .mobile-navigation[hidden] { display: none; }
+
+  @media (max-width: 900px) {
+    .desktop-navigation { display: none; }
+    .site-header-inner { grid-template-columns: 1fr auto; }
+    .menu-toggle { display: inline-flex; }
+    .site-header[data-hidden='true'] { transform: translateY(-101%); }
+  }
+  @media (max-width: 520px) {
+    .site-header-inner, .mobile-navigation { width: min(100% - 2rem, 1180px); }
+    .site-header-inner { min-height: 64px; gap: .5rem; }
+    .header-actions { gap: .1rem; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .site-header, .site-header-inner, .menu-line { transition: none; }
+    .site-brand:hover::after, .site-brand:focus-visible::after { animation: none; }
+  }
+  @media (forced-colors: active) {
+    .site-header { background: Canvas; border-color: CanvasText; }
+    .menu-toggle { border-color: ButtonText; }
+  }
+</style>

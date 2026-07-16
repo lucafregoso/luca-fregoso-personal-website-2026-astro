@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 675" role="img" aria-labelledby="title description">
+  <title id="title">Tech Chat – AI &amp; Open Source</title>
+  <desc id="description">Abstract local poster for the Codemotion live recording.</desc>
+  <defs>
+    <linearGradient id="background" x1="0" y1="0" x2="1" y2="1">
+      <stop stop-color="#111827"/>
+      <stop offset="1" stop-color="#24324a"/>
+    </linearGradient>
+  </defs>
+  <rect width="1200" height="675" fill="url(#background)"/>
+  <circle cx="1020" cy="100" r="270" fill="#c9da3a" opacity=".92"/>
+  <circle cx="110" cy="670" r="260" fill="#5b7cfa" opacity=".35"/>
+  <path d="M860 84h190M860 124h260M860 164h150" stroke="#111827" stroke-width="12" opacity=".55"/>
+  <text x="76" y="102" fill="#c9da3a" font-family="ui-monospace,monospace" font-size="28" letter-spacing="4">CODEMOTION · LIVE RECORDING</text>
+  <text x="76" y="300" fill="#fff" font-family="Arial,sans-serif" font-size="92" font-weight="700">Tech Chat</text>
+  <text x="76" y="405" fill="#fff" font-family="Arial,sans-serif" font-size="76" font-weight="700">AI &amp; Open Source</text>
+  <text x="80" y="570" fill="#cbd5e1" font-family="ui-monospace,monospace" font-size="28">HOSTED BY LUCA FREGOSO</text>
+</svg>
