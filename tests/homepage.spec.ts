@@ -17,19 +17,18 @@ test.describe("homepage content contract", () => {
     await expect(page.locator(".hero-role")).toContainText(
       "Developer Programs & Content Lead",
     );
-    // the remote signal must be visible above the fold
-    await expect(page.locator(".hero-role")).toContainText(/remote/i);
     // the target-role vocabulary must be visible above the fold
+    // (the remote signal lives in the contact block — asserted there)
     await expect(page.locator(".hero-role")).toContainText(/DevRel/i);
     await expect(page.locator(".hero-role")).toContainText(/presales/i);
     await expect(page.locator(".hero-headline")).toHaveText(
       "I design technical programs people trust.",
     );
     await expect(page.locator(".hero-intro")).toContainText(
-      /clear programs.*actually ship/i,
+      /presales rooms.*into programs that ship/i,
     );
     await expect(page.locator(".hero-proof")).toContainText(
-      /written production code and sold it/i,
+      /wrote production code and sold it/i,
     );
 
     const sectionHeadings = await page.locator("h2").allTextContents();

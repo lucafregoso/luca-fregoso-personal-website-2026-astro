@@ -1,11 +1,9 @@
 ---
 title:
   en: "Spotlight #11 – Luca Fregoso (Codemotion)"
-  it: "Spotlight #11 – Luca Fregoso (Codemotion)"
 summary:
-  en: Luca joins Il Podcast Open Source to discuss Codemotion, developer communities and the work behind technical programs.
-  it: Luca è ospite de Il Podcast Open Source per parlare di Codemotion, community di developer e del lavoro dietro ai programmi tecnici.
-locales: [en, it]
+  en: Luca joins `Il Podcast Open Source` to discuss Codemotion, developer communities and the work behind technical programs.
+locales: [en]
 format: podcast
 platform: spotify
 role: guest
