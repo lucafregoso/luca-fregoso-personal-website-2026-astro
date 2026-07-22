@@ -23,11 +23,11 @@ export const site = {
 
     // The <title> pattern. {name} and {tagline} are filled in.
     // Pages can override the whole title via the layout prop.
-    titlePattern: "{name} — {tagline}",
+    titlePattern: "{name} - {tagline}",
 
     // Default meta description (search results + social preview).
     description:
-      "Developer Relations (DevRel), technical presales and developer programs — 20+ years in tech, 15 of them building software. " +
+      "Developer Relations (DevRel), technical presales and developer programs. 20+ years in tech, 15 of them building software. " +
       "Luca Fregoso shapes conference agendas, training paths and solutions engineering for developer-facing products.",
 
     author: "Luca Fregoso",
@@ -54,7 +54,7 @@ export const site = {
   metrics: [
     {
       value: "20+ years",
-      label: "in tech — 15 of them building software",
+      label: "in tech, 15 of them building software",
     },
     {
       value: "5,000+",
@@ -76,7 +76,7 @@ export const site = {
       axis: "Business × Engineering",
       title: "Turning sales promises into shipped software",
       summary:
-        "I sit between clients, sales and engineering — I find the real ask, test the promises against reality, and scope a plan engineering can commit to.",
+        "I sit between clients, sales and engineering. I find the real ask, test the promises against reality, and scope a plan engineering can commit to.",
       stat: {
         value: "pitch → prod",
         label:
@@ -90,7 +90,7 @@ export const site = {
       axis: "Community × Engineering",
       title: "Shaping trusted agendas across Europe",
       summary:
-        "International committees, CFP and speaker curation for seven Codemotion editions across Milan, Madrid and Rome — rooms of 2,000–3,000 developers each.",
+        "International committees, CFP and speaker curation for seven Codemotion editions across Milan, Madrid and Rome. Rooms of 2,000–3,000 developers each.",
       stat: {
         value: "600 → 1",
         label: "submissions per edition, shaped into one balanced agenda",
