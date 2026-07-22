@@ -1,9 +1,12 @@
 import { defineCollection, z } from "astro:content";
 import { glob } from "astro/loaders";
 
+// English is required; Italian is optional while the /it/ locale is
+// disabled. localize() falls back to `en` when a translation is missing,
+// so entries may be EN-only or fully bilingual — nothing breaks either way.
 const localizedText = z.object({
   en: z.string().min(1),
-  it: z.string().min(1),
+  it: z.string().min(1).optional(),
 });
 const localeVisibility = z.array(z.enum(["en", "it"])).min(1);
 

@@ -1,11 +1,9 @@
 ---
 title:
   en: Tech Chat – AI & Open Source
-  it: Tech Chat – AI & Open Source
 summary:
   en: A live Codemotion conversation hosted by Luca about the relationship between artificial intelligence and open-source software.
-  it: Una conversazione live di Codemotion, condotta da Luca, sul rapporto tra intelligenza artificiale e software open source.
-locales: [en, it]
+locales: [en]
 format: live-recording
 platform: youtube
 role: host

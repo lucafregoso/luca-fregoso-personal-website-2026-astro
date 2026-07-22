@@ -1,6 +1,8 @@
 version: 2
 updates:
-  - package-ecosystem: "pip"
+  # npm covers the pnpm workspace (package.json + pnpm-lock.yaml) —
+  # the site's real dependencies: Astro, Playwright, Fontsource, etc.
+  - package-ecosystem: "npm"
     directory: "/"
     schedule:
       interval: "weekly"
@@ -10,10 +12,10 @@ updates:
       prefix-development: "chore(deps-dev)"
     labels:
       - "dependencies"
-      - "python"
+      - "javascript"
     open-pull-requests-limit: 5
     groups:
-      python-dependencies:
+      npm-dependencies:
         patterns:
           - "*"
 
