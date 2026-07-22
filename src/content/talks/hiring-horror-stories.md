@@ -3,7 +3,7 @@ title:
   en: "New Job Horror Stories from Developers and Recruiters"
   it: "New Job Horror Stories from Developers and Recruiters"
 abstract:
-  en: "Hiring should be a satisfying experience built on transparency, speed and mutual respect — yet often the opposite happens. This panel digs into genuinely frightening testimonies from both sides of the table, to move things forward for everyone."
+  en: "Hiring should run on transparency and mutual respect. It often doesn't. This panel digs into genuinely frightening testimonies from both sides of the table, what went wrong, and what to fix."
   it: "Il recruiting dovrebbe essere un’esperienza positiva, fondata su trasparenza, rapidità e rispetto reciproco. Spesso accade l’opposto. Questo panel parte da testimonianze davvero spaventose di developer e recruiter per capire come migliorare l’esperienza da entrambi i lati."
 locales: [en, it]
 events:
