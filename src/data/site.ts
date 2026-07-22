@@ -27,8 +27,8 @@ export const site = {
 
     // Default meta description (search results + social preview).
     description:
-      "Developer programs, technical content and presales lead with 20+ years in tech, 15 of them building software. " +
-      "Luca Fregoso shapes conference agendas, learning paths, technical narratives and developer-facing programs.",
+      "Developer Relations (DevRel), technical presales and developer programs — 20+ years in tech, 15 of them building software. " +
+      "Luca Fregoso shapes conference agendas, training paths and solutions engineering for developer-facing products.",
 
     author: "Luca Fregoso",
 
@@ -45,16 +45,16 @@ export const site = {
   // ---- Page content ----
   headline: "I design technical programs people trust.",
   intro:
-    "From European conference agendas to enterprise solutions, I turn hundreds of inputs, competing priorities and half-formed ideas into clear programs that actually ship.",
+    "From European conference agendas to presales rooms, I turn hundreds of inputs, competing priorities and half-formed ideas into programs that ship.",
   proof:
-    "I've written production code and sold it — in web agencies first, then running my own — before moving to programs. Engineers, sales teams and speakers get the same straight answer from me.",
+    "Before programs, I wrote production code and sold it: web agencies first, then my own. Engineers, sales teams and speakers get the same straight answer from me.",
 
   // Exactly three true numbers spanning the three worlds (career /
   // conferences / training), none repeated as an intersection stat.
   metrics: [
     {
       value: "20+ years",
-      label: "in tech — 15 of them building software and technical programs",
+      label: "in tech — 15 of them building software",
     },
     {
       value: "5,000+",
@@ -80,7 +80,7 @@ export const site = {
       stat: {
         value: "pitch → prod",
         label:
-          "program management, from the first sales call to a delivery plan that holds",
+          "technical presales, from the first sales call to a delivery plan that holds",
       },
       href: "#contact",
       linkLabel: "Discuss a complex brief",
@@ -90,7 +90,7 @@ export const site = {
       axis: "Community × Engineering",
       title: "Shaping trusted agendas across Europe",
       summary:
-        "International committees, CFP and speaker curation for seven Codemotion editions across Milan, Madrid and Rome.",
+        "International committees, CFP and speaker curation for seven Codemotion editions across Milan, Madrid and Rome — rooms of 2,000–3,000 developers each.",
       stat: {
         value: "600 → 1",
         label: "submissions per edition, shaped into one balanced agenda",
@@ -103,11 +103,11 @@ export const site = {
       axis: "People × Engineering",
       title: "Building a technical academy from zero",
       summary:
-        "Program design, teaching model and the day-to-day running of an academy business unit.",
+        "Program design, training model and the day-to-day running of an academy business unit.",
       stat: {
         value: "0 → 1",
         label:
-          "an academy that didn't exist, built into a running business unit",
+          "an academy built into a running business unit",
       },
       href: "/cv.pdf",
       linkLabel: "Read the full CV",

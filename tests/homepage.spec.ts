@@ -19,6 +19,9 @@ test.describe("homepage content contract", () => {
     );
     // the remote signal must be visible above the fold
     await expect(page.locator(".hero-role")).toContainText(/remote/i);
+    // the target-role vocabulary must be visible above the fold
+    await expect(page.locator(".hero-role")).toContainText(/DevRel/i);
+    await expect(page.locator(".hero-role")).toContainText(/presales/i);
     await expect(page.locator(".hero-headline")).toHaveText(
       "I design technical programs people trust.",
     );
@@ -57,7 +60,11 @@ test.describe("homepage content contract", () => {
     await expect(intersections.first()).toContainText(
       "Turning sales promises into shipped software",
     );
-    await expect(intersections.first()).toContainText(/program management/i);
+    await expect(intersections.first()).toContainText(/technical presales/i);
+    // "program management" moved to the section intro with the discipline clause
+    await expect(page.locator("#work .section-heading")).toContainText(
+      /program management/i,
+    );
     await expect(intersections.nth(2)).toContainText(/from zero/i);
     // each intersection card: axis label, one summary, display stat, CTA
     for (let index = 0; index < 3; index += 1) {
@@ -235,7 +242,7 @@ test.describe("homepage content contract", () => {
 
     const contact = page.locator("#contact");
     await expect(contact).toContainText(
-      /developer program.*technical proposal.*event.*learning path/i,
+      /DevRel motion.*presales cycle.*event.*training program/i,
     );
     await expect(contact.getByRole("button", { name: /email/i })).toBeVisible();
     await expect(
