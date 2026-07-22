@@ -18,16 +18,20 @@ function watchRuntime(page: Page) {
 
 for (const locale of [
   { path: '/', language: /Choose language/i, menu: 'Open menu' },
-  { path: '/it/', language: /Scegli (?:la )?lingua/i, menu: 'Apri menu' },
+  // /it/ temporarily disabled — restore with src/pages/it/:
+  // { path: '/it/', language: /Scegli (?:la )?lingua/i, menu: 'Apri menu' },
 ] as const) {
   test(`${locale.path} stays free of runtime warnings and failures through key interactions`, async ({ page }) => {
     const issues = watchRuntime(page);
     await page.setViewportSize({ width: 390, height: 844 });
     await page.goto(locale.path);
 
+    // language switcher is currently disabled; exercise it only if present
     const language = page.getByRole('button', { name: locale.language });
-    await language.click();
-    await page.keyboard.press('Escape');
+    if (await language.count()) {
+      await language.click();
+      await page.keyboard.press('Escape');
+    }
     await page.getByRole('button', { name: locale.menu }).click();
     await page.keyboard.press('Escape');
 

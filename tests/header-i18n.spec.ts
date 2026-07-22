@@ -13,18 +13,13 @@ const locales = [
     closeMenu: "Close menu",
     firstSection: "Work",
   },
-  {
-    path: "/it/",
-    lang: "it",
-    languageLabel: "Selezione lingua",
-    languageTrigger: /Scegli la lingua[.,]? Lingua attuale: Italiano/i,
-    currentLanguage: "Italiano",
-    alternateLanguage: "English",
-    alternatePath: "/",
-    openMenu: "Apri menu",
-    closeMenu: "Chiudi menu",
-    firstSection: "Lavoro",
-  },
+  // The /it/ locale is temporarily disabled (see activeLocales in
+  // src/i18n). Restore this row together with src/pages/it/:
+  // { path: "/it/", lang: "it", languageLabel: "Selezione lingua",
+  //   languageTrigger: /Scegli la lingua[.,]? Lingua attuale: Italiano/i,
+  //   currentLanguage: "Italiano", alternateLanguage: "English",
+  //   alternatePath: "/", openMenu: "Apri menu", closeMenu: "Chiudi menu",
+  //   firstSection: "Lavoro" },
 ] as const;
 
 async function expectMinimumTargetSize(locator: Locator, minimum = 44) {
@@ -57,18 +52,11 @@ test.describe("locale metadata and switching", () => {
         .getAttribute("href");
       expect(new URL(canonical!).pathname).toBe(locale.path);
 
+      // Single-locale mode: no hreflang alternates may be emitted (they
+      // would point at unrouted pages). When /it/ returns, restore the
+      // previous 3-link contract (en, it, x-default).
       const alternates = page.locator('link[rel="alternate"][hreflang]');
-      await expect(alternates).toHaveCount(3);
-      for (const [hreflang, pathname] of [
-        ["en", "/"],
-        ["it", "/it/"],
-        ["x-default", "/"],
-      ] as const) {
-        const href = await page
-          .locator(`link[rel="alternate"][hreflang="${hreflang}"]`)
-          .getAttribute("href");
-        expect(new URL(href!).pathname).toBe(pathname);
-      }
+      await expect(alternates).toHaveCount(0);
     });
 
     test(`${locale.path} language switcher identifies the current locale and navigates`, async ({
