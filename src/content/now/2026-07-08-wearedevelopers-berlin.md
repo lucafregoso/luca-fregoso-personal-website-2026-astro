@@ -8,7 +8,7 @@ locales:
   - it
 kind: milestone
 blurb:
-  en: Three days in Berlin for WeAreDevelopers World Congress — followed the conversations shaping developer tooling, AI, platforms and the next wave of technical communities.
+  en: Three days in Berlin for WeAreDevelopers World Congress. Followed the conversations shaping developer tooling, AI, platforms and the next wave of technical communities.
   it: Tre giorni a Berlino al WeAreDevelopers World Congress — ho seguito le conversazioni che stanno orientando developer tooling, AI, piattaforme e la prossima fase delle community tecniche.
 location:
   en: Berlin

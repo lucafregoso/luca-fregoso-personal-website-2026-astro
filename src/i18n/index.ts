@@ -87,7 +87,7 @@ const en = {
   writing: {
     title: "Media & writing",
     intro:
-      "Recordings, podcasts and articles about developer careers, technology and the decisions behind good programs.",
+      "Recordings and writing about developer careers, technology and the decisions behind good programs.",
     article: "article",
     inItalian: "in Italian",
   },
@@ -129,7 +129,7 @@ const en = {
   contact: {
     title: "Bring me the complicated brief.",
     intro:
-      "If you are shaping a DevRel motion, a presales cycle, an event or a training program that needs to hold up in front of skilled people, we can talk. I work remote by default — CET, with plenty of EU/US overlap — in English or Italian, as a consultant or embedded in your team.",
+      "If you are shaping a DevRel motion, a presales cycle, an event or a training program that needs to hold up in front of skilled people, we can talk. I work remote by default (CET, plenty of EU/US overlap), in English or Italian, as a consultant or embedded in your team.",
     linkedin: "Connect on LinkedIn",
     cv: "View CV (PDF)",
     socials: "Social profiles",
