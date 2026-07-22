@@ -1,11 +1,9 @@
 ---
 title:
   en: "10 Surprises and Paradoxes in the Gaming Industry"
-  it: "Industria del gaming: 10 sorprese e paradossi"
 summary:
   en: "A tour through the quirks and contradictions of the video-game industry."
-  it: "Un viaggio tra particolarità, contraddizioni e verità sorprendenti dell’industria dei videogiochi."
-locales: [en, it]
+locales: [en]
 publication: "Codemotion Magazine"
 url: "https://www.codemotion.com/magazine/it/frontend-it/sviluppo-videogiochi/10-sorprese-e-paradossi-gaming/"
 lang: it
