@@ -90,6 +90,11 @@ const writing = defineCollection({
     summary: localizedText,
     locales: localeVisibility,
     publication: z.string().default("Codemotion Magazine"),
+    // Where the piece lives. The homepage Media section is curated by hand:
+    //   'featured' → the single wide editorial slot (exactly one entry)
+    //   'library'  → the compact index under the recordings (default for new pieces)
+    //   'archive'  → archive page only
+    placement: z.enum(["featured", "library", "archive"]).default("library"),
     url: z.string().url(),
     // Language of the linked article — shows a "(in Italian)" marker on
     // the EN site when it differs from the reader's locale.

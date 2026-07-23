@@ -5,6 +5,7 @@ summary:
   en: "Does the language make the developer, or the mindset? A look at what counts when you build."
 locales: [en]
 publication: "Codemotion Magazine"
+placement: archive
 url: "https://www.codemotion.com/magazine/it/dev-life-it/linguaggi-programmazione-vs-mentalita-sviluppatore/"
 lang: it
 date: 2024-03-15
