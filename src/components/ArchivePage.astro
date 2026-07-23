@@ -13,6 +13,11 @@ interface Props {
 const locale = Astro.props.locale ?? 'en';
 const t = translations[locale];
 const items = await getArchiveItems(locale);
+// Only offer filters for types that actually have entries — a filter
+// pill that always leads to "No entries match" is a dead end.
+const presentTypes = archiveTypes.filter((type) =>
+  items.some((item) => item.type === type),
+);
 const pageSize = 20;
 const navItems = [
   { href: withBase('/#work'), label: t.nav.work },
@@ -40,7 +45,7 @@ const navItems = [
 
       <nav class="archive-filters" aria-label={t.archive.filterLabel}>
         <a class="meta-badge meta-badge-accent" href={archiveHref(locale)} data-filter-link data-type="all">{t.archive.all}</a>
-        {archiveTypes.map((type) => (
+        {presentTypes.map((type) => (
           <a class="meta-badge meta-badge-neutral" href={archiveHref(locale, type)} data-filter-link data-type={type}>
             {t.archive.filters[type]}
           </a>

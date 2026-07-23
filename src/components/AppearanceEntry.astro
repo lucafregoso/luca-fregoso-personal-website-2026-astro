@@ -61,7 +61,7 @@ const actionLabel = appearance.platform === 'youtube' ? t.appearances.watch : t.
           {/* The poster art already states format and role; the meta line
               only carries what the art can't: publisher (real text, not
               aria-hidden pixels), language marker, date. */}
-          <span>{appearance.publisher}{appearance.lang && appearance.lang !== locale ? ` · ${t.appearances.inItalian}` : ''} ·</span>
+          <span>{appearance.publisher}{appearance.lang && appearance.lang !== locale ? ` · ${t.appearances.inItalian}` : ''}</span>
           <time datetime={appearance.date.toISOString()}>{dateLabel}</time>
         </div>
         <h3><ExternalLink class="appearance-title-link" href={appearance.externalUrl}>{title}</ExternalLink></h3>
@@ -110,6 +110,7 @@ const actionLabel = appearance.platform === 'youtube' ? t.appearances.watch : t.
 </Tag>
 
 <script>
+  document.documentElement.classList.add('js-cards');
   document.addEventListener('click', (event) => {
     if (!(event.target instanceof Element)) return;
     if (event.target.closest('a, button')) return;
@@ -150,7 +151,15 @@ const actionLabel = appearance.platform === 'youtube' ? t.appearances.watch : t.
   .appearance-details > p { max-width: 66ch; margin: .55rem 0 0; color: var(--text-muted); font-size: var(--text-body-sm); }
 
   /* ---- Card variant: thumbnail-led, whole card clickable ---- */
-  .appearance-card { display: flex; flex-direction: column; align-items: stretch; overflow: hidden; border: 1px solid var(--border); border-radius: var(--radius-md); background: var(--surface); cursor: pointer; transition: transform .22s var(--ease-out), border-color .22s var(--ease-out), box-shadow .22s var(--ease-out); }
+  .appearance-card { display: flex; flex-direction: column; align-items: stretch; overflow: hidden; border: 1px solid var(--border); border-radius: var(--radius-md); background: var(--surface); transition: transform .22s var(--ease-out), border-color .22s var(--ease-out), box-shadow .22s var(--ease-out); }
+  /* Whole-card click is JS-delegated; only promise a pointer when JS ran. */
+  :global(html.js-cards) .appearance-card { cursor: pointer; }
+  .appearance-card h3 :global(a) { color: var(--text); }
+  .appearance-card:hover h3 :global(a),
+  .appearance-card:focus-within h3 :global(a) { border-bottom-color: var(--lime); }
+  /* Separator lives in CSS so a wrapped meta line never ends in a dangling
+     dot — when the date wraps, the dot travels with it. */
+  .appearance-card .appearance-meta time::before { content: '· '; }
   .appearance-card::after { content: none; }
   .appearance-card:hover, .appearance-card:focus-within { transform: translateY(-3px); border-color: color-mix(in srgb, var(--lime), var(--border-strong) 40%); box-shadow: 0 14px 34px color-mix(in srgb, var(--text), transparent 92%); }
   .appearance-card .card-thumb { border: 0; border-radius: 0; border-bottom: 1px solid var(--border); }

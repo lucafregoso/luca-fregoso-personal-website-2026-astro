@@ -136,7 +136,7 @@ test.describe("compact media appearances", () => {
     await popup.close();
   });
 
-  test("library cards share one frame across appearances and articles", async ({
+  test("library cards share one frame across appearances and the featured essay", async ({
     page,
   }) => {
     await page.goto("/");
@@ -144,7 +144,8 @@ test.describe("compact media appearances", () => {
       page.locator("#media"),
       examples[1].title,
     );
-    const articleCard = page.locator("#media .media-card-article").first();
+    // the article-card grid is gone; the featured slab carries the same frame
+    const articleCard = page.locator("#media .media-featured").first();
     await expect(articleCard).toBeVisible();
     const frameOf = (element: Element) => {
       const computed = getComputedStyle(element);

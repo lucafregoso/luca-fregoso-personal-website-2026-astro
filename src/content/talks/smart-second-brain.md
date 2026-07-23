@@ -2,7 +2,7 @@
 title:
   en: "Smart Second Brain: Building an Intuitive Tool for Personal Organisation"
 abstract:
-  en: "In the information age, managing a constant stream of data is hard, and not everyone has the mindset to follow rigid schemes. This talk walks through building a tool that works as a second brain: it captures voice and text and turns loose thoughts into organised, automation-ready data."
+  en: "Building a second brain that captures voice and text and turns loose thoughts into automation-ready data."
 locales: [en]
 events:
   - "GDG DevFest Pisa 2024"

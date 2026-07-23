@@ -295,13 +295,12 @@ function caseHref(href: string) {
         </div>
         <div class="talk-grid">
           {talks.map((talk) => (
-            <article class="talk-card">
-              <span class="talk-status meta-badge meta-badge-neutral mono">{t.talks.status}</span>
+            <article class="talk-card" data-media-card>
               <h3>{localize(talk.data.title, locale)}</h3>
               <p class="talk-abstract">{localize(talk.data.abstract, locale)}</p>
               <p class="talk-events mono">{talk.data.events.join(' · ')}</p>
               {talk.data.sessionizeUrl && (
-                <ExternalLink href={talk.data.sessionizeUrl}>{t.talks.view}</ExternalLink>
+                <ExternalLink class="talk-link media-card-link" href={talk.data.sessionizeUrl}>{t.talks.view}</ExternalLink>
               )}
             </article>
           ))}
@@ -318,7 +317,7 @@ function caseHref(href: string) {
           <article class="media-featured" data-media-card>
             <div class="media-featured-body">
               <div class="media-card-meta mono">
-                <span>{featuredEssay.data.publication}{featuredEssay.data.lang && featuredEssay.data.lang !== locale ? ` · ${t.writing.inItalian}` : ''} ·</span>
+                <span>{featuredEssay.data.publication}{featuredEssay.data.lang && featuredEssay.data.lang !== locale ? ` · ${t.writing.inItalian}` : ''}</span>
                 <time datetime={featuredEssay.data.date.toISOString()}>{monthYear(featuredEssay.data.date)}</time>
               </div>
               <h3><ExternalLink class="media-card-link" href={featuredEssay.data.url}>{localize(featuredEssay.data.title, locale)}</ExternalLink></h3>
@@ -341,7 +340,7 @@ function caseHref(href: string) {
               <li class="media-index-row" data-media-card>
                 <h3 class="media-index-title"><ExternalLink class="media-card-link" href={entry.data.url}>{localize(entry.data.title, locale)}</ExternalLink></h3>
                 <div class="media-card-meta mono">
-                  <span>{entry.data.publication}{entry.data.lang && entry.data.lang !== locale ? ` · ${t.writing.inItalian}` : ''} ·</span>
+                  <span>{entry.data.publication}{entry.data.lang && entry.data.lang !== locale ? ` · ${t.writing.inItalian}` : ''}</span>
                   <time datetime={entry.data.date.toISOString()}>{monthYear(entry.data.date)}</time>
                 </div>
               </li>
@@ -349,7 +348,7 @@ function caseHref(href: string) {
           </ul>
         )}
         {archivedArticles > 0 && (
-          <a class="section-link mono" href={archiveHref(locale, 'article')}>{t.writing.archiveCta(archivedArticles)}</a>
+          <a class="section-link mono" href={archiveHref(locale, 'article')}>{t.writing.archiveCta(archivedArticles)}<span class="section-link-arrow" aria-hidden="true">→</span></a>
         )}
       </section>
     </main>
@@ -385,6 +384,8 @@ function caseHref(href: string) {
     // Article cards: whole card clicks through to the title link,
     // mirroring the AppearanceEntry pattern. Plain left-clicks only:
     // text selections and modified clicks (new tab, etc.) pass through.
+    // js-cards on <html> unlocks the pointer cursor the delegation earns.
+    document.documentElement.classList.add('js-cards');
     document.addEventListener('click', (event) => {
       if (!(event.target instanceof Element)) return;
       if (event.target.closest('a, button')) return;
@@ -458,6 +459,11 @@ function caseHref(href: string) {
   .hero-visual::after { content: ''; position: absolute; inset: 0; box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--text), transparent 84%); border-radius: inherit; pointer-events: none; }
   .hero-visual img { width: 100%; height: 100%; display: block; object-fit: cover; filter: saturate(.82) contrast(1.05); transition: transform .5s var(--ease-out); }
   .hero-visual:hover img { transform: scale(1.015); }
+  @media (prefers-reduced-motion: reduce) {
+    .hero-visual img, .section-link-arrow { transition: none; }
+    .hero-visual:hover img { transform: none; }
+    :global(.section-link:hover) .section-link-arrow { transform: none; }
+  }
   .hero-visual figcaption { position: absolute; z-index: 1; left: 1rem; right: 1rem; bottom: 1rem; padding: .65rem .8rem; display: flex; justify-content: space-between; gap: 1rem; border-radius: var(--radius-sm); color: #fff; background: rgba(10, 12, 16, .78); backdrop-filter: blur(8px); font-size: var(--text-meta); text-transform: uppercase; letter-spacing: 0; }
 
   /* ---- Metrics ---- */
@@ -575,8 +581,12 @@ function caseHref(href: string) {
 
   /* ---- Talks ---- */
   .talk-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.2rem; }
-  .talk-card { padding: 1.6rem; display: flex; flex-direction: column; align-items: flex-start; border: 1px solid var(--border); border-radius: var(--radius-md); background: var(--surface); }
-  .talk-card h3 { margin: 1.4rem 0 .8rem; font-size: var(--text-h3); }
+  /* Talk cards share the Media cards' physics: same frame, same lift,
+     same whole-card click — sibling sections, one grammar. */
+  .talk-card { padding: 1.6rem; display: flex; flex-direction: column; align-items: flex-start; border: 1px solid var(--border); border-radius: var(--radius-md); background: var(--surface); transition: transform .22s var(--ease-out), border-color .22s var(--ease-out), box-shadow .22s var(--ease-out); }
+  .talk-card:hover, .talk-card:focus-within { transform: translateY(-3px); border-color: color-mix(in srgb, var(--lime), var(--border-strong) 40%); box-shadow: 0 14px 34px color-mix(in srgb, var(--text), transparent 92%); }
+  :global(html.js-cards .talk-card:has(.talk-link)) { cursor: pointer; }
+  .talk-card h3 { margin: 0 0 .8rem; font-size: var(--text-h3); }
   .talk-abstract { display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 3; line-clamp: 3; overflow: hidden; margin: 0; color: var(--text-muted); font-size: var(--text-body-sm); }
   .talk-events { margin: 1.4rem 0 .8rem; color: var(--text-faint); font-size: var(--text-ui); }
   .talk-card :global(a), :global(.section-link) { width: fit-content; font-size: var(--text-ui); }
@@ -584,7 +594,9 @@ function caseHref(href: string) {
 
   /* ---- Media & writing: thumbnail cards ---- */
   /* ---- Media mosaic: featured slab → paired posters → compact index ---- */
-  .media-featured { position: relative; display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: .9rem 3rem; align-items: end; margin-bottom: 1.2rem; padding: 1.8rem 1.9rem; border: 1px solid var(--border); border-radius: var(--radius-md); background: var(--surface); cursor: pointer; transition: transform .22s var(--ease-out), border-color .22s var(--ease-out), box-shadow .22s var(--ease-out); }
+  .media-featured { position: relative; display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: .9rem 3rem; align-items: end; margin-bottom: 1.2rem; padding: 1.8rem 1.9rem; border: 1px solid var(--border); border-radius: var(--radius-md); background: var(--surface); transition: transform .22s var(--ease-out), border-color .22s var(--ease-out), box-shadow .22s var(--ease-out); }
+  /* Whole-card click is JS-delegated; only promise a pointer when JS ran. */
+  :global(html.js-cards) .media-featured, :global(html.js-cards) .media-index-row { cursor: pointer; }
   .media-featured:hover, .media-featured:focus-within { transform: translateY(-3px); border-color: color-mix(in srgb, var(--lime), var(--border-strong) 40%); box-shadow: 0 14px 34px color-mix(in srgb, var(--text), transparent 92%); }
   .media-featured h3 { margin: .75rem 0 0; font-size: var(--text-display-sm); line-height: 1.15; letter-spacing: -.015em; max-width: 34ch; text-wrap: balance; }
   .media-featured h3 :global(a) { color: var(--text); }
@@ -593,8 +605,12 @@ function caseHref(href: string) {
   .media-featured-rail { display: flex; flex-direction: column; align-items: flex-end; gap: .7rem; }
   .media-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.2rem; }
   .media-card-meta { display: flex; flex-wrap: wrap; gap: .45rem 1rem; color: var(--text-faint); font-size: var(--text-meta); }
+  /* Separator in CSS: a wrapped meta line never ends in a dangling dot. */
+  .media-card-meta time::before { content: '· '; }
+  .section-link-arrow { display: inline-block; margin-left: .35rem; transition: transform .16s var(--ease-out); }
+  :global(.section-link:hover) .section-link-arrow { transform: translateX(3px); }
   .media-index { margin: 1.4rem 0 0; padding: 0; list-style: none; }
-  .media-index-row { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: .35rem 2rem; padding: .95rem 0; border-top: 1px solid var(--border); cursor: pointer; }
+  .media-index-row { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: .35rem 2rem; padding: .95rem 0; border-top: 1px solid var(--border); }
   .media-index-row:last-child { border-bottom: 1px solid var(--border); }
   .media-index-title { margin: 0; font-size: var(--text-body); line-height: 1.35; font-weight: 600; }
   .media-index-title :global(a) { color: var(--text); }

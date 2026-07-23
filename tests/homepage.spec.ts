@@ -86,6 +86,9 @@ test.describe("homepage content contract", () => {
     await expect(page.locator(".section-number")).toHaveCount(0);
     await expect(page.locator(".section-glyph")).toHaveCount(0);
     await expect(page.locator(".eyebrow")).toHaveCount(0);
+    // the SESSION badge was a kicker-in-card: three identical labels
+    // distinguishing nothing inside a section already called Talks
+    await expect(page.locator(".talk-status")).toHaveCount(0);
   });
 
   test("nav labels match the section headings they target", async ({
@@ -192,6 +195,33 @@ test.describe("homepage content contract", () => {
     expect(initial).not.toBe("rgba(0, 0, 0, 0)");
     expect(hovered).not.toBe(initial);
     expect(hovered).not.toBe("rgba(0, 0, 0, 0)");
+  });
+
+  test("media section is a curated mosaic, not a date dump", async ({
+    page,
+  }) => {
+    // exactly one hand-picked featured essay leads the section
+    const featured = page.locator("#media .media-featured");
+    await expect(featured).toHaveCount(1);
+    await expect(featured).toContainText("Anatomy of a Successful Talk Proposal");
+    // the two recordings sit as a paired poster row, no orphan cells
+    await expect(
+      page.locator("#media .media-grid [data-appearance-entry]"),
+    ).toHaveCount(2);
+    // scripts render in place in Astro 5 and are display:none — they never
+    // create grid cells; only rendered boxes count as mosaic tiles
+    await expect(
+      page.locator("#media .media-grid > :not(script)"),
+    ).toHaveCount(2);
+    // the uniform article-card grid is gone for good
+    await expect(page.locator("#media .media-card-article")).toHaveCount(0);
+    // the rest of the writing lives behind a confident archive link
+    const archiveCta = page.locator("#media a.section-link");
+    await expect(archiveCta).toContainText(/4 more articles/);
+    await expect(archiveCta).toHaveAttribute(
+      "href",
+      /\/archive\/\?type=article$/,
+    );
   });
 
   test("linked media badges render as pills, not underlined links", async ({
