@@ -92,7 +92,6 @@ const en = {
     title: "Talks",
     intro:
       "Selected sessions about tech careers, hiring and the tools we use to think. Delivered in English or Italian.",
-    status: "session",
     view: "View session",
     fullProfile: "Full speaker profile",
   },

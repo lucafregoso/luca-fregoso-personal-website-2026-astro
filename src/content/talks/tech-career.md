@@ -2,7 +2,7 @@
 title:
   en: "Tech Career: Should I Stay or Should I Go?"
 abstract:
-  en: "Follow the money no longer holds as the only reason to pick a job. What pushes us to change or stay, what to weigh, and whom to trust, explored in a  panel that puts you in the shoes of someone facing the fateful question."
+  en: "Follow the money no longer holds. What pushes us to change or stay, what to weigh — and whom to trust."
 locales: [en]
 events:
   - "Codemotion Rome 2025"
