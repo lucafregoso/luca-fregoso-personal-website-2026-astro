@@ -169,7 +169,9 @@ h1, h2 { font-weight: var(--display-weight); letter-spacing: -.025em; }
   background: var(--surface-accent);
 }
 a.meta-badge {
-  transition: border-color .15s ease, color .15s ease, background .15s ease, transform .15s var(--ease-out);
+  /* Transform only: color/border/background snap so a theme flip is
+     atomic — animating them made link badges lag behind span badges. */
+  transition: transform .15s var(--ease-out);
 }
 a.meta-badge:hover,
 a.meta-badge:focus-visible {

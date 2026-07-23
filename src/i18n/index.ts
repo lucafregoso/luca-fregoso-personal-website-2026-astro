@@ -102,6 +102,8 @@ const en = {
       "Recordings and writing about developer careers, technology and the decisions behind good programs.",
     article: "article",
     inItalian: "in Italian",
+    archiveCta: (count: number) =>
+      `${count} more articles live in the archive`,
   },
   archive: {
     title: "Archive.",

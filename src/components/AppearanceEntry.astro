@@ -58,16 +58,15 @@ const actionLabel = appearance.platform === 'youtube' ? t.appearances.watch : t.
       </div>
       <div class="card-body">
         <div class="appearance-meta mono">
-          <span>{appearance.publisher}{appearance.lang && appearance.lang !== locale ? ` · ${t.appearances.inItalian}` : ''}</span>
+          {/* The poster art already states format and role; the meta line
+              only carries what the art can't: publisher (real text, not
+              aria-hidden pixels), language marker, date. */}
+          <span>{appearance.publisher}{appearance.lang && appearance.lang !== locale ? ` · ${t.appearances.inItalian}` : ''} ·</span>
           <time datetime={appearance.date.toISOString()}>{dateLabel}</time>
         </div>
         <h3><ExternalLink class="appearance-title-link" href={appearance.externalUrl}>{title}</ExternalLink></h3>
         <p class="card-summary">{summary}</p>
         <ExternalLink class="appearance-action mono" href={appearance.externalUrl}>{actionLabel}</ExternalLink>
-        <div class="appearance-badges mono card-badges" aria-label={locale === 'it' ? 'Tipo di contenuto e ruolo' : 'Content format and role'}>
-          <a class="meta-badge meta-badge-neutral" href={archiveHref(locale, appearance.format as ArchiveType)}>{t.appearances.formats[appearance.format]}</a>
-          <span class="meta-badge meta-badge-neutral">{t.appearances.roles[appearance.role]}</span>
-        </div>
       </div>
     </>
   ) : (
@@ -159,7 +158,7 @@ const actionLabel = appearance.platform === 'youtube' ? t.appearances.watch : t.
   .appearance-card .appearance-meta { flex-wrap: wrap; }
   .appearance-card h3 { margin: .8rem 0 0; font-size: var(--text-h3); line-height: 1.3; }
   .appearance-card .card-summary { display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; line-clamp: 2; overflow: hidden; max-width: none; margin: .6rem 0 0; color: var(--text-muted); font-size: var(--text-body-sm); }
-  .appearance-card .card-badges { margin-top: auto; padding-top: 1.1rem; }
+  .appearance-card :global(.appearance-action) { margin-top: auto; padding-top: .55rem; }
   .appearance-thumbnail { display: block; overflow: hidden; aspect-ratio: 16 / 9; border: 1px solid var(--border); border-radius: 9px; background: var(--surface); cursor: pointer; transition: border-color .18s var(--ease-out); }
   .appearance-thumbnail:hover { border-color: var(--border); border-bottom-color: var(--border); }
   .appearance-thumbnail img { width: 100%; height: 100%; display: block; object-fit: cover; transition: transform .24s var(--ease-out), filter .24s var(--ease-out); }
