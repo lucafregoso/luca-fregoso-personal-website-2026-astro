@@ -25,7 +25,7 @@ const en = {
   meta: {
     lang: "en",
     ogLocale: "en_US",
-    title: `${site.name} - ${site.tagline}`,
+    title: `${site.name} - ${site.tagline} | DevRel, Technical Presales, Training`,
     description: site.meta.description,
   },
   nav: {
@@ -50,7 +50,7 @@ const en = {
   externalNewTab: "opens in a new tab",
   hero: {
     name: site.name,
-    role: `${site.tagline} - DevRel, technical presales & training`,
+    role: site.tagline,
     headline: site.headline,
     intro: site.intro,
     proof: site.proof,
@@ -70,10 +70,16 @@ const en = {
     intro:
       "I am the glue between tech, business and community. Code, sales rooms, conference stages and classrooms. Call it DevRel, presales or program management, the job is the same: getting worlds that don't speak the same language to ship one thing together.",
   },
+  network: {
+    title: "The network behind the programs",
+    body:
+      "Years of conferences and communities built me a network that answers the phone: speakers, committee members, organizers, partner companies from startups to enterprises. When a program needs the right person in the room, I know who to call.",
+  },
   lately: {
     title: "Lately",
     updated: "Updated",
-    intro: "Recent work from programs, stages and the communities around them.",
+    intro:
+      "Where you'll find me on stage and behind the scenes: MC and host gigs, hackathons, facilitation. Updated by hand.",
     upcoming: "upcoming",
     showEarlier: (count: number) => `Show ${count} earlier updates`,
     archiveCta: "View the full archive",
@@ -91,7 +97,7 @@ const en = {
   talks: {
     title: "Talks",
     intro:
-      "Selected sessions about tech careers, hiring and the tools we use to think. Delivered in English or Italian.",
+      "Selected sessions on AI workflows, developer careers and developer tools: the same themes I curate for others, from the other side of the stage.",
     view: "View session",
     fullProfile: "Full speaker profile",
   },
@@ -142,7 +148,8 @@ const en = {
   contact: {
     title: "Bring me the complicated brief.",
     intro:
-      "If you are shaping a DevRel motion, a presales cycle, an event or a training program that needs to hold up in front of skilled people, we can talk. I work remote by default (CET, plenty of EU/US overlap), in English or Italian, as a consultant or embedded in your team.",
+      "If you're building something for developers, a conference, a community program, a technical story that needs telling, we can talk. I work remote-first from Italy (CET, EU/US overlap), in English or Italian.",
+    secondary: "Open to the right full-time role, and to selected consulting engagements.",
     linkedin: "Connect on LinkedIn",
     cv: "View CV (PDF)",
     socials: "Social profiles",

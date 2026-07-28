@@ -1,7 +1,7 @@
 ---
 date: 2026-07-02
 title:
-  en: "MC and focus-group facilitator in Chia"
+  en: "MC & focus-group facilitator in Chia, Sardinia"
 locales: [en]
 kind: speaking
 blurb:

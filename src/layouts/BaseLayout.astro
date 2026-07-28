@@ -84,6 +84,7 @@ const alternateOgLocale = multiLocale ? translations[locale === 'en' ? 'it' : 'e
       '@type': 'Person',
       name: site.name,
       jobTitle: site.tagline,
+      description: site.bio,
       '@id': new URL(withBase('/#person'), Astro.site).toString(),
       url: new URL(withBase('/'), Astro.site).toString(),
       sameAs: [...site.socials.map((s) => s.url), site.links.sessionize],
