@@ -1,7 +1,7 @@
 ---
 date: 2026-04-15
 title:
-  en: "Call for Papers open — Codemotion Milan"
+  en: "Call for Papers open, Codemotion Milan"
 locales: [en]
 kind: milestone
 blurb:

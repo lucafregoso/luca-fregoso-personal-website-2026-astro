@@ -78,6 +78,9 @@ const talks = defineCollection({
     events: z.array(z.string()).default([]),
     tags: z.array(z.string()).default([]),
     sessionizeUrl: z.string().url().optional(),
+    // Homepage shows featured talks only (kept to 3, from 3 different
+    // conferences); the rest stay in the collection, off the page.
+    featured: z.boolean().default(true),
     order: z.number().default(99),
   }),
 });

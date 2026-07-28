@@ -1,11 +1,11 @@
 ---
 date: 2026-06-17
 title:
-  en: "Hackathon at Docebo ‘GAME UP! Product Power Up 2026’"
+  en: "Co-designed & hosted the Docebo hackathon ‘GAME UP! Product Power Up 2026’"
 locales: [en]
 kind: speaking
 blurb:
-  en: "Helped organise and run the hackathon and brought together the mentor team behind it, then hosted from the stage through the non-Docebo moments. Two days, a packed room, and a keynote thread on FOBO, the fear of becoming obsolete in the age of AI."
+  en: "Shaped the event with the Docebo team: challenge design, rules, mentor selection. Then hosted from the stage through the non-Docebo moments. Two days, a packed room, and a keynote thread on FOBO, the fear of becoming obsolete in the age of AI."
 location:
   en: "Docebo · Milan"
 featured: true

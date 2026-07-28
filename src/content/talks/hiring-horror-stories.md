@@ -2,7 +2,7 @@
 title:
   en: "New Job Horror Stories from Developers and Recruiters"
 abstract:
-  en: "Hiring should run on transparency and mutual respect. It often doesn't — horror stories from both sides of the table."
+  en: "Hiring should run on transparency and mutual respect. It often doesn't: horror stories from both sides."
 locales: [en]
 events:
   - "DevFest Milano 2024"

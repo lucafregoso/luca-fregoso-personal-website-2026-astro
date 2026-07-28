@@ -40,7 +40,9 @@ const recentEntries = past.slice(1, 4);
 const earlierEntries = past.slice(4);
 const buildDate = new Date();
 
-const talks = (await getCollection('talks')).filter((entry) => entry.data.locales.includes(locale)).sort((a, b) => a.data.order - b.data.order);
+const talks = (await getCollection('talks'))
+  .filter((entry) => entry.data.locales.includes(locale) && entry.data.featured)
+  .sort((a, b) => a.data.order - b.data.order);
 const writing = (await getCollection('writing')).filter((entry) => entry.data.locales.includes(locale)).sort(
   (a, b) => b.data.date.valueOf() - a.data.date.valueOf()
 );
@@ -186,20 +188,27 @@ function caseHref(href: string) {
               <p class="ix-axis mono">{ix.axis}</p>
               <h3>{ix.title}</h3>
               <p class="ix-summary">{ix.summary}</p>
-              <p class="ix-stat">
-                <strong>{ix.stat.value}</strong>
-                <span>{ix.stat.label}</span>
-              </p>
-              <a
-                class="ix-link mono"
-                href={caseHref(ix.href)}
-                {...(ix.download ? { 'aria-label': `${ix.linkLabel}, PDF` } : {})}
-              >
-                {ix.linkLabel} <span aria-hidden="true">→</span>
-              </a>
+              {'external' in ix && ix.external ? (
+                <ExternalLink class="ix-link mono" href={ix.href}>{ix.linkLabel}</ExternalLink>
+              ) : (
+                <a
+                  class="ix-link mono"
+                  href={caseHref(ix.href)}
+                  {...(ix.download ? { 'aria-label': `${ix.linkLabel}, PDF` } : {})}
+                >
+                  {ix.linkLabel} <span aria-hidden="true">→</span>
+                </a>
+              )}
             </article>
           ))}
         </div>
+      </section>
+
+      <section class="section network" aria-labelledby="network-title">
+        <div class="section-heading compact">
+          <h2 id="network-title">{t.network.title}</h2>
+        </div>
+        <p class="network-body">{t.network.body}</p>
       </section>
 
       <section class="section stream tinted" id="lately" aria-labelledby="lately-title">
@@ -358,6 +367,7 @@ function caseHref(href: string) {
         <div>
           <h2>{t.contact.title}</h2>
           <p>{t.contact.intro}</p>
+          <p class="contact-secondary"><em>{t.contact.secondary}</em></p>
         </div>
         <div class="contact-actions">
           <ContactEmail locale={locale} />
@@ -509,8 +519,10 @@ function caseHref(href: string) {
   .band-ink > * { position: relative; z-index: 1; }
   .band-ink .section-heading > p:last-child { color: var(--band-muted); }
 
-  .intersections { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.2rem; }
+  .intersections { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1.2rem; }
   .intersection {
+    min-width: 0;
+    overflow-wrap: break-word;
     display: flex; flex-direction: column; align-items: flex-start; padding: 1.6rem;
     border: 1px solid var(--band-border); border-top: 3px solid var(--lime);
     border-radius: 0 0 var(--radius-md) var(--radius-md);
@@ -520,11 +532,13 @@ function caseHref(href: string) {
   .ix-axis { margin: 0; color: var(--accent-text-dark, #c3ce4a); font-size: var(--text-meta); text-transform: uppercase; letter-spacing: 0; }
   .intersection h3 { margin: 1.6rem 0 0; font-size: var(--text-h3); font-weight: var(--display-weight); letter-spacing: -.01em; line-height: 1.2; text-wrap: balance; }
   .ix-summary { margin: .8rem 0 0; color: var(--band-muted); font-size: var(--text-body-sm); line-height: 1.55; }
-  .ix-stat { margin: auto 0 0; padding-top: 1.6rem; }
-  .ix-stat strong { display: block; color: var(--lime); font-size: var(--text-stat); font-weight: var(--display-weight); line-height: 1; letter-spacing: -.02em; }
-  .ix-stat span { display: block; margin-top: .55rem; color: var(--band-faint); font-size: var(--text-body-sm); line-height: 1.45; }
-  .ix-link { min-height: 44px; margin-top: 1rem; display: inline-flex; align-items: center; gap: .35rem; color: var(--accent-text-dark, #c3ce4a); font-size: var(--text-ui); }
-  .ix-link:hover { border-bottom-color: var(--lime); }
+  /* The network interlude: one paragraph, light band between the ink
+     Work band and the tinted Lately stream. */
+  .network-body { max-width: 68ch; margin: 0; font-size: var(--text-body); color: var(--text-muted); text-wrap: pretty; }
+  /* :global so the rule also reaches the anchor rendered inside the
+     ExternalLink component (scoped selectors stop at component edges). */
+  :global(.ix-link) { min-height: 44px; margin-top: 1rem; display: inline-flex; align-items: center; gap: .35rem; color: var(--accent-text-dark, #c3ce4a); font-size: var(--text-ui); }
+  :global(.ix-link:hover) { border-bottom-color: var(--lime); }
 
   /* ---- Lately: vertical time rail ---- */
   .upcoming { margin: 0 0 2rem; padding: 0; list-style: none; }
@@ -580,14 +594,14 @@ function caseHref(href: string) {
   .archive-cta { width: fit-content; min-height: 44px; display: inline-flex; align-items: center; color: var(--accent-text); font-size: var(--text-ui); }
 
   /* ---- Talks ---- */
-  .talk-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.2rem; }
+  .talk-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1.2rem; }
   /* Talk cards share the Media cards' physics: same frame, same lift,
      same whole-card click — sibling sections, one grammar. */
   .talk-card { padding: 1.6rem; display: flex; flex-direction: column; align-items: flex-start; border: 1px solid var(--border); border-radius: var(--radius-md); background: var(--surface); transition: transform .22s var(--ease-out), border-color .22s var(--ease-out), box-shadow .22s var(--ease-out); }
   .talk-card:hover, .talk-card:focus-within { transform: translateY(-3px); border-color: color-mix(in srgb, var(--lime), var(--border-strong) 40%); box-shadow: 0 14px 34px color-mix(in srgb, var(--text), transparent 92%); }
   :global(html.js-cards .talk-card:has(.talk-link)) { cursor: pointer; }
   .talk-card h3 { margin: 0 0 .8rem; font-size: var(--text-h3); }
-  .talk-abstract { display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 3; line-clamp: 3; overflow: hidden; margin: 0; color: var(--text-muted); font-size: var(--text-body-sm); }
+  .talk-abstract { display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 4; line-clamp: 4; overflow: hidden; margin: 0; color: var(--text-muted); font-size: var(--text-body-sm); }
   .talk-events { margin: 1.4rem 0 .8rem; color: var(--text-faint); font-size: var(--text-ui); }
   .talk-card :global(a), :global(.section-link) { width: fit-content; font-size: var(--text-ui); }
   :global(.section-link) { min-height: 44px; margin-top: 1.5rem; display: inline-flex; align-items: center; }
@@ -619,8 +633,10 @@ function caseHref(href: string) {
   /* ---- Contact ---- */
   .contact { padding: 7rem 0 2rem; }
   .contact-grid { display: grid; grid-template-columns: 2fr 1fr; gap: 4rem; padding: 3rem; border-radius: var(--radius-md); color: var(--dark-text, #e6edf3); background: #0b0e13; }
-  .contact h2 { max-width: 14ch; margin: 0; color: #f3f5f7; font-size: var(--text-h2); line-height: 1.05; letter-spacing: -.03em; text-wrap: balance; }
+  .contact h2 { max-width: 24ch; margin: 0; color: #f3f5f7; font-size: var(--text-h2); line-height: 1.05; letter-spacing: -.03em; text-wrap: balance; }
   .contact-grid p { max-width: 58ch; color: #aab3c0; }
+  /* Consulting survives as a quiet aside only — hiring is the message. */
+  .contact-secondary { margin-top: .9rem; font-size: var(--text-body-sm); color: #8a93a0; }
   .contact-actions { display: flex; flex-direction: column; align-items: stretch; justify-content: center; gap: .8rem; }
   .contact-actions :global(.button) {
     min-height: 48px; padding: .7rem 1.15rem; border: 1px solid var(--border-strong);
@@ -665,8 +681,8 @@ function caseHref(href: string) {
   @media (max-width: 900px) {
     .hero { grid-template-columns: 1fr; padding: 4rem 0; }
     .hero-visual { min-height: 420px; }
-    .intersections { grid-template-columns: 1fr; }
-    .talk-grid { grid-template-columns: 1fr; }
+    .intersections { grid-template-columns: minmax(0, 1fr); }
+    .talk-grid { grid-template-columns: minmax(0, 1fr); }
     .contact-grid { grid-template-columns: 1fr; }
   }
 

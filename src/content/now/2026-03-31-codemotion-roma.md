@@ -5,7 +5,7 @@ title:
 locales: [en]
 kind: building
 blurb:
-  en: "Curated the Rome edition’s agenda: multi-track, international committee, ~90 sessions."
+  en: "Curated the Rome edition’s agenda: multi-track, international committee, one balanced program from ~600 submissions."
 location:
   en: "Rome"
 featured: false
