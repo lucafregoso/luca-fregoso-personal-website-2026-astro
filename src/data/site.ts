@@ -21,14 +21,10 @@ export const site = {
     lang: "en",
     ogLocale: "en_US",
 
-    // The <title> pattern. {name} and {tagline} are filled in.
-    // Pages can override the whole title via the layout prop.
-    titlePattern: "{name} - {tagline}",
-
-    // Default meta description (search results + social preview).
+    // Default meta description. HARD LIMIT ~160 chars: Google truncates
+    // beyond that and the "open to roles" line must survive the cut.
     description:
-      "Full-stack developer turned program leader. Head of Content & Presales at Codemotion: 5,000+ talk proposals evaluated across 7 European conference editions. " +
-      "15 years shipping software, a technical academy built from zero. Open to international DevRel and Developer Programs roles (remote, CET).",
+      "Head of Content & Presales at Codemotion: 5,000+ talk proposals across 7 editions, 15 years shipping software. Open to DevRel and Developer Programs roles, remote.",
 
     author: "Luca Fregoso",
 
@@ -92,9 +88,8 @@ export const site = {
       title: "Academy Manager in an enterprise group (2019–2022)",
       summary:
         "Needs assessment, curricula, instructors and daily operations: a tech academy built from zero into its own business unit.",
-      href: "/cv.pdf",
+      href: "/cv/",
       linkLabel: "Read the full CV",
-      download: true,
     },
     {
       id: "code",
@@ -133,5 +128,5 @@ export const site = {
   // Email, stored split so it never appears as a harvestable string in
   // the HTML. The UI reassembles it on interaction (see ContactEmail).
   emailUser: "hello",
-  emailDomain: "luca-fregoso.com",
+  emailDomain: "luca-fregoso.me",
 };

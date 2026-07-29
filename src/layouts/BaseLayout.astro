@@ -42,7 +42,8 @@ const alternateOgLocale = multiLocale ? translations[locale === 'en' ? 'it' : 'e
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="theme-color" content={m.themeColor} />
+    <meta name="theme-color" content={m.themeColor} media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#0d1117" media="(prefers-color-scheme: dark)" />
     <meta name="author" content={m.author} />
     <link rel="icon" href={withBase('/favicon.svg')} type="image/svg+xml" />
     <link rel="preload" as="font" type="font/woff2" href={sansWoff2} crossorigin />
@@ -71,8 +72,10 @@ const alternateOgLocale = multiLocale ? translations[locale === 'en' ? 'it' : 'e
     {ogImageUrl && <meta property="og:image" content={ogImageUrl} />}
     {ogImageUrl && <meta property="og:image:alt" content={locale === 'it' ? 'Luca Fregoso sul palco durante un evento per developer.' : 'Luca Fregoso on stage at a developer event.'} />}
     {ogImageUrl && <meta property="og:image:width" content="1200" />}
-    {ogImageUrl && <meta property="og:image:height" content="900" />}
+    {ogImageUrl && <meta property="og:image:height" content="800" />}
     <meta name="twitter:card" content={ogImageUrl ? 'summary_large_image' : 'summary'} />
+    <meta name="twitter:site" content="@scakko" />
+    <meta name="twitter:creator" content="@scakko" />
     <meta name="twitter:title" content={title} />
     <meta name="twitter:description" content={description} />
     {ogImageUrl && <meta name="twitter:image" content={ogImageUrl} />}
@@ -83,8 +86,29 @@ const alternateOgLocale = multiLocale ? translations[locale === 'en' ? 'it' : 'e
       '@context': 'https://schema.org',
       '@type': 'Person',
       name: site.name,
-      jobTitle: site.tagline,
+      // The concrete role, not the positioning tagline: entity resolution
+      // needs "Head of Content & Presales" + worksFor Codemotion.
+      jobTitle: 'Head of Content & Presales',
+      worksFor: {
+        '@type': 'Organization',
+        name: 'Codemotion',
+        url: 'https://www.codemotion.com/',
+      },
       description: site.bio,
+      knowsAbout: [
+        'Developer Relations',
+        'Developer Programs',
+        'Technical Presales',
+        'Technical Training',
+        'Conference Program Curation',
+        'Public Speaking',
+        'Full-Stack Development',
+      ],
+      knowsLanguage: ['en', 'it'],
+      homeLocation: { '@type': 'Place', name: 'Milan, Italy' },
+      ...(m.ogImage
+        ? { image: new URL(withBase(m.ogImage), Astro.site).toString() }
+        : {}),
       '@id': new URL(withBase('/#person'), Astro.site).toString(),
       url: new URL(withBase('/'), Astro.site).toString(),
       sameAs: [...site.socials.map((s) => s.url), site.links.sessionize],

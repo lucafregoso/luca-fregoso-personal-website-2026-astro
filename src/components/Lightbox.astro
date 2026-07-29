@@ -114,8 +114,13 @@ const labels = translations[locale].lightbox;
       btnPrev.hidden = !multi;
       btnNext.hidden = !multi;
       countEl.textContent = multi ? `${index + 1} / ${gallery.length}` : '';
+      // Disabling the focused button would drop focus to the (inert)
+      // body and strand keyboard users: move it to a live control first.
+      const focused = document.activeElement;
       btnPrev.disabled = index === 0;
       btnNext.disabled = index === gallery.length - 1;
+      if (focused === btnPrev && btnPrev.disabled) (btnNext.disabled ? btnClose : btnNext).focus();
+      if (focused === btnNext && btnNext.disabled) (btnPrev.disabled ? btnClose : btnPrev).focus();
       if (shouldAnnounce) {
         announce(`${positionLabel(index + 1, gallery.length)}${item.alt ? `: ${item.alt}` : ''}`);
       }

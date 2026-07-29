@@ -30,7 +30,9 @@
   --surface-2: #ebebe5; /* tinted band — a visible step from --bg, not a whisper */
   --text: #1a1a1a;
   --text-muted: #5f5f5a;
-  --text-faint: #6a6a63;
+  /* 5.0:1 on the tinted band (#ebebe5): headroom above the 4.5 AA floor
+     so future band tweaks can't silently fail contrast. */
+  --text-faint: #61615a;
   --border: #e3e3d8;
   --border-strong: #cfcfc2;
   --surface-elevated: #ffffff;
