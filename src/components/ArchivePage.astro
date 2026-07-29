@@ -131,13 +131,21 @@ const navItems = [
       matching.forEach((item, index) => { item.hidden = index < first || index >= last; });
       links.forEach((link) => {
         const active = link.dataset.type === type;
-        link.setAttribute('aria-current', active ? 'page' : 'false');
+        if (active) link.setAttribute('aria-current', 'page');
+        else link.removeAttribute('aria-current');
       });
       if (empty) empty.hidden = matching.length > 0;
       if (status) status.textContent = labels.status(Math.min(matching.length, pageSize), matching.length);
       if (pagination) pagination.hidden = matching.length <= pageSize;
+      // Same guard as the lightbox: never disable the focused button
+      // without first parking focus somewhere alive.
+      const focused = document.activeElement;
       if (previous) previous.disabled = page <= 1;
       if (next) next.disabled = page >= totalPages;
+      if (previous && next) {
+        if (focused === previous && previous.disabled) next.focus();
+        if (focused === next && next.disabled) previous.focus();
+      }
       if (current) current.textContent = String(page);
     }
 
@@ -167,6 +175,10 @@ const navItems = [
   .archive-heading p { max-width: 58ch; color: var(--text-muted); }
   .archive-filters { display: flex; flex-wrap: wrap; gap: .45rem; margin-bottom: 1.25rem; }
   .archive-filters [aria-current='page'] { color: #171715; background: var(--lime); border-color: var(--lime); }
+  @media (forced-colors: active) {
+    /* Backgrounds are stripped in forced colors: keep the active state. */
+    .archive-filters [aria-current='page'] { text-decoration: underline; outline: 2px solid ButtonText; outline-offset: 2px; }
+  }
   .archive-status { margin: 0 0 .75rem; color: var(--text-faint); font-size: var(--text-meta); }
   .archive-list { margin: 0; padding: 0; list-style: none; border-top: 1px solid var(--border); }
   .archive-item { display: grid; grid-template-columns: clamp(180px, 20vw, 220px) minmax(0, 1fr); gap: 1.75rem; padding: 1.6rem 0; border-bottom: 1px solid var(--border); }

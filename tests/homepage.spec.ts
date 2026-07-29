@@ -277,9 +277,11 @@ test.describe("homepage content contract", () => {
     await expect(
       introNav.getByRole("link", { name: "Sessionize" }),
     ).toHaveAttribute("href", "https://sessionize.com/luca-fregoso/");
-    await expect(
-      introNav.getByRole("link", { name: "CV (PDF)" }),
-    ).toHaveAttribute("href", /\/cv\.pdf$/);
+    // the hero links the CV page; the direct PDF stays in the contact block
+    await expect(introNav.getByRole("link", { name: "CV" })).toHaveAttribute(
+      "href",
+      /\/cv\/$/,
+    );
     await expect(
       page.locator(".hero-actions").getByRole("link", { name: "Work with me" }),
     ).toHaveAttribute("href", "#contact");

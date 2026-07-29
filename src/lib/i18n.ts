@@ -4,7 +4,7 @@ import { locales, type Locale } from '../i18n';
 export type { Locale } from '../i18n';
 
 function routeWithoutBase(pathname: string): string {
-  const base = import.meta.env.BASE_URL.replace(/\/$/, '');
+  const base = import.meta.env.SITE_URL.replace(/\/$/, '');
   const route = base && pathname.startsWith(base) ? pathname.slice(base.length) : pathname;
   return `/${route.replace(/^\/+|\/+$/g, '')}`;
 }

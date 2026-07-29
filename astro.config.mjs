@@ -43,6 +43,11 @@ export default defineConfig({
     },
   },
   integrations: [sitemap({
+    // /cv/ is noindex on purpose: listing it in the sitemap would send
+    // a contradictory signal ("index me" + "don't").
+    filter: (page) => !page.includes('/cv/'),
+    // Freshness signal, aligned with the site's "Updated {build date}".
+    lastmod: new Date(),
     i18n: {
       defaultLocale: 'en',
       locales: { en: 'en-US', it: 'it-IT' },

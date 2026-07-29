@@ -137,13 +137,13 @@ test.describe('email', () => {
     const reveal = page.locator('.email-reveal');
     const actions = page.locator('.email-actions');
     await expect(actions).toBeHidden();
-    await expect(page.locator('body')).not.toContainText('hello@luca-fregoso.com');
+    await expect(page.locator('body')).not.toContainText('hello@luca-fregoso.me');
 
     await reveal.click();
     await expect(reveal).toBeHidden();
     await expect(actions).toBeVisible();
-    await expect(page.locator('.email-address')).toHaveText('hello@luca-fregoso.com');
-    await expect(page.locator('.email-link')).toHaveAttribute('href', 'mailto:hello@luca-fregoso.com');
+    await expect(page.locator('.email-address')).toHaveText('hello@luca-fregoso.me');
+    await expect(page.locator('.email-link')).toHaveAttribute('href', 'mailto:hello@luca-fregoso.me');
     await expect(page.locator('.email-link')).toBeFocused();
     await expect(page.locator('[data-email-status]')).toContainText('Email address revealed');
   });
@@ -155,7 +155,7 @@ test.describe('email', () => {
     await page.locator('.email-copy').click();
     await expect(page.locator('.email-copy')).toHaveText('Copied');
     await expect(page.locator('[data-email-status]')).toContainText('copied to clipboard');
-    expect(await page.evaluate(() => navigator.clipboard.readText())).toBe('hello@luca-fregoso.com');
+    expect(await page.evaluate(() => navigator.clipboard.readText())).toBe('hello@luca-fregoso.me');
   });
 });
 

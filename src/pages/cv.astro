@@ -1,0 +1,223 @@
+---
+// The CV, as a page (/cv/) and as the print source for public/cv.pdf.
+// Same design system as the site: Schibsted display, Fragment Mono meta,
+// lime as structure only. Regenerate the PDF with:
+//   node scripts/generate-cv-pdf.mjs   (dev server running; see .env.example)
+// The phone number is NOT in this page's HTML: the generator injects it
+// into the PDF at render time. noindex stays on: the homepage is the
+// front door, this page is the document.
+import '../styles/global.css';
+import { site } from '../data/site';
+import { withBase } from '../lib/url';
+
+const cv = {
+  location: 'Milan, Italy · remote-first (CET, EU/US overlap)',
+  links: ['linkedin.com/in/lucafregoso', 'sessionize.com/luca-fregoso', 'luca-fregoso.me'],
+  profile: [
+    'I started from the community, built a software company, ran an enterprise business unit. Today I lead content for the biggest tech community in Italy, and not just there: at Codemotion I turn ~600 talk submissions per edition into agendas that rooms of 2,000–3,000 developers trust, across Milan, Madrid and Rome, and I sit in technical presales with the sales team.',
+    'My edge is 15 years as a full-stack developer behind a non-developer role: I read technical content as a peer, talk to speakers and clients on their level, and know what matters to a technical audience. I have built programs from zero (a technical academy grown into its own business unit, 20+ custom learning paths) and run mature ones with international committees. Engineers, sales teams and speakers get the same straight answer from me.',
+  ],
+  strengths: [
+    'Developer Relations (DevRel) & Developer Programs', 'Technical Presales & Solution Scoping', 'Content & Speaker Curation (CFP)',
+    'Training Program Design', 'Public Speaking & MC', 'International Committee Coordination',
+    'Enterprise Client Engagement', 'AI Adoption Programs', 'Full-Stack Development (15 yrs: PHP, JavaScript/TypeScript)',
+  ],
+  experience: [
+    {
+      role: 'Head of Content & Presales', org: 'Codemotion', period: 'Jun 2024 – Present',
+      note: 'Content Manager in parallel since Jan 2024 · Remote',
+      intro: 'Content strategy, speaker curation and technical presales for the company connecting businesses with Italy’s largest developer community. Conferences in Milan, Madrid and Rome.',
+      bullets: [
+        'Lead technical presales: define the solution with enterprise clients and turn sales commitments into scope engineering can deliver.',
+        'Evaluate ~600 talk proposals per edition (5,000+ across 7 editions) and distill them into one balanced agenda.',
+        'Coordinate international program committees; every edition plays to rooms of 2,000–3,000 developers.',
+        'Run the AI Adoption offering for partner companies: learning paths plus hackathons, agentathons, prompt battles and vibe coding challenges.',
+        'MC and moderator at European tech events (AI Conf, Cloud Native Days, DevFest, Cloud Day, Web Day), host of private enterprise events; co-designed and hosted the Docebo hackathon ‘GAME UP! Product Power Up 2026’.',
+        'Write for Codemotion Magazine (Anatomy of a Successful Talk Proposal, Kubernetes, sustainable tech); guest on Il Podcast Open Source, Spotlight #11.',
+      ],
+    },
+    {
+      role: 'Dev Talent Partner', org: 'Codemotion', period: 'Jan 2023 – Jun 2024',
+      intro: 'Connected developers with career opportunities and helped companies define their technical talent needs.',
+      bullets: [
+        'Ran needs analysis with developers and matched them with the technical representatives of hiring companies.',
+        'Built a developer network across Europe and direct knowledge of what makes developers change jobs.',
+      ],
+    },
+    {
+      role: 'Academy Manager · Project Manager · Team Leader', org: 'HRM Group', period: 'Dec 2019 – Dec 2022',
+      note: 'Milan',
+      intro: 'Technical education programs for an IT consulting group.',
+      bullets: [
+        'Built a technical academy from zero into a standalone business unit: needs assessment, curricula, instructor selection, delivery, 20+ custom learning paths.',
+        'Coordinated dev teams on custom e-commerce in parallel, with mentorship and code reviews.',
+      ],
+    },
+    {
+      role: 'Founder & Technical Lead', org: 'S2K', period: 'Jan 2009 – Jan 2023',
+      intro: 'Independent software consultancy: custom e-commerce, CMS, web and mobile, full delivery cycle.',
+      bullets: [
+        'Managed clients, functional analysis and delivery across e-commerce platforms (WooCommerce, PrestaShop, Magento), in PHP and JavaScript.',
+        'Coordinated a network of collaborators for brand, web marketing and SEO alongside custom software.',
+      ],
+    },
+    {
+      role: 'Instructor, Web Design & Development', org: 'Civica Scuola Arte & Messaggio, Milan', period: '2012 – 2013',
+      intro: 'PHP, HTML/CSS and JavaScript for web design and development classes.',
+      bullets: [],
+    },
+    {
+      role: 'Full-Stack Developer & Web Team Lead', org: 'DODICITRENTA (Milan) · Sigest (La Spezia)', period: '2005 – 2011',
+      intro: 'Led web development teams on open-source stacks, from analysis to deployment. Projects for Condé Nast, MTV, Electronic Arts, Mondadori, Calzedonia and RCS.',
+      bullets: [],
+    },
+  ],
+  education: [
+    'Master in Multimedia Communication, Social Media & Digital, UP Level School of Management, Milan (2008–2009). Adobe Expert Certified.',
+    'Applied Computer Science coursework, Polo Universitario G. Marconi, La Spezia (2005–2007). Diploma in Computer Science, I.T.I.S. Capellini (92/100).',
+  ],
+  languages: 'Italian (native) · English (full professional) · French (basic)',
+};
+---
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="robots" content="noindex, nofollow" />
+    <title>Luca Fregoso - CV</title>
+  </head>
+  <body class="cv">
+    <a class="cv-back mono" href={withBase('/')}><span aria-hidden="true">←</span> luca-fregoso.me</a>
+    <header class="cv-head">
+      <h1>{site.name}</h1>
+      <p class="cv-tagline">{site.tagline}</p>
+      <p class="cv-meta mono">{cv.location}</p>
+      {/* Email assembled at runtime from split parts (repo rule: never as
+          plain text in HTML). The PDF generator appends the phone here. */}
+      <p class="cv-meta mono" data-cv-contact><span data-email-user={site.emailUser} data-email-domain={site.emailDomain}>{site.emailUser} [at] {site.emailDomain}</span></p>
+      <p class="cv-meta mono">{cv.links.join(' · ')}</p>
+      <a class="cv-download mono" href={withBase('/cv.pdf')} download>Download PDF</a>
+    </header>
+    <script>
+      const el = document.querySelector<HTMLElement>('[data-email-user]');
+      if (el) el.textContent = `${el.dataset.emailUser}@${el.dataset.emailDomain}`;
+    </script>
+
+    <main>
+    <section class="cv-section">
+      <h2>Profile</h2>
+      {cv.profile.map((p) => <p class="cv-prose">{p}</p>)}
+    </section>
+
+    <section class="cv-section">
+      <h2>Skills</h2>
+      <p class="cv-strengths mono">{cv.strengths.join(' · ')}</p>
+    </section>
+
+    <section class="cv-section">
+      <h2>Professional experience</h2>
+      {cv.experience.map((job) => (
+        <article class="cv-job">
+          <div class="cv-job-head">
+            <h3>{job.role} <span class="cv-org">| {job.org}</span></h3>
+            <p class="cv-period mono">{job.period}</p>
+          </div>
+          {job.note && <p class="cv-note mono">{job.note}</p>}
+          <p class="cv-intro">{job.intro}</p>
+          {job.bullets.length > 0 && (
+            <ul class="cv-bullets">
+              {job.bullets.map((bullet) => <li>{bullet}</li>)}
+            </ul>
+          )}
+        </article>
+      ))}
+    </section>
+
+    <section class="cv-section">
+      <h2>Education & languages</h2>
+      {cv.education.map((line) => <p class="cv-prose">{line}</p>)}
+      <p class="cv-prose"><strong>Languages:</strong> {cv.languages}</p>
+    </section>
+    </main>
+  </body>
+</html>
+
+<style>
+  @page { size: A4; margin: 13mm 15mm; }
+  /* On screen the CV sits as a white sheet on the site's background;
+     in print (and PDF generation) everything collapses to plain white. */
+  :global(html) { background: var(--bg); }
+  .cv {
+    max-width: 180mm;
+    margin: 2.5rem auto;
+    padding: 2rem 2.2rem 3rem;
+    color: #1a1a1a;
+    background: #fff;
+    border: 1px solid color-mix(in srgb, #1a1a1a, transparent 88%);
+    border-radius: var(--radius-md);
+    box-shadow: 0 18px 44px color-mix(in srgb, #1a1a1a, transparent 90%);
+    font-size: .95rem;
+    line-height: 1.5;
+  }
+  .cv-back {
+    display: inline-flex;
+    align-items: center;
+    gap: .35rem;
+    min-height: 44px;
+    margin-bottom: 1.2rem;
+    font-size: var(--text-ui);
+  }
+  .cv-download {
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+    margin-top: .9rem;
+    padding: .1rem 1rem;
+    border-radius: var(--radius-pill);
+    color: #171715;
+    background: var(--lime);
+    font-size: var(--text-ui);
+  }
+  .cv-download:hover { background: var(--lime-dim, var(--lime)); border-bottom-color: transparent; }
+  @media print {
+    :global(html), :global(body) { background: #fff; }
+    .cv { margin: 0 auto; padding: 0; border: 0; border-radius: 0; box-shadow: none; font-size: 9.6pt; line-height: 1.45; }
+    .cv-back, .cv-download { display: none; }
+    /* Print sizes: the compact A4 scale the PDF was designed on. */
+    .cv-meta, .cv-period, .cv-note { font-size: 7.6pt; }
+    .cv-strengths { font-size: 7.8pt; }
+    .cv-tagline { font-size: 11.5pt; }
+    h2 { font-size: 10.5pt; }
+    .cv-job-head h3 { font-size: 10.3pt; }
+  }
+  /* letter-spacing stays at normal everywhere: negative tracking makes
+     PDF text extraction (and ATS parsers) merge words ("LucaFregoso"). */
+  .cv :global(h1), .cv :global(h2), .cv :global(h3) { letter-spacing: normal; }
+  .cv-head h1 { margin: 0; font-size: 26pt; font-weight: var(--display-weight); line-height: 1; }
+  .cv-tagline { margin: .35rem 0 .6rem; font-size: 1.05rem; font-weight: 600; }
+  .cv-meta { margin: .1rem 0; font-size: .78rem; color: #55554f; }
+  .mono { font-family: var(--font-mono); letter-spacing: 0; }
+  h2 {
+    margin: 1.05rem 0 .45rem;
+    padding-top: .45rem;
+    border-top: 2px solid var(--lime);
+    font-size: 1rem;
+    font-weight: var(--display-weight);
+    letter-spacing: .01em;
+    text-transform: uppercase;
+  }
+  .cv-prose { max-width: none; margin: 0 0 .45rem; }
+  .cv-strengths { font-size: .8rem; color: #3a3a35; }
+  .cv-job { margin-bottom: .75rem; break-inside: avoid; }
+  .cv-job-head { display: flex; align-items: baseline; justify-content: space-between; gap: 1rem; }
+  .cv-job-head h3 { margin: 0; font-size: 1rem; font-weight: 700; }
+  .cv-org { font-weight: 600; color: #55554f; }
+  .cv-period { margin: 0; font-size: .78rem; color: #55554f; white-space: nowrap; }
+  .cv-note { margin: .05rem 0 0; font-size: .78rem; color: #55554f; }
+  .cv-intro { margin: .2rem 0 .25rem; font-style: italic; color: #3a3a35; }
+  .cv-bullets { margin: 0; padding-left: 1.05rem; }
+  .cv-bullets li { margin-bottom: .18rem; }
+  .cv-talks { list-style: none; padding-left: 0; }
+  .cv-talks li::before { content: '·'; margin-right: .5rem; color: #8a8a80; }
+</style>

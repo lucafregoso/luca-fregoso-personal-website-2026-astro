@@ -25,7 +25,8 @@ const en = {
   meta: {
     lang: "en",
     ogLocale: "en_US",
-    title: `${site.name} - ${site.tagline} | DevRel, Technical Presales, Training`,
+    // ~55 chars: the terms recruiters search, inside the SERP cut.
+    title: `${site.name} · Developer Relations & Technical Presales`,
     description: site.meta.description,
   },
   nav: {
@@ -57,7 +58,7 @@ const en = {
     primary: "Work with me",
     secondary: "See selected work",
     profileLinks: "Profile links",
-    cv: "CV (PDF)",
+    cv: "CV",
     imageAlt:
       "Luca Fregoso hosting on stage at Codemotion Conference Milan 2025.",
     imageContext: "On stage",
@@ -68,7 +69,7 @@ const en = {
   work: {
     title: "Work",
     intro:
-      "I am the glue between tech, business and community. Code, sales rooms, conference stages and classrooms. Call it DevRel, presales or program management, the job is the same: getting worlds that don't speak the same language to ship one thing together.",
+      "I am the glue between tech, business and community. Code, sales rooms, conference stages and classrooms. Call it DevRel, developer programs, presales or program management, the job is the same: getting worlds that don't speak the same language to ship one thing together.",
   },
   network: {
     title: "The network behind the programs",
@@ -183,6 +184,12 @@ const en = {
     imageOf: (position: number, total: number) =>
       `Image ${position} of ${total}`,
     opened: "Image viewer opened.",
+  },
+  notFound: {
+    title: "404. This page shipped without a program.",
+    body: "The address does not exist, or it moved. Everything worth reading is one click away.",
+    cta: "Back to the homepage",
+    metaTitle: `${site.name} - Page not found`,
   },
   devtools:
     "You opened the devtools. Of course you did.\nBuilt by hand with Astro. Say hi via the contact section.",
