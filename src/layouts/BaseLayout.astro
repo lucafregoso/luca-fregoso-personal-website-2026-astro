@@ -85,6 +85,7 @@ const alternateOgLocale = multiLocale ? translations[locale === 'en' ? 'it' : 'e
     <script is:inline type="application/ld+json" set:html={JSON.stringify({
       '@context': 'https://schema.org',
       '@type': 'Person',
+      alternateName: 'scakko', 
       name: site.name,
       // The concrete role, not the positioning tagline: entity resolution
       // needs "Head of Content & Presales" + worksFor Codemotion.
@@ -111,7 +112,7 @@ const alternateOgLocale = multiLocale ? translations[locale === 'en' ? 'it' : 'e
         : {}),
       '@id': new URL(withBase('/#person'), Astro.site).toString(),
       url: new URL(withBase('/'), Astro.site).toString(),
-      sameAs: [...site.socials.map((s) => s.url), site.links.sessionize],
+      sameAs: [...site.socials.map((s) => s.url), site.links.sessionize, site.links.codemotionAuthor],
     })} />
     {structuredData.map((item) => <script is:inline type="application/ld+json" set:html={JSON.stringify(item)} />)}
 

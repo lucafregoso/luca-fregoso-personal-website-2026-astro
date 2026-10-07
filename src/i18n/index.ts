@@ -25,8 +25,10 @@ const en = {
   meta: {
     lang: "en",
     ogLocale: "en_US",
-    // ~55 chars: the terms recruiters search, inside the SERP cut.
-    title: `${site.name} · Developer Relations & Technical Presales`,
+    // ~75 chars: SERP cuts near 60, so name + role + employer come first and
+    // "Developer Relations" (recruiter keyword) may be truncated; it also
+    // lives in the meta description.
+    title: `${site.name} · Head of Content & Presales, Codemotion · Developer Relations`,
     description: site.meta.description,
   },
   nav: {

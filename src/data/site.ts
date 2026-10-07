@@ -13,7 +13,7 @@
 export const site = {
   // ---- Identity ----
   name: "Luca Fregoso",
-  tagline: "Content Lead & Training Programs · Developer Relations",
+  tagline: "Head of Content & Presales, Codemotion · Developer Relations",
 
   // ---- Technical / SEO / social metadata ----
   meta: {
@@ -49,7 +49,7 @@ export const site = {
     "15 years shipping software, the last six designing the programs around them. At Codemotion I turn ~600 talk submissions per edition into agendas the community trusts, across Milan, Madrid and Rome. Engineers, sales teams and speakers get the same straight answer from me.",
   // Person bio (JSON-LD description; the closest thing to an About).
   bio:
-    "Developer at heart, program designer by trade. I've written production code for 15 years, sold and scoped software in presales rooms, curated conference stages across Europe and built a training academy from zero. Always as the glue between engineering, business and community. Based in Italy, remote-first (CET, comfortable EU/US overlap). I work in English or Italian.",
+    "Luca Fregoso is Head of Content & Presales at Codemotion, where he curates conference agendas across Milan, Madrid and Rome and leads technical presales. A developer with 15 years of experience, he previously founded the software company S2K and built a technical training academy inside an enterprise group. Based in Italy, he works in English and Italian.",
 
   // Exactly three true numbers, each with a subject and a role attached
   // (no passive-voice achievements). The 600/edition and 2,000–3,000
@@ -78,7 +78,7 @@ export const site = {
       axis: "Community × Business × Engineering",
       title: "Head of Content & Presales, Codemotion (2023–present)",
       summary:
-        "Conference content end to end, plus technical presales and AI Adoption for the company connecting businesses with Italy's largest developer community.",
+        "Joined in 2023 as Dev Talent Partner. Conference content end to end, plus technical presales and AI Adoption for the company connecting businesses with Italy's largest developer community.",
       href: "#talks",
       linkLabel: "Explore speaking work",
     },
@@ -106,6 +106,7 @@ export const site = {
   links: {
     linkedin: "https://www.linkedin.com/in/lucafregoso",
     sessionize: "https://sessionize.com/luca-fregoso/",
+    codemotionAuthor: "https://www.codemotion.com/magazine/it/author/luca-fregoso/",
   },
 
   // Only verified public profiles belong here. Placeholder links are never

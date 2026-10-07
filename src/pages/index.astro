@@ -99,6 +99,19 @@ const appearanceStructuredData = appearances
         };
   });
 
+// ProfilePage: tells crawlers this page IS the profile of the Person
+// defined in BaseLayout (same @id). dateModified follows the latest real
+// update on the page, not the build time.
+const profileStructuredData = {
+  '@context': 'https://schema.org',
+  '@type': 'ProfilePage',
+  '@id': new URL(withBase('/#profile'), Astro.site).toString(),
+  url: new URL(withBase('/'), Astro.site).toString(),
+  inLanguage: locale,
+  dateModified: (heroEntry?.date ?? buildDate).toISOString(),
+  mainEntity: { '@id': new URL(withBase('/#person'), Astro.site).toString() },
+};
+
 const monthYear = (date: Date) =>
   date.toLocaleDateString(locale === 'it' ? 'it-IT' : 'en-GB', { year: 'numeric', month: 'short' });
 const dayMonth = (date: Date) =>
@@ -132,7 +145,7 @@ function caseHref(href: string) {
 }
 ---
 
-<BaseLayout locale={locale} title={t.meta.title} description={t.meta.description} structuredData={appearanceStructuredData}>
+<BaseLayout locale={locale} title={t.meta.title} description={t.meta.description} structuredData={[profileStructuredData, ...appearanceStructuredData]}>
   <SiteHeader
     locale={locale}
     navItems={[

@@ -16,7 +16,7 @@ test.describe("homepage content contract", () => {
     ).toBeVisible();
     // the one title, everywhere (brief QA1)
     await expect(page.locator(".hero-role")).toContainText(
-      "Content Lead & Training Programs · Developer Relations",
+      "Head of Content & Presales, Codemotion · Developer Relations",
     );
     await expect(page.locator(".hero-headline")).toHaveText(
       "I design technical programs people trust.",

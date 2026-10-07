@@ -15,8 +15,8 @@ export const GET: APIRoute = ({ site: origin }) => {
 
   const body = `# ${site.name}
 
-> ${site.tagline}. Head of Content & Presales at Codemotion, the company
-> connecting businesses with Italy's largest developer community.
+> ${site.tagline}. Codemotion is the company connecting businesses with
+> Italy's largest developer community.
 > 15 years as a full-stack developer (PHP, JavaScript/TypeScript), now
 > leading conference content, technical presales and AI Adoption programs.
 > Based in Italy, remote-first (CET). Works in English and Italian.
@@ -43,10 +43,10 @@ export const GET: APIRoute = ({ site: origin }) => {
 - CV (web page): ${url('/cv/')}
 - LinkedIn: ${site.links.linkedin}
 - Speaker profile (Sessionize): ${site.links.sessionize}
-- Writing (Codemotion Magazine, in Italian): https://www.codemotion.com/magazine/it/author/luca-fregoso/
+- Writing (Codemotion Magazine, in Italian): ${site.links.codemotionAuthor}
 
 ## Talks
-- "AI non ti sostituira (?). Il tuo workflow, pero, non sara piu lo stesso!"
+- "AI non ti sostituirà (?). Il tuo workflow, però, non sarà più lo stesso!"
   (panel, in Italian), Codemotion Rome 2026
 - "Tech Career: Should I Stay or Should I Go?", Codemotion Rome 2025 and
   Milan 2024
