@@ -13,7 +13,7 @@
 export const site = {
   // ---- Identity ----
   name: "Luca Fregoso",
-  tagline: "Developer Programs & Content Lead",
+  tagline: "Head of Content & Presales, Codemotion · Developer Relations",
 
   // ---- Technical / SEO / social metadata ----
   meta: {
@@ -21,14 +21,10 @@ export const site = {
     lang: "en",
     ogLocale: "en_US",
 
-    // The <title> pattern. {name} and {tagline} are filled in.
-    // Pages can override the whole title via the layout prop.
-    titlePattern: "{name} - {tagline}",
-
-    // Default meta description (search results + social preview).
+    // Default meta description. HARD LIMIT ~160 chars: Google truncates
+    // beyond that and the "open to roles" line must survive the cut.
     description:
-      "Developer Relations (DevRel), technical presales and developer programs. 20+ years in tech, 15 of them building software. " +
-      "Luca Fregoso shapes conference agendas, training paths and solutions engineering for developer-facing products.",
+      "Head of Content & Presales at Codemotion: 5,000+ talk proposals across 7 editions, 15 years shipping software. Open to DevRel and Developer Programs roles, remote.",
 
     author: "Luca Fregoso",
 
@@ -44,80 +40,73 @@ export const site = {
 
   // ---- Page content ----
   headline: "I design technical programs people trust.",
+  // The hero tells the arc, not the job search: community → company →
+  // enterprise business unit → content for Italy's biggest tech
+  // community. DevRel is shown through proof, never claimed.
   intro:
-    "From European conference agendas to presales rooms, I turn hundreds of inputs, competing priorities and half-formed ideas into programs that ship.",
+    "I started from the community, built a software company, ran an enterprise business unit. Today I lead content for the biggest tech community in Italy, and not just there.",
   proof:
-    "Before programs, I wrote production code and sold it: web agencies first, then my own. Engineers, sales teams and speakers get the same straight answer from me.",
+    "15 years shipping software, the last six designing the programs around them. At Codemotion I turn ~600 talk submissions per edition into agendas the community trusts, across Milan, Madrid and Rome. Engineers, sales teams and speakers get the same straight answer from me.",
+  // Person bio (JSON-LD description; the closest thing to an About).
+  bio:
+    "Luca Fregoso is Head of Content & Presales at Codemotion, where he curates conference agendas across Milan, Madrid and Rome and leads technical presales. A developer with 15 years of experience, he previously founded the software company S2K and built a technical training academy inside an enterprise group. Based in Italy, he works in English and Italian.",
 
-  // Exactly three true numbers spanning the three worlds (career /
-  // conferences / training), none repeated as an intersection stat.
+  // Exactly three true numbers, each with a subject and a role attached
+  // (no passive-voice achievements). The 600/edition and 2,000–3,000
+  // figures live in the hero proof — never duplicated here.
   metrics: [
     {
-      value: "20+ years",
-      label: "in tech, 15 of them building software",
+      value: "20+ yrs",
+      label: "in tech, 15 of them shipping software",
     },
     {
-      value: "5,000+",
-      label: "conference proposals evaluated across CFPs and committees",
+      value: "2,000–3,000",
+      label: "developers in the room at every edition I curate",
     },
     {
-      value: "20+ paths",
-      label:
-        "custom learning paths designed while leading an academy business unit",
+      value: "0 → 20+",
+      label: "custom learning paths for the technical academy I built from zero",
     },
   ],
 
-  // The Work section: three intersections where being the glue between
-  // tech, business and community produced measurable results. Compact by
-  // design — one axis label, one title, one sentence, one display stat.
+  // The Work section: three intersections in one row, each opening with
+  // role + employer + dates (name employers in visible copy). Numbers
+  // live in the metrics strip; cards carry the narrative, one line each.
   intersections: [
     {
-      id: "business",
-      axis: "Business × Engineering",
-      title: "Turning sales promises into shipped software",
+      id: "codemotion",
+      axis: "Community × Business × Engineering",
+      title: "Head of Content & Presales, Codemotion (2023–present)",
       summary:
-        "I sit between clients, sales and engineering. I find the real ask, test the promises against reality, and scope a plan engineering can commit to.",
-      stat: {
-        value: "pitch → prod",
-        label:
-          "technical presales, from the first sales call to a delivery plan that holds",
-      },
-      href: "#contact",
-      linkLabel: "Discuss a complex brief",
-    },
-    {
-      id: "community",
-      axis: "Community × Engineering",
-      title: "Shaping trusted agendas across Europe",
-      summary:
-        "International committees, CFP and speaker curation for seven Codemotion editions across Milan, Madrid and Rome. Rooms of 2,000–3,000 developers each.",
-      stat: {
-        value: "600 → 1",
-        label: "submissions per edition, shaped into one balanced agenda",
-      },
+        "Joined in 2023 as Dev Talent Partner. Conference content end to end, plus technical presales and AI Adoption for the company connecting businesses with Italy's largest developer community.",
       href: "#talks",
       linkLabel: "Explore speaking work",
     },
     {
       id: "people",
       axis: "People × Engineering",
-      title: "Building a technical academy from zero",
+      title: "Academy Manager in an enterprise group (2019–2022)",
       summary:
-        "Program design, training model and the day-to-day running of an academy business unit.",
-      stat: {
-        value: "0 → 1",
-        label:
-          "an academy built into a running business unit",
-      },
-      href: "/cv.pdf",
+        "Needs assessment, curricula, instructors and daily operations: a tech academy built from zero into its own business unit.",
+      href: "/cv/",
       linkLabel: "Read the full CV",
-      download: true,
+    },
+    {
+      id: "code",
+      axis: "Code × Everything",
+      title: "Founder & Technical Lead, S2K (2009–2023)",
+      summary:
+        "Fourteen years of custom software, e-commerce, CMS, web and mobile. Earlier, web team lead on projects for Condé Nast, MTV and Electronic Arts.",
+      href: "https://www.linkedin.com/in/lucafregoso",
+      linkLabel: "Full history on LinkedIn",
+      external: true,
     },
   ],
 
   links: {
     linkedin: "https://www.linkedin.com/in/lucafregoso",
     sessionize: "https://sessionize.com/luca-fregoso/",
+    codemotionAuthor: "https://www.codemotion.com/magazine/it/author/luca-fregoso/",
   },
 
   // Only verified public profiles belong here. Placeholder links are never
@@ -140,5 +129,5 @@ export const site = {
   // Email, stored split so it never appears as a harvestable string in
   // the HTML. The UI reassembles it on interaction (see ContactEmail).
   emailUser: "hello",
-  emailDomain: "luca-fregoso.com",
+  emailDomain: "luca-fregoso.me",
 };
