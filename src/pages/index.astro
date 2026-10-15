@@ -40,16 +40,21 @@ const recentEntries = past.slice(1, 4);
 const earlierEntries = past.slice(4);
 const buildDate = new Date();
 
-const talks = (await getCollection('talks')).filter((entry) => entry.data.locales.includes(locale)).sort((a, b) => a.data.order - b.data.order);
+const talks = (await getCollection('talks'))
+  .filter((entry) => entry.data.locales.includes(locale) && entry.data.featured)
+  .sort((a, b) => a.data.order - b.data.order);
 const writing = (await getCollection('writing')).filter((entry) => entry.data.locales.includes(locale)).sort(
   (a, b) => b.data.date.valueOf() - a.data.date.valueOf()
 );
-const library = [
-  ...writing.map((entry) => ({ type: 'article' as const, date: entry.data.date, entry })),
-  ...appearances
-    .filter((entry) => entry.data.placements.includes('library'))
-    .map((entry) => ({ type: 'appearance' as const, date: entry.data.date, entry })),
-].sort((a, b) => b.date.valueOf() - a.date.valueOf());
+// The Media section is a curated mosaic, not a date dump: one featured
+// essay (wide editorial slot), the recordings as a paired poster row,
+// an optional compact index, and everything else behind the archive link.
+const featuredEssay = writing.find((entry) => entry.data.placement === 'featured') ?? null;
+const indexArticles = writing.filter((entry) => entry.data.placement === 'library');
+const libraryAppearances = appearances
+  .filter((entry) => entry.data.placements.includes('library'))
+  .sort((a, b) => b.data.date.valueOf() - a.data.date.valueOf());
+const archivedArticles = writing.length - (featuredEssay ? 1 : 0) - indexArticles.length;
 
 const appearanceAnchor = (id: string) => `appearance-${id.replace(/[^a-z0-9-]/gi, '-')}`;
 const isoDuration = (duration: string) => {
@@ -78,10 +83,34 @@ const appearanceStructuredData = appearances
         name: site.name,
       },
     };
+    // inLanguage: both current recordings are Italian; an AI quoting them
+    // to an English speaker should get the language caveat machine-side too.
+    const inLanguage = entry.data.lang ?? 'en';
     return entry.data.format === 'podcast'
-      ? { ...common, '@type': 'PodcastEpisode', associatedMedia: { '@type': 'AudioObject', contentUrl: entry.data.externalUrl } }
-      : { ...common, '@type': 'VideoObject', contentUrl: entry.data.externalUrl, uploadDate: entry.data.date.toISOString() };
+      ? { ...common, '@type': 'PodcastEpisode', inLanguage, associatedMedia: { '@type': 'AudioObject', contentUrl: entry.data.externalUrl } }
+      : {
+          ...common,
+          '@type': 'VideoObject',
+          inLanguage,
+          // embedUrl (a player) is what schema.org expects here; a watch
+          // page is neither contentUrl (media file) nor embedUrl.
+          embedUrl: `https://www.youtube.com/embed/${entry.data.platformId}`,
+          uploadDate: entry.data.date.toISOString(),
+        };
   });
+
+// ProfilePage: tells crawlers this page IS the profile of the Person
+// defined in BaseLayout (same @id). dateModified follows the latest real
+// update on the page, not the build time.
+const profileStructuredData = {
+  '@context': 'https://schema.org',
+  '@type': 'ProfilePage',
+  '@id': new URL(withBase('/#profile'), Astro.site).toString(),
+  url: new URL(withBase('/'), Astro.site).toString(),
+  inLanguage: locale,
+  dateModified: (heroEntry?.date ?? buildDate).toISOString(),
+  mainEntity: { '@id': new URL(withBase('/#person'), Astro.site).toString() },
+};
 
 const monthYear = (date: Date) =>
   date.toLocaleDateString(locale === 'it' ? 'it-IT' : 'en-GB', { year: 'numeric', month: 'short' });
@@ -116,7 +145,7 @@ function caseHref(href: string) {
 }
 ---
 
-<BaseLayout locale={locale} title={t.meta.title} description={t.meta.description} structuredData={appearanceStructuredData}>
+<BaseLayout locale={locale} title={t.meta.title} description={t.meta.description} structuredData={[profileStructuredData, ...appearanceStructuredData]}>
   <SiteHeader
     locale={locale}
     navItems={[
@@ -143,7 +172,7 @@ function caseHref(href: string) {
           <div class="utility-links mono" aria-label={t.hero.profileLinks}>
             <ExternalLink href={site.links.linkedin}>LinkedIn</ExternalLink>
             <ExternalLink href={site.links.sessionize}>Sessionize</ExternalLink>
-            <a href={withBase('/cv.pdf')}>{t.hero.cv}</a>
+            <a href={withBase('/cv/')}>{t.hero.cv}</a>
           </div>
         </div>
 
@@ -183,20 +212,23 @@ function caseHref(href: string) {
               <p class="ix-axis mono">{ix.axis}</p>
               <h3>{ix.title}</h3>
               <p class="ix-summary">{ix.summary}</p>
-              <p class="ix-stat">
-                <strong>{ix.stat.value}</strong>
-                <span>{ix.stat.label}</span>
-              </p>
-              <a
-                class="ix-link mono"
-                href={caseHref(ix.href)}
-                {...(ix.download ? { 'aria-label': `${ix.linkLabel}, PDF` } : {})}
-              >
-                {ix.linkLabel} <span aria-hidden="true">→</span>
-              </a>
+              {'external' in ix && ix.external ? (
+                <ExternalLink class="ix-link mono" href={ix.href}>{ix.linkLabel}</ExternalLink>
+              ) : (
+                <a class="ix-link mono" href={caseHref(ix.href)}>
+                  {ix.linkLabel} <span aria-hidden="true">→</span>
+                </a>
+              )}
             </article>
           ))}
         </div>
+      </section>
+
+      <section class="section network" aria-labelledby="network-title">
+        <div class="section-heading compact">
+          <h2 id="network-title">{t.network.title}</h2>
+        </div>
+        <p class="network-body">{t.network.body}</p>
       </section>
 
       <section class="section stream tinted" id="lately" aria-labelledby="lately-title">
@@ -292,13 +324,12 @@ function caseHref(href: string) {
         </div>
         <div class="talk-grid">
           {talks.map((talk) => (
-            <article class="talk-card">
-              <span class="talk-status meta-badge meta-badge-neutral mono">{t.talks.status}</span>
+            <article class="talk-card" data-media-card>
               <h3>{localize(talk.data.title, locale)}</h3>
               <p class="talk-abstract">{localize(talk.data.abstract, locale)}</p>
               <p class="talk-events mono">{talk.data.events.join(' · ')}</p>
               {talk.data.sessionizeUrl && (
-                <ExternalLink href={talk.data.sessionizeUrl}>{t.talks.view}</ExternalLink>
+                <ExternalLink class="talk-link media-card-link" href={talk.data.sessionizeUrl}>{t.talks.view}</ExternalLink>
               )}
             </article>
           ))}
@@ -311,19 +342,43 @@ function caseHref(href: string) {
           <h2 id="writing-title">{t.writing.title}</h2>
           <p>{t.writing.intro}</p>
         </div>
-        <div class="media-grid">
-          {library.map((item) => item.type === 'article' ? (
-            <article class="media-card media-card-article" data-media-card>
+        {featuredEssay && (
+          <article class="media-featured" data-media-card>
+            <div class="media-featured-body">
               <div class="media-card-meta mono">
-                <span>{item.entry.data.publication}{item.entry.data.lang && item.entry.data.lang !== locale ? ` · ${t.writing.inItalian}` : ''}</span>
-                <time datetime={item.entry.data.date.toISOString()}>{monthYear(item.entry.data.date)}</time>
+                <span>{featuredEssay.data.publication}{featuredEssay.data.lang && featuredEssay.data.lang !== locale ? ` · ${t.writing.inItalian}` : ''}</span>
+                <time datetime={featuredEssay.data.date.toISOString()}>{monthYear(featuredEssay.data.date)}</time>
               </div>
-              <h3><ExternalLink class="media-card-link" href={item.entry.data.url}>{localize(item.entry.data.title, locale)}</ExternalLink></h3>
-              <p class="media-card-summary">{localize(item.entry.data.summary, locale)}</p>
-              <div class="media-card-badges mono"><a class="meta-badge meta-badge-neutral" href={archiveHref(locale, 'article')}>{t.writing.article}</a></div>
-            </article>
-          ) : <AppearanceEntry appearance={item.entry.data} {locale} variant="card" anchorId={appearanceAnchor(item.entry.id)} />)}
+              <h3><ExternalLink class="media-card-link" href={featuredEssay.data.url}>{localize(featuredEssay.data.title, locale)}</ExternalLink></h3>
+              <p class="media-featured-summary">{localize(featuredEssay.data.summary, locale)}</p>
+            </div>
+            <div class="media-featured-rail">
+              <ExternalLink class="appearance-action mono" href={featuredEssay.data.url}>{t.lately.read(featuredEssay.data.publication)}</ExternalLink>
+              <a class="meta-badge meta-badge-neutral mono" href={archiveHref(locale, 'article')}>{t.writing.article}</a>
+            </div>
+          </article>
+        )}
+        <div class="media-grid">
+          {libraryAppearances.map((entry) => (
+            <AppearanceEntry appearance={entry.data} {locale} variant="card" anchorId={appearanceAnchor(entry.id)} />
+          ))}
         </div>
+        {indexArticles.length > 0 && (
+          <ul class="media-index">
+            {indexArticles.map((entry) => (
+              <li class="media-index-row" data-media-card>
+                <h3 class="media-index-title"><ExternalLink class="media-card-link" href={entry.data.url}>{localize(entry.data.title, locale)}</ExternalLink></h3>
+                <div class="media-card-meta mono">
+                  <span>{entry.data.publication}{entry.data.lang && entry.data.lang !== locale ? ` · ${t.writing.inItalian}` : ''}</span>
+                  <time datetime={entry.data.date.toISOString()}>{monthYear(entry.data.date)}</time>
+                </div>
+              </li>
+            ))}
+          </ul>
+        )}
+        {archivedArticles > 0 && (
+          <a class="section-link mono" href={archiveHref(locale, 'article')}>{t.writing.archiveCta(archivedArticles)}<span class="section-link-arrow" aria-hidden="true">→</span></a>
+        )}
       </section>
     </main>
 
@@ -332,6 +387,7 @@ function caseHref(href: string) {
         <div>
           <h2>{t.contact.title}</h2>
           <p>{t.contact.intro}</p>
+          <p class="contact-secondary"><em>{t.contact.secondary}</em></p>
         </div>
         <div class="contact-actions">
           <ContactEmail locale={locale} />
@@ -358,6 +414,8 @@ function caseHref(href: string) {
     // Article cards: whole card clicks through to the title link,
     // mirroring the AppearanceEntry pattern. Plain left-clicks only:
     // text selections and modified clicks (new tab, etc.) pass through.
+    // js-cards on <html> unlocks the pointer cursor the delegation earns.
+    document.documentElement.classList.add('js-cards');
     document.addEventListener('click', (event) => {
       if (!(event.target instanceof Element)) return;
       if (event.target.closest('a, button')) return;
@@ -431,6 +489,11 @@ function caseHref(href: string) {
   .hero-visual::after { content: ''; position: absolute; inset: 0; box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--text), transparent 84%); border-radius: inherit; pointer-events: none; }
   .hero-visual img { width: 100%; height: 100%; display: block; object-fit: cover; filter: saturate(.82) contrast(1.05); transition: transform .5s var(--ease-out); }
   .hero-visual:hover img { transform: scale(1.015); }
+  @media (prefers-reduced-motion: reduce) {
+    .hero-visual img, .section-link-arrow { transition: none; }
+    .hero-visual:hover img { transform: none; }
+    :global(.section-link:hover) .section-link-arrow { transform: none; }
+  }
   .hero-visual figcaption { position: absolute; z-index: 1; left: 1rem; right: 1rem; bottom: 1rem; padding: .65rem .8rem; display: flex; justify-content: space-between; gap: 1rem; border-radius: var(--radius-sm); color: #fff; background: rgba(10, 12, 16, .78); backdrop-filter: blur(8px); font-size: var(--text-meta); text-transform: uppercase; letter-spacing: 0; }
 
   /* ---- Metrics ---- */
@@ -476,8 +539,10 @@ function caseHref(href: string) {
   .band-ink > * { position: relative; z-index: 1; }
   .band-ink .section-heading > p:last-child { color: var(--band-muted); }
 
-  .intersections { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.2rem; }
+  .intersections { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1.2rem; }
   .intersection {
+    min-width: 0;
+    overflow-wrap: break-word;
     display: flex; flex-direction: column; align-items: flex-start; padding: 1.6rem;
     border: 1px solid var(--band-border); border-top: 3px solid var(--lime);
     border-radius: 0 0 var(--radius-md) var(--radius-md);
@@ -487,11 +552,13 @@ function caseHref(href: string) {
   .ix-axis { margin: 0; color: var(--accent-text-dark, #c3ce4a); font-size: var(--text-meta); text-transform: uppercase; letter-spacing: 0; }
   .intersection h3 { margin: 1.6rem 0 0; font-size: var(--text-h3); font-weight: var(--display-weight); letter-spacing: -.01em; line-height: 1.2; text-wrap: balance; }
   .ix-summary { margin: .8rem 0 0; color: var(--band-muted); font-size: var(--text-body-sm); line-height: 1.55; }
-  .ix-stat { margin: auto 0 0; padding-top: 1.6rem; }
-  .ix-stat strong { display: block; color: var(--lime); font-size: var(--text-stat); font-weight: var(--display-weight); line-height: 1; letter-spacing: -.02em; }
-  .ix-stat span { display: block; margin-top: .55rem; color: var(--band-faint); font-size: var(--text-body-sm); line-height: 1.45; }
-  .ix-link { min-height: 44px; margin-top: 1rem; display: inline-flex; align-items: center; gap: .35rem; color: var(--accent-text-dark, #c3ce4a); font-size: var(--text-ui); }
-  .ix-link:hover { border-bottom-color: var(--lime); }
+  /* The network interlude: one paragraph, light band between the ink
+     Work band and the tinted Lately stream. */
+  .network-body { max-width: 68ch; margin: 0; font-size: var(--text-body); color: var(--text-muted); text-wrap: pretty; }
+  /* :global so the rule also reaches the anchor rendered inside the
+     ExternalLink component (scoped selectors stop at component edges). */
+  :global(.ix-link) { min-height: 44px; margin-top: 1rem; display: inline-flex; align-items: center; gap: .35rem; color: var(--accent-text-dark, #c3ce4a); font-size: var(--text-ui); }
+  :global(.ix-link:hover) { border-bottom-color: var(--lime); }
 
   /* ---- Lately: vertical time rail ---- */
   .upcoming { margin: 0 0 2rem; padding: 0; list-style: none; }
@@ -547,30 +614,49 @@ function caseHref(href: string) {
   .archive-cta { width: fit-content; min-height: 44px; display: inline-flex; align-items: center; color: var(--accent-text); font-size: var(--text-ui); }
 
   /* ---- Talks ---- */
-  .talk-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.2rem; }
-  .talk-card { padding: 1.6rem; display: flex; flex-direction: column; align-items: flex-start; border: 1px solid var(--border); border-radius: var(--radius-md); background: var(--surface); }
-  .talk-card h3 { margin: 1.4rem 0 .8rem; font-size: var(--text-h3); }
-  .talk-abstract { display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 3; line-clamp: 3; overflow: hidden; margin: 0; color: var(--text-muted); font-size: var(--text-body-sm); }
+  .talk-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1.2rem; }
+  /* Talk cards share the Media cards' physics: same frame, same lift,
+     same whole-card click — sibling sections, one grammar. */
+  .talk-card { padding: 1.6rem; display: flex; flex-direction: column; align-items: flex-start; border: 1px solid var(--border); border-radius: var(--radius-md); background: var(--surface); transition: transform .22s var(--ease-out), border-color .22s var(--ease-out), box-shadow .22s var(--ease-out); }
+  .talk-card:hover, .talk-card:focus-within { transform: translateY(-3px); border-color: color-mix(in srgb, var(--lime), var(--border-strong) 40%); box-shadow: 0 14px 34px color-mix(in srgb, var(--text), transparent 92%); }
+  :global(html.js-cards .talk-card:has(.talk-link)) { cursor: pointer; }
+  .talk-card h3 { margin: 0 0 .8rem; font-size: var(--text-h3); }
+  .talk-abstract { display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 4; line-clamp: 4; overflow: hidden; margin: 0; color: var(--text-muted); font-size: var(--text-body-sm); }
   .talk-events { margin: 1.4rem 0 .8rem; color: var(--text-faint); font-size: var(--text-ui); }
   .talk-card :global(a), :global(.section-link) { width: fit-content; font-size: var(--text-ui); }
   :global(.section-link) { min-height: 44px; margin-top: 1.5rem; display: inline-flex; align-items: center; }
 
   /* ---- Media & writing: thumbnail cards ---- */
-  .media-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.2rem; align-items: stretch; }
-  .media-card { position: relative; display: flex; flex-direction: column; align-items: flex-start; padding: 1.4rem; border: 1px solid var(--border); border-radius: var(--radius-md); background: var(--surface); cursor: pointer; transition: transform .22s var(--ease-out), border-color .22s var(--ease-out), box-shadow .22s var(--ease-out); }
-  .media-card:hover, .media-card:focus-within { transform: translateY(-3px); border-color: color-mix(in srgb, var(--lime), var(--border-strong) 40%); box-shadow: 0 14px 34px color-mix(in srgb, var(--text), transparent 92%); }
+  /* ---- Media mosaic: featured slab → paired posters → compact index ---- */
+  .media-featured { position: relative; display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: .9rem 3rem; align-items: end; margin-bottom: 1.2rem; padding: 1.8rem 1.9rem; border: 1px solid var(--border); border-radius: var(--radius-md); background: var(--surface); transition: transform .22s var(--ease-out), border-color .22s var(--ease-out), box-shadow .22s var(--ease-out); }
+  /* Whole-card click is JS-delegated; only promise a pointer when JS ran. */
+  :global(html.js-cards) .media-featured, :global(html.js-cards) .media-index-row { cursor: pointer; }
+  .media-featured:hover, .media-featured:focus-within { transform: translateY(-3px); border-color: color-mix(in srgb, var(--lime), var(--border-strong) 40%); box-shadow: 0 14px 34px color-mix(in srgb, var(--text), transparent 92%); }
+  .media-featured h3 { margin: .75rem 0 0; font-size: var(--text-display-sm); line-height: 1.15; letter-spacing: -.015em; max-width: 34ch; text-wrap: balance; }
+  .media-featured h3 :global(a) { color: var(--text); }
+  .media-featured:hover h3 :global(a), .media-featured:focus-within h3 :global(a) { border-bottom-color: var(--lime); }
+  .media-featured-summary { margin: .8rem 0 0; max-width: 58ch; color: var(--text-muted); font-size: var(--text-body); }
+  .media-featured-rail { display: flex; flex-direction: column; align-items: flex-end; gap: .7rem; }
+  .media-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.2rem; }
   .media-card-meta { display: flex; flex-wrap: wrap; gap: .45rem 1rem; color: var(--text-faint); font-size: var(--text-meta); }
-  .media-card h3 { margin: .8rem 0 0; font-size: var(--text-h3); line-height: 1.3; }
-  .media-card h3 :global(a) { color: var(--text); }
-  .media-card:hover h3 :global(a), .media-card:focus-within h3 :global(a) { border-bottom-color: var(--lime); }
-  .media-card-summary { display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; line-clamp: 2; overflow: hidden; margin: .6rem 0 0; color: var(--text-muted); font-size: var(--text-body-sm); }
-  .media-card-badges { margin-top: auto; padding-top: 1.1rem; display: flex; gap: .4rem; }
+  /* Separator in CSS: a wrapped meta line never ends in a dangling dot. */
+  .media-card-meta time::before { content: '· ' / ''; }
+  .section-link-arrow { display: inline-block; margin-left: .35rem; transition: transform .16s var(--ease-out); }
+  :global(.section-link:hover) .section-link-arrow { transform: translateX(3px); }
+  .media-index { margin: 1.4rem 0 0; padding: 0; list-style: none; }
+  .media-index-row { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: .35rem 2rem; padding: .95rem 0; border-top: 1px solid var(--border); }
+  .media-index-row:last-child { border-bottom: 1px solid var(--border); }
+  .media-index-title { margin: 0; font-size: var(--text-body); line-height: 1.35; font-weight: 600; }
+  .media-index-title :global(a) { color: var(--text); }
+  .media-index-row:hover .media-index-title :global(a), .media-index-row:focus-within .media-index-title :global(a) { border-bottom-color: var(--lime); }
 
   /* ---- Contact ---- */
   .contact { padding: 7rem 0 2rem; }
   .contact-grid { display: grid; grid-template-columns: 2fr 1fr; gap: 4rem; padding: 3rem; border-radius: var(--radius-md); color: var(--dark-text, #e6edf3); background: #0b0e13; }
-  .contact h2 { max-width: 14ch; margin: 0; color: #f3f5f7; font-size: var(--text-h2); line-height: 1.05; letter-spacing: -.03em; text-wrap: balance; }
+  .contact h2 { max-width: 24ch; margin: 0; color: #f3f5f7; font-size: var(--text-h2); line-height: 1.05; letter-spacing: -.03em; text-wrap: balance; }
   .contact-grid p { max-width: 58ch; color: #aab3c0; }
+  /* Consulting survives as a quiet aside only — hiring is the message. */
+  .contact-secondary { margin-top: .9rem; font-size: var(--text-body-sm); color: #8a93a0; }
   .contact-actions { display: flex; flex-direction: column; align-items: stretch; justify-content: center; gap: .8rem; }
   .contact-actions :global(.button) {
     min-height: 48px; padding: .7rem 1.15rem; border: 1px solid var(--border-strong);
@@ -597,13 +683,16 @@ function caseHref(href: string) {
   .egg-prompt { color: var(--accent-text-dark, #c3ce4a); margin-right: .5rem; }
   .egg-command { color: var(--band-text); }
   .egg.is-typing .egg-command::after, .egg.is-done .egg-command::after {
-    content: '▊'; margin-left: .15rem; color: var(--accent-text);
+    content: '▊' / ''; margin-left: .15rem; color: var(--accent-text);
   }
   .egg.is-done .egg-command::after { animation: egg-blink 1.1s steps(1) infinite; }
   .egg-output { max-width: 62ch; margin: .6rem 0 0; color: var(--band-muted); }
   /* The armed state hides instantly (visibility keeps it out of the
      accessibility tree); only the reveal animates. */
-  .egg.is-armed .egg-output { opacity: 0; visibility: hidden; transform: translateY(6px); }
+  /* Opacity-only: keeps the output in the accessibility tree even before
+     the reveal fires (visibility:hidden removed it for SR users whose
+     virtual cursor never intersects 60% of the strip). */
+  .egg.is-armed .egg-output { opacity: 0; transform: translateY(6px); }
   .egg.is-armed.is-done .egg-output { opacity: 1; visibility: visible; transform: none; transition: opacity .45s var(--ease-out), transform .45s var(--ease-out); }
   @keyframes egg-blink { 50% { opacity: 0; } }
   @media (prefers-reduced-motion: reduce) {
@@ -615,8 +704,8 @@ function caseHref(href: string) {
   @media (max-width: 900px) {
     .hero { grid-template-columns: 1fr; padding: 4rem 0; }
     .hero-visual { min-height: 420px; }
-    .intersections { grid-template-columns: 1fr; }
-    .talk-grid { grid-template-columns: 1fr; }
+    .intersections { grid-template-columns: minmax(0, 1fr); }
+    .talk-grid { grid-template-columns: minmax(0, 1fr); }
     .contact-grid { grid-template-columns: 1fr; }
   }
 
@@ -625,6 +714,9 @@ function caseHref(href: string) {
     .feed-body.media-presentation-sidecar { grid-template-columns: 1fr; }
     .featured-story.media-presentation-sidecar :global(.media),
     .feed-body.media-presentation-sidecar :global(.media) { margin-top: 1rem; }
+    .media-featured { grid-template-columns: 1fr; align-items: start; gap: .4rem; padding: 1.4rem 1.5rem 1.5rem; }
+    .media-featured-rail { width: 100%; flex-direction: row; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: .6rem 1rem; }
+    .media-index-row { flex-direction: column; align-items: flex-start; gap: .3rem; }
   }
 
   @media (max-width: 620px) {

@@ -14,26 +14,32 @@ test.describe("homepage content contract", () => {
     await expect(
       page.getByRole("heading", { level: 1, name: "Luca Fregoso" }),
     ).toBeVisible();
+    // the one title, everywhere (brief QA1)
     await expect(page.locator(".hero-role")).toContainText(
-      "Developer Programs & Content Lead",
+      "Head of Content & Presales, Codemotion · Developer Relations",
     );
-    // the target-role vocabulary must be visible above the fold
-    // (the remote signal lives in the contact block — asserted there)
-    await expect(page.locator(".hero-role")).toContainText(/DevRel/i);
-    await expect(page.locator(".hero-role")).toContainText(/presales/i);
     await expect(page.locator(".hero-headline")).toHaveText(
       "I design technical programs people trust.",
     );
+    // the hero tells the arc (community → company → business unit →
+    // content lead), never the job search — show, don't beg
     await expect(page.locator(".hero-intro")).toContainText(
-      /presales rooms.*into programs that ship/i,
+      /started from the community/i,
     );
+    await expect(page.locator(".hero-intro")).toContainText(
+      /biggest tech community in Italy/i,
+    );
+    // employer + numbers stay in the proof; the closer is Luca's own line
+    await expect(page.locator(".hero-proof")).toContainText(/At Codemotion/);
     await expect(page.locator(".hero-proof")).toContainText(
-      /wrote production code and sold it/i,
+      /same straight answer from me/,
     );
+    await expect(page.locator(".hero-availability")).toHaveCount(0);
 
     const sectionHeadings = await page.locator("h2").allTextContents();
     expect(sectionHeadings.map((heading) => heading.trim())).toEqual([
       "Work",
+      "The network behind the programs",
       "Lately",
       "Talks",
       "Media & writing",
@@ -56,36 +62,53 @@ test.describe("homepage content contract", () => {
     );
     const intersections = page.locator("#work .intersection");
     await expect(intersections).toHaveCount(3);
+    // every card opens with role + employer; Codemotion carries both the
+    // community side and the presales/AI Adoption side in one card
     await expect(intersections.first()).toContainText(
-      "Turning sales promises into shipped software",
+      "Head of Content & Presales, Codemotion (2023–present)",
     );
     await expect(intersections.first()).toContainText(/technical presales/i);
+    await expect(intersections.nth(1)).toContainText(
+      "Academy Manager in an enterprise group (2019–2022)",
+    );
+    await expect(intersections.nth(1)).toContainText(/from zero/i);
+    await expect(intersections.nth(2)).toContainText(
+      "Founder & Technical Lead, S2K (2009–2023)",
+    );
     // "program management" moved to the section intro with the discipline clause
     await expect(page.locator("#work .section-heading")).toContainText(
       /program management/i,
     );
-    await expect(intersections.nth(2)).toContainText(/from zero/i);
-    // each intersection card: axis label, one summary, display stat, CTA
+    // each intersection card: axis label, one-line summary, CTA (numbers
+    // live in the metrics strip, never on cards)
     for (let index = 0; index < 3; index += 1) {
       const block = intersections.nth(index);
       await expect(block.locator(".ix-axis")).toContainText("×");
       await expect(block.locator(".ix-summary")).toBeVisible();
-      await expect(block.locator(".ix-stat strong")).toBeVisible();
       await expect(block.locator(".ix-link")).toBeVisible();
     }
+    await expect(page.locator(".ix-stat")).toHaveCount(0);
   });
 
   test("uses stronger career-wide proof without kicker scaffolding", async ({
     page,
   }) => {
-    // exactly three true numbers, none duplicated as an intersection stat
+    // exactly three true numbers, each with a subject attached; the
+    // ~600/edition figure lives in the hero proof, room size in the strip
     await expect(page.locator(".metrics .metric")).toHaveCount(3);
-    await expect(page.locator(".metrics")).toContainText("20+ years");
-    await expect(page.locator(".metrics")).toContainText("5,000+");
-    await expect(page.locator(".metrics")).toContainText("20+ paths");
+    await expect(page.locator(".metrics")).toContainText("20+ yrs");
+    await expect(page.locator(".metrics")).toContainText("2,000–3,000");
+    await expect(page.locator(".metrics")).toContainText("0 → 20+");
+    await expect(page.locator(".hero-proof")).toContainText("~600 talk submissions per edition");
+    await expect(page.locator(".hero-proof")).not.toContainText("2,000–3,000");
+    // employers he chose not to name stay unnamed
+    await expect(page.locator("body")).not.toContainText("HRM");
     await expect(page.locator(".section-number")).toHaveCount(0);
     await expect(page.locator(".section-glyph")).toHaveCount(0);
     await expect(page.locator(".eyebrow")).toHaveCount(0);
+    // the SESSION badge was a kicker-in-card: three identical labels
+    // distinguishing nothing inside a section already called Talks
+    await expect(page.locator(".talk-status")).toHaveCount(0);
   });
 
   test("nav labels match the section headings they target", async ({
@@ -194,6 +217,33 @@ test.describe("homepage content contract", () => {
     expect(hovered).not.toBe("rgba(0, 0, 0, 0)");
   });
 
+  test("media section is a curated mosaic, not a date dump", async ({
+    page,
+  }) => {
+    // exactly one hand-picked featured essay leads the section
+    const featured = page.locator("#media .media-featured");
+    await expect(featured).toHaveCount(1);
+    await expect(featured).toContainText("Anatomy of a Successful Talk Proposal");
+    // the two recordings sit as a paired poster row, no orphan cells
+    await expect(
+      page.locator("#media .media-grid [data-appearance-entry]"),
+    ).toHaveCount(2);
+    // scripts render in place in Astro 5 and are display:none — they never
+    // create grid cells; only rendered boxes count as mosaic tiles
+    await expect(
+      page.locator("#media .media-grid > :not(script)"),
+    ).toHaveCount(2);
+    // the uniform article-card grid is gone for good
+    await expect(page.locator("#media .media-card-article")).toHaveCount(0);
+    // the rest of the writing lives behind a confident archive link
+    const archiveCta = page.locator("#media a.section-link");
+    await expect(archiveCta).toContainText(/4 more articles/);
+    await expect(archiveCta).toHaveAttribute(
+      "href",
+      /\/archive\/\?type=article$/,
+    );
+  });
+
   test("linked media badges render as pills, not underlined links", async ({
     page,
   }) => {
@@ -227,22 +277,29 @@ test.describe("homepage content contract", () => {
     await expect(
       introNav.getByRole("link", { name: "Sessionize" }),
     ).toHaveAttribute("href", "https://sessionize.com/luca-fregoso/");
-    await expect(
-      introNav.getByRole("link", { name: "CV (PDF)" }),
-    ).toHaveAttribute("href", /\/cv\.pdf$/);
+    // the hero links the CV page; the direct PDF stays in the contact block
+    await expect(introNav.getByRole("link", { name: "CV" })).toHaveAttribute(
+      "href",
+      /\/cv\/$/,
+    );
     await expect(
       page.locator(".hero-actions").getByRole("link", { name: "Work with me" }),
     ).toHaveAttribute("href", "#contact");
     // the availability statement lives at the conversion point
-    await expect(page.locator("#contact")).toContainText(/remote by default/i);
+    await expect(page.locator("#contact")).toContainText(
+      /remote-first from Italy/i,
+    );
+    // job-openness stays quiet: one secondary line, no hiring headline
+    await expect(page.locator(".contact-secondary")).toContainText(
+      "Open to the right full-time role, and to selected consulting engagements.",
+    );
     await expect(
       page.getByRole("link", { name: "See selected work" }),
     ).toHaveAttribute("href", "#work");
 
     const contact = page.locator("#contact");
-    await expect(contact).toContainText(
-      /DevRel motion.*presales cycle.*event.*training program/i,
-    );
+    await expect(contact).toContainText("Bring me the complicated brief.");
+    await expect(contact).toContainText(/we can talk/i);
     await expect(contact.getByRole("button", { name: /email/i })).toBeVisible();
     await expect(
       contact.getByRole("link", { name: "View CV (PDF)" }),

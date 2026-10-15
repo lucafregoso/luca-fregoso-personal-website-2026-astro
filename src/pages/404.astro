@@ -1,0 +1,26 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { translations } from '../i18n';
+import { withBase } from '../lib/url';
+
+const t = translations.en;
+---
+
+<BaseLayout locale="en" title={t.notFound.metaTitle} description={t.notFound.body}>
+  <main id="main" tabindex="-1" class="not-found">
+    <p class="nf-code mono" aria-hidden="true">$ curl {Astro.url.pathname} → 404</p>
+    <h1>{t.notFound.title}</h1>
+    <p>{t.notFound.body}</p>
+    <a class="button button-primary" href={withBase('/')}>{t.notFound.cta}</a>
+  </main>
+</BaseLayout>
+
+<style>
+  .not-found { max-width: var(--shell, 72rem); width: min(calc(100% - 3rem), 40rem); margin: 0 auto; padding: 9rem 0 7rem; }
+  .nf-code { margin: 0 0 1.2rem; color: var(--text-faint); font-size: var(--text-ui); overflow-wrap: anywhere; }
+  h1 { margin: 0 0 .8rem; font-size: var(--text-h2); letter-spacing: -.025em; text-wrap: balance; }
+  p { max-width: 55ch; color: var(--text-muted); }
+  .button { display: inline-flex; align-items: center; min-height: 44px; margin-top: 1.6rem; padding: .35rem 1.15rem; border-radius: var(--radius-pill); font-size: var(--text-ui); }
+  .button-primary { color: #171715; background: var(--lime); }
+  .button-primary:hover { background: var(--lime-dim, var(--lime)); border-bottom-color: transparent; }
+</style>
