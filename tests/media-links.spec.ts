@@ -5,20 +5,20 @@ const providerRequest =
   /(?:youtube(?:-nocookie)?\.com|ytimg\.com|googlevideo\.com|spotify\.com|scdn\.co)/i;
 const examples = [
   {
-    title: "Tech Chat – AI & Open Source",
+    title: "Codemotion Interview with Keynote Katharine Jarmul",
     publisher: "Codemotion",
-    duration: "1:03:23",
+    duration: "14:37",
     hrefPart: "youtube.com/watch",
     mobilePresentation: "poster",
     action: { en: "Watch on YouTube", it: "Guarda su YouTube" },
   },
   {
-    title: "Spotlight #11 – Luca Fregoso (Codemotion)",
-    publisher: "Il Podcast Open Source",
-    duration: "44:01",
-    hrefPart: "open.spotify.com/episode",
-    mobilePresentation: "stamp",
-    action: { en: "Listen on Spotify", it: "Ascolta su Spotify" },
+    title: "Interview with Matteo Flora – Codemotion AI & Tech Conference 2026",
+    publisher: "Codemotion",
+    duration: "20:33",
+    hrefPart: "youtube.com/watch",
+    mobilePresentation: "poster",
+    action: { en: "Watch on YouTube", it: "Guarda su YouTube" },
   },
 ] as const;
 // typed wide so the it-locale branches keep compiling while disabled
@@ -117,9 +117,12 @@ test.describe("compact media appearances", () => {
   test("YouTube keeps the requested start time in its external URL", async ({
     page,
   }) => {
-    await page.goto("/");
-    const href = await appearanceFor(page.locator("#media"), examples[0].title)
-      .locator("a.appearance-title-link")
+    // Tech Chat left the homepage Media pair; its start time still has to
+    // survive wherever it is listed.
+    await page.goto("/archive/");
+    const href = await page
+      .locator('a[href*="hexh4KEy2Lo"]')
+      .first()
       .getAttribute("href");
     expect(new URL(href!).searchParams.get("t")).toBe("1060s");
   });
@@ -132,7 +135,7 @@ test.describe("compact media appearances", () => {
     const popupPromise = page.waitForEvent("popup");
     await entry.locator(".appearance-thumbnail").click();
     const popup = await popupPromise;
-    expect(popup.url()).toContain("open.spotify.com/episode");
+    expect(popup.url()).toContain("QtCtAesL5Gk");
     await popup.close();
   });
 
@@ -214,10 +217,10 @@ test.describe("compact media appearances", () => {
   });
 });
 
-test("Docebo uses a compact contact sheet and keeps lightbox navigation", async ({
+test("image galleries use a compact contact sheet and keep lightbox navigation", async ({
   page,
 }) => {
-  await page.goto("/");
+  await page.goto("/test-fixtures/lightbox/");
   const gallery = page.locator(
     '#lately [data-media-presentation="contact-sheet"]',
   );

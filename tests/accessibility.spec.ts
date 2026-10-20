@@ -56,7 +56,7 @@ for (const locale of [{ path: '/', name: 'English' }] as const) {
     });
 
     test(`image dialog has no WCAG 2.2 AA violations — ${locale.name}, ${theme} theme`, async ({ page }) => {
-      await settlePage(page, locale.path, theme);
+      await settlePage(page, '/test-fixtures/lightbox/', theme);
       await page.locator('[data-lightbox]').first().click();
       await expect(page.locator('#lightbox')).toBeVisible();
       const results = await runAxe(page);

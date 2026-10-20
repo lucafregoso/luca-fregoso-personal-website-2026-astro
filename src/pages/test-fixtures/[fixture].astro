@@ -1,0 +1,36 @@
+---
+// Test-only fixtures. Built only when PLAYWRIGHT_TEST=1, so production
+// never ships these routes. The lightbox fixture renders the newest Lately
+// entry with an image gallery, so lightbox tests keep a target no matter
+// which entries the homepage feed currently shows.
+import { getCollection } from 'astro:content';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import Media from '../../components/Media.astro';
+import Lightbox from '../../components/Lightbox.astro';
+import { localize } from '../../i18n';
+
+export async function getStaticPaths() {
+  if (process.env.PLAYWRIGHT_TEST !== '1') return [];
+  const gallery = (await getCollection('now'))
+    .filter((entry) => entry.data.media.filter((item) => item.type === 'image').length >= 2)
+    .sort((a, b) => b.data.date.valueOf() - a.data.date.valueOf())[0];
+  return gallery ? [{ params: { fixture: 'lightbox' }, props: { entry: gallery } }] : [];
+}
+
+const { entry } = Astro.props;
+---
+
+<BaseLayout locale="en" title="Lightbox fixture">
+  <main id="main" tabindex="-1" class="fixture">
+    <section id="lately">
+      <h1>{localize(entry.data.title, 'en')}</h1>
+      <Media locale="en" media={entry.data.media} presentation={entry.data.mediaPresentation} galleryId={`g-${entry.id}`} />
+    </section>
+  </main>
+  <Lightbox locale="en" />
+</BaseLayout>
+
+<style>
+  .fixture { width: min(calc(100% - 3rem), 72rem); margin: 0 auto; padding: 6rem 0; }
+  h1 { font-size: var(--text-h2); }
+</style>

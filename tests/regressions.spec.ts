@@ -115,6 +115,15 @@ test.describe("regressions", () => {
     // wash — the background-color itself must stay transparent, never an
     // opaque tinted card.
     await page.goto("/");
+    // The signature is driven by the class alone. When no featured entry
+    // happens to be among the recent items, promote one so the guard never
+    // depends on which content is currently showing.
+    if ((await page.locator(".timeline .is-featured").count()) === 0) {
+      await page
+        .locator(".timeline .feed-item")
+        .first()
+        .evaluate((el) => el.classList.add("is-featured"));
+    }
     const featured = page.locator(".timeline .is-featured").first();
     await expect(featured).toBeVisible();
 
