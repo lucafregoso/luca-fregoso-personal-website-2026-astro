@@ -1,4 +1,5 @@
-import { defineCollection, z } from "astro:content";
+import { defineCollection } from "astro:content";
+import { z } from "astro/zod";
 import { glob } from "astro/loaders";
 
 // English is required; Italian is optional while the /it/ locale is
@@ -23,7 +24,7 @@ const now = defineCollection({
     kind: z.enum(["speaking", "writing", "milestone", "building", "note"]),
     blurb: localizedText.optional(),
     // Generic outbound link (LinkedIn post, article, event page…).
-    url: z.string().url().optional(),
+    url: z.url().optional(),
     // How prominently to surface the outbound link:
     //   'subtle' → small "Read on LinkedIn ↗" under the text (default when url present)
     //   'strong' → bigger "Read the full post ↗", for entries that are excerpts
@@ -54,7 +55,7 @@ const now = defineCollection({
           }),
           z.object({
             type: z.literal("link"),
-            url: z.string().url(),
+            url: z.url(),
             label: localizedText.optional(),
           }),
         ]),
@@ -77,7 +78,7 @@ const talks = defineCollection({
     locales: localeVisibility,
     events: z.array(z.string()).default([]),
     tags: z.array(z.string()).default([]),
-    sessionizeUrl: z.string().url().optional(),
+    sessionizeUrl: z.url().optional(),
     // Homepage shows featured talks only (kept to 3, from 3 different
     // conferences); the rest stay in the collection, off the page.
     featured: z.boolean().default(true),
@@ -98,7 +99,7 @@ const writing = defineCollection({
     //   'library'  → the compact index under the recordings (default for new pieces)
     //   'archive'  → archive page only
     placement: z.enum(["featured", "library", "archive"]).default("library"),
-    url: z.string().url(),
+    url: z.url(),
     // Language of the linked article — shows a "(in Italian)" marker on
     // the EN site when it differs from the reader's locale.
     lang: z.enum(["en", "it"]).optional(),
@@ -123,7 +124,7 @@ const appearances = defineCollection({
     duration: z.string().regex(/^\d{1,2}:\d{2}(?::\d{2})?$/),
     publisher: z.string().min(1),
     platformId: z.string().min(1),
-    externalUrl: z.string().url(),
+    externalUrl: z.url(),
     // Language of the recording — "(in Italian)" marker on the EN site.
     lang: z.enum(["en", "it"]).optional(),
     poster: z.string().startsWith("/"),
