@@ -115,8 +115,8 @@ const en = {
     kinds: { watch: "watch", listen: "listen", read: "read" },
     recordings: "Recordings",
     writingGroup: "Writing",
-    recordingsCount: (count: number) =>
-      `${count} ${count === 1 ? "recording" : "recordings"}`,
+    recordingsCta: (count: number) =>
+      `${count} more ${count === 1 ? "recording lives" : "recordings live"} in the archive`,
   },
   archive: {
     title: "Archive.",

@@ -3,7 +3,14 @@ import fs from "node:fs";
 
 const providerRequest =
   /(?:youtube(?:-nocookie)?\.com|ytimg\.com|googlevideo\.com|spotify\.com|scdn\.co)/i;
+// the hand-picked three (`library` placement), newest first
 const examples = [
+  {
+    guest: "Andrey Breslav",
+    duration: "15:16",
+    platformId: "BaBDYY5PG-Y",
+    lang: null,
+  },
   {
     guest: "Katharine Jarmul",
     duration: "14:37",
@@ -11,22 +18,10 @@ const examples = [
     lang: null,
   },
   {
-    guest: "Matteo Flora",
-    duration: "20:27",
-    platformId: "MVUDWU9qGqw",
+    guest: "BGE 116",
+    duration: "2:15:21",
+    platformId: "Bxprfi5Z7Uo",
     lang: "in Italian",
-  },
-  {
-    guest: "Mario Zechner",
-    duration: "9:40",
-    platformId: "uQ46eTUZrLo",
-    lang: null,
-  },
-  {
-    guest: "Andrey Breslav",
-    duration: "15:16",
-    platformId: "BaBDYY5PG-Y",
-    lang: null,
   },
 ] as const;
 // typed wide so the it-locale branches keep compiling while disabled
@@ -111,7 +106,7 @@ test.describe("media run of show", () => {
     await expect(preview.locator(".rundown-slide:visible")).toHaveCount(1);
     await expect(media.locator(".rundown-thumb").first()).toBeHidden();
     await expect(preview.locator(".rundown-slide:visible")).toContainText(
-      "BGV 7",
+      "Andrey Breslav",
     );
 
     await rowFor(media, "Katharine Jarmul").hover();
@@ -120,9 +115,9 @@ test.describe("media run of show", () => {
     );
     await expect(rowFor(media, "Katharine Jarmul")).toHaveClass(/is-active/);
 
-    await rowFor(media, "Matteo Flora").locator("h3 a").focus();
+    await rowFor(media, "BGE 116").locator("h3 a").focus();
     await expect(preview.locator(".rundown-slide:visible")).toContainText(
-      "Matteo Flora",
+      "BGE 116",
     );
     await expect(media.locator(".rundown-row.is-active")).toHaveCount(1);
   });
@@ -133,11 +128,11 @@ test.describe("media run of show", () => {
     await page.setViewportSize({ width: 1280, height: 900 });
     await page.goto("/");
     const media = page.locator("#media");
-    await rowFor(media, "Matteo Flora").hover();
+    await rowFor(media, "BGE 116").hover();
     const popupPromise = page.waitForEvent("popup");
     await media.locator(".rundown-slide:visible .rundown-poster").click();
     const popup = await popupPromise;
-    expect(popup.url()).toContain("MVUDWU9qGqw");
+    expect(popup.url()).toContain("Bxprfi5Z7Uo");
     await popup.close();
   });
 
@@ -152,7 +147,7 @@ test.describe("media run of show", () => {
     await page.goto("/");
     const slide = page.locator("#media .rundown-slide:visible");
     await expect(slide).toHaveCount(1);
-    await expect(slide).toContainText("BGV 7");
+    await expect(slide).toContainText("Andrey Breslav");
     await context.close();
   });
 
@@ -173,11 +168,11 @@ test.describe("media run of show", () => {
     page,
   }) => {
     await page.goto("/");
-    const row = rowFor(page.locator("#media"), "Matteo Flora");
+    const row = rowFor(page.locator("#media"), "BGE 116");
     const popupPromise = page.waitForEvent("popup");
     await row.locator(".rundown-date").click();
     const popup = await popupPromise;
-    expect(popup.url()).toContain("MVUDWU9qGqw");
+    expect(popup.url()).toContain("Bxprfi5Z7Uo");
     await popup.close();
   });
 
@@ -207,7 +202,7 @@ test.describe("media run of show", () => {
   test("text-only mobile mode remains available", async ({ page }) => {
     await page.setViewportSize({ width: 390, height: 900 });
     await page.goto("/");
-    const row = rowFor(page.locator("#media"), "Matteo Flora");
+    const row = rowFor(page.locator("#media"), "BGE 116");
     await row.evaluate((element) =>
       element.setAttribute("data-mobile-presentation", "text-only"),
     );

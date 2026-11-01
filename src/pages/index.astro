@@ -9,7 +9,7 @@ import SocialIcon from '../components/SocialIcon.astro';
 import ExternalLink from '../components/ExternalLink.astro';
 import AppearanceEntry from '../components/AppearanceEntry.astro';
 import { site } from '../data/site';
-import { archiveHref, type ArchiveType } from '../lib/archive';
+import { archiveHref, recordingTypes, type ArchiveType } from '../lib/archive';
 import { withBase } from '../lib/url';
 import { localize, translations, type Locale, type LocalizedText } from '../i18n';
 
@@ -46,16 +46,19 @@ const talks = (await getCollection('talks'))
 const writing = (await getCollection('writing')).filter((entry) => entry.data.locales.includes(locale)).sort(
   (a, b) => b.data.date.valueOf() - a.data.date.valueOf()
 );
-// The Media section is Luca's run of show: every recording he hosted or
-// joined, newest first, each row tagged with his role, then the
-// hand-picked writing. Shows and publishers stay metadata, never block
-// labels. Everything else lives behind the archive link. One preview
-// panel follows the active row on desktop.
+// The Media section is Luca's run of show: up to three hand-picked
+// recordings (`library` placement), newest first, then the hand-picked
+// writing. Shows and publishers stay metadata, never block labels.
+// Everything else lives behind the archive links. One preview panel
+// follows the active row on desktop.
+const mediaRecordingLimit = 3;
 const featuredEssay = writing.find((entry) => entry.data.placement === 'featured') ?? null;
 const indexArticles = writing.filter((entry) => entry.data.placement === 'library');
 const libraryAppearances = appearances
   .filter((entry) => entry.data.placements.includes('library'))
-  .sort((a, b) => b.data.date.valueOf() - a.data.date.valueOf());
+  .sort((a, b) => b.data.date.valueOf() - a.data.date.valueOf())
+  .slice(0, mediaRecordingLimit);
+const archivedRecordings = appearances.length - libraryAppearances.length;
 const archivedArticles = writing.length - (featuredEssay ? 1 : 0) - indexArticles.length;
 
 const appearanceAnchor = (id: string) => `appearance-${id.replace(/[^a-z0-9-]/gi, '-')}`;
@@ -77,7 +80,7 @@ type RundownItem = {
   anchorId?: string;
   mobilePresentation?: 'stamp' | 'poster' | 'text-only';
 };
-type RundownGroup = { id: string; label: string; meta?: string; items: RundownItem[] };
+type RundownGroup = { id: string; label: string; meta?: string; items: RundownItem[]; more?: { href: string; label: string } };
 
 const recordingItems: RundownItem[] = libraryAppearances.map((entry) => {
   const data = entry.data;
@@ -101,7 +104,14 @@ const recordingItems: RundownItem[] = libraryAppearances.map((entry) => {
   };
 });
 const rundownGroups: RundownGroup[] = recordingItems.length
-  ? [{ id: 'rundown-0', label: t.writing.recordings, meta: t.writing.recordingsCount(recordingItems.length), items: recordingItems }]
+  ? [{
+      id: 'rundown-0',
+      label: t.writing.recordings,
+      items: recordingItems,
+      more: archivedRecordings > 0
+        ? { href: archiveHref(locale, recordingTypes), label: t.writing.recordingsCta(archivedRecordings) }
+        : undefined,
+    }]
   : [];
 const readItems: RundownItem[] = [...(featuredEssay ? [featuredEssay] : []), ...indexArticles].map((entry) => ({
   id: entry.id,
@@ -453,6 +463,9 @@ function caseHref(href: string) {
                     </li>
                   ))}
                 </ol>
+                {group.more && (
+                  <a class="section-link mono" href={group.more.href}>{group.more.label}<span class="section-link-arrow" aria-hidden="true">→</span></a>
+                )}
               </div>
             ))}
             {archivedArticles > 0 && (

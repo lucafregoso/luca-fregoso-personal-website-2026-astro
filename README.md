@@ -125,9 +125,11 @@ guest:                 # optional: interview rows lead with the guest
 ```
 
 The permanent Media archive merges articles and appearances newest-first.
-The home-page Media section is a run of show: every `library` appearance in
-one block, newest first (Italian recordings get a small flag before the
-title), then the `featured` and `library` articles. Shows and publishers stay metadata —
+The home-page Media section is a run of show: up to three hand-picked
+`library` appearances, newest first (Italian recordings get a small flag
+before the title), with a link to the rest in the archive, then the
+`featured` and `library` articles. Archive filters combine:
+`/archive/?type=video,live-recording,podcast` shows every recording. Shows and publishers stay metadata —
 the section is about Luca, not about any one series. On desktop one preview panel follows
 the row under the pointer or keyboard focus; titles and rows open the original
 platform in a new tab. On phones rows carry a small poster thumbnail, and

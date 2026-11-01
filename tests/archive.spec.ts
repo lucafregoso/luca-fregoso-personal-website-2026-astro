@@ -50,7 +50,38 @@ test.describe("archive", () => {
       );
       await expect(
         page.locator(`[data-filter-link][data-type="${locale.filter}"]`),
-      ).toHaveAttribute("aria-current", "page");
+      ).toHaveAttribute("aria-current", "true");
+    });
+
+    test(`${locale.path} combines filters and toggles them off`, async ({
+      page,
+    }) => {
+      const filter = (type: string) =>
+        page.locator(`[data-filter-link][data-type="${type}"]`);
+      // the homepage "more recordings" link: every recording format at once
+      await page.goto(`${locale.path}?type=video,live-recording,podcast`);
+      const visible = page.locator("[data-archive-item]:visible");
+      await expect(visible).toHaveCount(8);
+      for (const type of ["video", "live-recording", "podcast"]) {
+        await expect(filter(type)).toHaveAttribute("aria-current", "true");
+      }
+      await expect(filter("all")).not.toHaveAttribute("aria-current");
+      // clicking a selected pill drops just that type
+      await filter("podcast").click();
+      await expect(page).toHaveURL(/\?type=video,live-recording$/);
+      await expect(visible).toHaveCount(7);
+      await expect(visible.filter({ hasText: locale.filteredText })).toHaveCount(0);
+      await expect(filter("podcast")).not.toHaveAttribute("aria-current");
+      // clicking an unselected pill adds it back, in pill order
+      await filter("podcast").click();
+      await expect(page).toHaveURL(/\?type=video,live-recording,podcast$/);
+      await expect(visible).toHaveCount(8);
+      // deselecting everything falls back to All
+      for (const type of ["video", "live-recording", "podcast"]) {
+        await filter(type).click();
+      }
+      await expect(page).toHaveURL(/\/archive\/$/);
+      await expect(filter("all")).toHaveAttribute("aria-current", "page");
     });
   }
 
