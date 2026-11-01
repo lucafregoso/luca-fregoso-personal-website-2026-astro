@@ -7,9 +7,8 @@ import Lightbox from '../components/Lightbox.astro';
 import ContactEmail from '../components/ContactEmail.astro';
 import SocialIcon from '../components/SocialIcon.astro';
 import ExternalLink from '../components/ExternalLink.astro';
-import AppearanceEntry from '../components/AppearanceEntry.astro';
 import { site } from '../data/site';
-import { archiveHref, type ArchiveType } from '../lib/archive';
+import { archiveHref, recordingTypes, type ArchiveType } from '../lib/archive';
 import { withBase } from '../lib/url';
 import { localize, translations, type Locale, type LocalizedText } from '../i18n';
 
@@ -23,12 +22,10 @@ const allNow = (await getCollection('now')).filter((entry) => entry.data.locales
 const appearances = (await getCollection('appearances'))
   .filter((entry) => entry.data.locales.includes(locale))
   .sort((a, b) => b.data.date.valueOf() - a.data.date.valueOf());
-const latelyAppearances = appearances.filter((entry) => entry.data.placements.includes('lately'));
 
-const timeline = [
-  ...allNow.map((entry) => ({ type: 'update' as const, date: entry.data.date, entry })),
-  ...latelyAppearances.map((entry) => ({ type: 'appearance' as const, date: entry.data.date, entry })),
-].sort((a, b) => b.date.valueOf() - a.date.valueOf());
+// Lately is what Luca did: `now` entries only. Recordings live in the
+// Media section (hand-picked) and the archive (all of them).
+const timeline = allNow.map((entry) => ({ type: 'update' as const, date: entry.data.date, entry }));
 const todayMs = Date.now();
 const upcoming = allNow
   .filter((entry) => entry.data.date.valueOf() > todayMs)
@@ -46,17 +43,91 @@ const talks = (await getCollection('talks'))
 const writing = (await getCollection('writing')).filter((entry) => entry.data.locales.includes(locale)).sort(
   (a, b) => b.data.date.valueOf() - a.data.date.valueOf()
 );
-// The Media section is a curated mosaic, not a date dump: one featured
-// essay (wide editorial slot), the recordings as a paired poster row,
-// an optional compact index, and everything else behind the archive link.
+// The Media section is Luca's run of show: up to three hand-picked
+// recordings (`library` placement), newest first, then the hand-picked
+// writing. Shows and publishers stay metadata, never block labels.
+// Everything else lives behind the archive links. One preview panel
+// follows the active row on desktop.
+const mediaRecordingLimit = 3;
 const featuredEssay = writing.find((entry) => entry.data.placement === 'featured') ?? null;
 const indexArticles = writing.filter((entry) => entry.data.placement === 'library');
 const libraryAppearances = appearances
   .filter((entry) => entry.data.placements.includes('library'))
-  .sort((a, b) => b.data.date.valueOf() - a.data.date.valueOf());
+  .sort((a, b) => b.data.date.valueOf() - a.data.date.valueOf())
+  .slice(0, mediaRecordingLimit);
+const archivedRecordings = appearances.length - libraryAppearances.length;
 const archivedArticles = writing.length - (featuredEssay ? 1 : 0) - indexArticles.length;
 
 const appearanceAnchor = (id: string) => `appearance-${id.replace(/[^a-z0-9-]/gi, '-')}`;
+
+type RundownItem = {
+  id: string;
+  kind: 'watch' | 'listen' | 'read';
+  title: string;
+  context: string;
+  fullTitle: string;
+  summary: string;
+  href: string;
+  action: string;
+  publisher: string;
+  date: Date;
+  duration?: string;
+  lang?: 'en' | 'it';
+  poster?: string;
+  anchorId?: string;
+  mobilePresentation?: 'stamp' | 'poster' | 'text-only';
+};
+type RundownGroup = { id: string; label: string; meta?: string; items: RundownItem[]; more?: { href: string; label: string } };
+
+const recordingItems: RundownItem[] = libraryAppearances.map((entry) => {
+  const data = entry.data;
+  const title = localize(data.title, locale);
+  return {
+    id: entry.id,
+    kind: data.platform === 'spotify' ? 'listen' : 'watch',
+    title: data.guest?.name ?? title,
+    context: data.guest?.context ? localize(data.guest.context, locale) : localize(data.summary, locale),
+    fullTitle: title,
+    summary: localize(data.summary, locale),
+    href: data.externalUrl,
+    action: data.platform === 'spotify' ? t.appearances.listen : t.appearances.watch,
+    publisher: data.publisher,
+    date: data.date,
+    duration: data.duration,
+    lang: data.lang,
+    poster: data.poster,
+    anchorId: appearanceAnchor(entry.id),
+    mobilePresentation: data.mobilePresentation,
+  };
+});
+const rundownGroups: RundownGroup[] = recordingItems.length
+  ? [{
+      id: 'rundown-0',
+      label: t.writing.recordings,
+      items: recordingItems,
+      more: archivedRecordings > 0
+        ? { href: archiveHref(locale, recordingTypes), label: t.writing.recordingsCta(archivedRecordings) }
+        : undefined,
+    }]
+  : [];
+const readItems: RundownItem[] = [...(featuredEssay ? [featuredEssay] : []), ...indexArticles].map((entry) => ({
+  id: entry.id,
+  kind: 'read',
+  title: localize(entry.data.title, locale),
+  context: entry.data.publication,
+  fullTitle: localize(entry.data.title, locale),
+  summary: localize(entry.data.summary, locale),
+  href: entry.data.url,
+  action: t.lately.read(entry.data.publication),
+  publisher: entry.data.publication,
+  date: entry.data.date,
+  lang: entry.data.lang,
+}));
+if (readItems.length) {
+  rundownGroups.push({ id: `rundown-${rundownGroups.length}`, label: t.writing.writingGroup, items: readItems });
+}
+const rundownItems = rundownGroups.flatMap((group) => group.items);
+const activeRundownId = rundownItems[0]?.id;
 const isoDuration = (duration: string) => {
   const parts = duration.split(':').map(Number);
   const [hours, minutes, seconds] = parts.length === 3 ? parts : [0, parts[0], parts[1]];
@@ -273,10 +344,9 @@ function caseHref(href: string) {
               <Media locale={locale} media={heroEntry.entry.data.media} presentation={heroEntry.entry.data.mediaPresentation} galleryId={`g-${heroEntry.entry.id}`} />
             </article>
           )}
-          {heroEntry?.type === 'appearance' && <AppearanceEntry appearance={heroEntry.entry.data} {locale} variant="featured" />}
 
           <ol class="feed">
-            {recentEntries.map((item) => item.type === 'update' ? (
+            {recentEntries.map((item) => (
               <li data-reveal class={`feed-item ${item.entry.data.featured ? 'is-featured' : ''}`}>
                 <div class="feed-meta mono">
                   <time datetime={item.date.toISOString()}>{dayMonth(item.date)}</time>
@@ -296,7 +366,7 @@ function caseHref(href: string) {
                   <Media locale={locale} media={item.entry.data.media} presentation={item.entry.data.mediaPresentation} galleryId={`g-${item.entry.id}`} />
                 </div>
               </li>
-            ) : <AppearanceEntry appearance={item.entry.data} {locale} variant="feed" />)}
+            ))}
           </ol>
         </div>
 
@@ -342,43 +412,95 @@ function caseHref(href: string) {
           <h2 id="writing-title">{t.writing.title}</h2>
           <p>{t.writing.intro}</p>
         </div>
-        {featuredEssay && (
-          <article class="media-featured" data-media-card>
-            <div class="media-featured-body">
-              <div class="media-card-meta mono">
-                <span>{featuredEssay.data.publication}{featuredEssay.data.lang && featuredEssay.data.lang !== locale ? ` · ${t.writing.inItalian}` : ''}</span>
-                <time datetime={featuredEssay.data.date.toISOString()}>{monthYear(featuredEssay.data.date)}</time>
-              </div>
-              <h3><ExternalLink class="media-card-link" href={featuredEssay.data.url}>{localize(featuredEssay.data.title, locale)}</ExternalLink></h3>
-              <p class="media-featured-summary">{localize(featuredEssay.data.summary, locale)}</p>
-            </div>
-            <div class="media-featured-rail">
-              <ExternalLink class="appearance-action mono" href={featuredEssay.data.url}>{t.lately.read(featuredEssay.data.publication)}</ExternalLink>
-              <a class="meta-badge meta-badge-neutral mono" href={archiveHref(locale, 'article')}>{t.writing.article}</a>
-            </div>
-          </article>
-        )}
-        <div class="media-grid">
-          {libraryAppearances.map((entry) => (
-            <AppearanceEntry appearance={entry.data} {locale} variant="card" anchorId={appearanceAnchor(entry.id)} />
-          ))}
-        </div>
-        {indexArticles.length > 0 && (
-          <ul class="media-index">
-            {indexArticles.map((entry) => (
-              <li class="media-index-row" data-media-card>
-                <h3 class="media-index-title"><ExternalLink class="media-card-link" href={entry.data.url}>{localize(entry.data.title, locale)}</ExternalLink></h3>
-                <div class="media-card-meta mono">
-                  <span>{entry.data.publication}{entry.data.lang && entry.data.lang !== locale ? ` · ${t.writing.inItalian}` : ''}</span>
-                  <time datetime={entry.data.date.toISOString()}>{monthYear(entry.data.date)}</time>
+        <div class="rundown" data-rundown>
+          <div class="rundown-list">
+            {rundownGroups.map((group) => (
+              <div class="rundown-group" role="group" aria-labelledby={group.id}>
+                <div class="rundown-group-head mono">
+                  <p id={group.id}>{group.label}</p>
+                  {group.meta && <span>{group.meta}</span>}
                 </div>
-              </li>
+                <ol class="rundown-rows">
+                  {group.items.map((item) => (
+                    <li
+                      class:list={['rundown-row', item.poster && 'has-thumb', item.id === activeRundownId && 'is-active']}
+                      id={item.anchorId}
+                      data-media-card
+                      data-rundown-item={item.id}
+                      data-appearance-entry={item.anchorId ? '' : undefined}
+                      data-mobile-presentation={item.mobilePresentation}
+                    >
+                      <div class="rundown-copy">
+                        <h3>
+                          <ExternalLink class="media-card-link" href={item.href}>
+                            {/* Recording language as a flag before the title; the
+                                link's accessible name still says "(in Italian)". */}
+                            {item.lang === 'it' && item.lang !== locale && (
+                              <span class="rundown-flag" data-lang={item.lang}>
+                                <svg viewBox="0 0 3 2" aria-hidden="true"><rect width="1" height="2" fill="#009246" /><rect x="1" width="1" height="2" fill="#fff" /><rect x="2" width="1" height="2" fill="#ce2b37" /></svg>
+                                <span class="sr-only">({t.writing.inItalian})</span>
+                              </span>
+                            )}
+                            {item.title}
+                          </ExternalLink>
+                        </h3>
+                        <p>{item.context}</p>
+                      </div>
+                      {item.poster && (
+                        <div class="rundown-thumb" aria-hidden="true">
+                          <img src={withBase(item.poster)} alt="" width="1200" height="675" loading="lazy" decoding="async" />
+                        </div>
+                      )}
+                      <div class="rundown-meta mono">
+                        <span class="rundown-time">{item.duration && <time datetime={isoDuration(item.duration)}>{item.duration}</time>}</span>
+                        <span class="rundown-kind meta-badge meta-badge-neutral">{t.writing.kinds[item.kind]}</span>
+                        <time class="rundown-date" datetime={item.date.toISOString()}>{monthYear(item.date)}</time>
+                      </div>
+                    </li>
+                  ))}
+                </ol>
+                {group.more && (
+                  <a class="section-link mono" href={group.more.href}>{group.more.label}<span class="section-link-arrow" aria-hidden="true">→</span></a>
+                )}
+              </div>
             ))}
-          </ul>
-        )}
-        {archivedArticles > 0 && (
-          <a class="section-link mono" href={archiveHref(locale, 'article')}>{t.writing.archiveCta(archivedArticles)}<span class="section-link-arrow" aria-hidden="true">→</span></a>
-        )}
+            {archivedArticles > 0 && (
+              <a class="section-link mono" href={archiveHref(locale, 'article')}>{t.writing.archiveCta(archivedArticles)}<span class="section-link-arrow" aria-hidden="true">→</span></a>
+            )}
+          </div>
+          {/* A visual mirror of the active row. Every word and link in it
+              already lives in the list, so it stays out of the a11y tree;
+              without JS it simply shows the newest item. */}
+          <aside class="rundown-preview" aria-hidden="true">
+            {rundownItems.map((item) => (
+              <figure class:list={['rundown-slide', item.id === activeRundownId && 'is-active']} data-rundown-slide={item.id}>
+                {item.poster ? (
+                  <div class="rundown-poster">
+                    <img src={withBase(item.poster)} alt="" width="1200" height="675" loading="lazy" decoding="async" />
+                    <span class="rundown-play">
+                      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 4.5v15l12.5-7.5z" fill="currentColor" /></svg>
+                    </span>
+                    {item.duration && <span class="rundown-poster-time mono">{item.duration}</span>}
+                  </div>
+                ) : (
+                  <div class="rundown-poster rundown-poster-text">
+                    <span class="mono">{item.publisher}</span>
+                    <span class="rundown-poster-title">{item.fullTitle}</span>
+                  </div>
+                )}
+                <figcaption>
+                  <div class="media-card-meta mono">
+                    <span>{item.publisher}{item.lang && item.lang !== locale ? ` · ${t.writing.inItalian}` : ''}</span>
+                    <time datetime={item.date.toISOString()}>{monthYear(item.date)}</time>
+                  </div>
+                  {item.poster && <p class="rundown-slide-title">{item.fullTitle}</p>}
+                  <p class="rundown-slide-summary">{item.summary}</p>
+                  <span class="rundown-slide-action mono">{item.action}<span aria-hidden="true"> ↗</span></span>
+                </figcaption>
+              </figure>
+            ))}
+          </aside>
+        </div>
       </section>
     </main>
 
@@ -411,8 +533,7 @@ function caseHref(href: string) {
   <Lightbox locale={locale} />
 
   <script>
-    // Article cards: whole card clicks through to the title link,
-    // mirroring the AppearanceEntry pattern. Plain left-clicks only:
+    // Media rows: the whole row clicks through to the title link. Plain left-clicks only:
     // text selections and modified clicks (new tab, etc.) pass through.
     // js-cards on <html> unlocks the pointer cursor the delegation earns.
     document.documentElement.classList.add('js-cards');
@@ -426,6 +547,34 @@ function caseHref(href: string) {
       const link = card?.querySelector('.media-card-link') as HTMLAnchorElement | null;
       if (link) link.click();
     });
+
+    // Media run of show: the preview follows the row under the pointer or
+    // keyboard focus, and stays on the last one picked. The server already
+    // marks the newest item active, so without JS nothing is missing.
+    (function () {
+      const rundown = document.querySelector<HTMLElement>('[data-rundown]');
+      if (!rundown) return;
+      const slides = new Map(
+        [...rundown.querySelectorAll<HTMLElement>('[data-rundown-slide]')].map((slide) => [slide.dataset.rundownSlide, slide])
+      );
+      let active = rundown.querySelector<HTMLElement>('[data-rundown-item].is-active');
+      const activate = (target: EventTarget | null) => {
+        const row = target instanceof Element ? target.closest<HTMLElement>('[data-rundown-item]') : null;
+        if (!row || row === active) return;
+        active?.classList.remove('is-active');
+        slides.get(active?.dataset.rundownItem)?.classList.remove('is-active');
+        row.classList.add('is-active');
+        slides.get(row.dataset.rundownItem)?.classList.add('is-active');
+        active = row;
+      };
+      rundown.addEventListener('mouseover', (event) => activate(event.target));
+      rundown.addEventListener('focusin', (event) => activate(event.target));
+      // The preview is a mirror: clicking it follows the active row's link.
+      rundown.querySelector('.rundown-preview')?.addEventListener('click', (event) => {
+        if (!(event instanceof MouseEvent) || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey || event.button !== 0) return;
+        active?.querySelector<HTMLAnchorElement>('.media-card-link')?.click();
+      });
+    })();
 
     // Page-end easter egg: the $ whoami line "types" itself when it
     // scrolls into view, then the output fades in. Without JS (or with
@@ -491,6 +640,9 @@ function caseHref(href: string) {
   .hero-visual:hover img { transform: scale(1.015); }
   @media (prefers-reduced-motion: reduce) {
     .hero-visual img, .section-link-arrow { transition: none; }
+    .rundown-row, .rundown-time::before, .rundown-play { transition: none; }
+    .rundown-slide.is-active { animation: none; }
+    .rundown-slide:hover .rundown-play { transform: none; }
     .hero-visual:hover img { transform: none; }
     :global(.section-link:hover) .section-link-arrow { transform: none; }
   }
@@ -588,9 +740,6 @@ function caseHref(href: string) {
       box-shadow: 0 0 0 6px color-mix(in srgb, var(--lime), transparent 70%);
     }
   }
-  /* AppearanceEntry's own hover bar (its ::after) is redundant next to the
-     rail dots — the dot handles the hover affordance inside the timeline. */
-  .timeline :global(.appearance-entry)::after { content: none; }
 
   .featured-story { padding: 2.5rem 0 3rem; border-bottom: 1px solid var(--border); }
   /* Featured entries are marked by the larger rail dot alone — no
@@ -626,29 +775,83 @@ function caseHref(href: string) {
   .talk-card :global(a), :global(.section-link) { width: fit-content; font-size: var(--text-ui); }
   :global(.section-link) { min-height: 44px; margin-top: 1.5rem; display: inline-flex; align-items: center; }
 
-  /* ---- Media & writing: thumbnail cards ---- */
-  /* ---- Media mosaic: featured slab → paired posters → compact index ---- */
-  .media-featured { position: relative; display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: .9rem 3rem; align-items: end; margin-bottom: 1.2rem; padding: 1.8rem 1.9rem; border: 1px solid var(--border); border-radius: var(--radius-md); background: var(--surface); transition: transform .22s var(--ease-out), border-color .22s var(--ease-out), box-shadow .22s var(--ease-out); }
-  /* Whole-card click is JS-delegated; only promise a pointer when JS ran. */
-  :global(html.js-cards) .media-featured, :global(html.js-cards) .media-index-row { cursor: pointer; }
-  .media-featured:hover, .media-featured:focus-within { transform: translateY(-3px); border-color: color-mix(in srgb, var(--lime), var(--border-strong) 40%); box-shadow: 0 14px 34px color-mix(in srgb, var(--text), transparent 92%); }
-  .media-featured h3 { margin: .75rem 0 0; font-size: var(--text-display-sm); line-height: 1.15; letter-spacing: -.015em; max-width: 34ch; text-wrap: balance; }
-  .media-featured h3 :global(a) { color: var(--text); }
-  .media-featured:hover h3 :global(a), .media-featured:focus-within h3 :global(a) { border-bottom-color: var(--lime); }
-  .media-featured-summary { margin: .8rem 0 0; max-width: 58ch; color: var(--text-muted); font-size: var(--text-body); }
-  .media-featured-rail { display: flex; flex-direction: column; align-items: flex-end; gap: .7rem; }
-  .media-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.2rem; }
+  /* ---- Media & writing: run of show ----
+     One running order of recordings (duration · kind · flag + who · date) beside one
+     preview panel that follows the active row. Rows reuse the Lately
+     grammar: the active one gets the lime dot, nothing else gets color. */
+  .rundown { display: grid; grid-template-columns: minmax(0, 7fr) minmax(0, 4.4fr); gap: clamp(2rem, 4vw, 3.5rem); align-items: start; }
+  .rundown-list { min-width: 0; display: flex; flex-direction: column; gap: 2.6rem; }
+  .rundown-list > :global(.section-link) { margin-top: -1.2rem; }
+  .rundown-group-head { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: baseline; gap: .3rem 1.5rem; padding: 0 .9rem .7rem; color: var(--text-faint); font-size: var(--text-meta); text-transform: uppercase; }
+  .rundown-group-head p { margin: 0; color: var(--text); }
+  .rundown-rows { margin: 0; padding: 0; list-style: none; }
+  .rundown-row { display: grid; grid-template-columns: 4.6rem 5.4rem minmax(0, 1fr) 5.6rem; grid-template-areas: "time kind copy date"; column-gap: 1rem; align-items: baseline; padding: 1rem .9rem; border-top: 1px solid var(--border-strong); transition: background-color .18s var(--ease-out), border-color .18s var(--ease-out); }
+  .rundown-row:last-child { border-bottom: 1px solid var(--border-strong); }
+  /* Whole-row click is JS-delegated; only promise a pointer when JS ran. */
+  :global(html.js-cards) .rundown-row { cursor: pointer; }
+  .rundown-copy { grid-area: copy; min-width: 0; }
+  .rundown-copy h3 { margin: 0; font-size: var(--text-h3); line-height: 1.3; text-wrap: balance; }
+  .rundown-copy h3 :global(a) { color: var(--text); }
+  .rundown-row:hover h3 :global(a), .rundown-row:focus-within h3 :global(a) { border-bottom-color: var(--lime); }
+  .rundown-copy p { margin: .2rem 0 0; color: var(--text-muted); font-size: var(--text-body-sm); line-height: 1.45; }
+  .rundown-thumb { display: none; }
+  .rundown-meta { display: contents; }
+  .rundown-time { grid-area: time; display: inline-flex; align-items: center; gap: .55rem; color: var(--text); font-size: var(--text-meta); font-variant-numeric: tabular-nums; }
+  .rundown-time::before { content: ''; flex: none; width: 8px; height: 8px; border-radius: 50%; background: transparent; transform: scale(.4); transition: background-color .18s var(--ease-out), transform .18s var(--ease-out); }
+  .rundown-kind { grid-area: kind; }
+  /* Flag sits on the title's first line; the sr-only text inside carries
+     the "(in Italian)" marker for assistive tech. */
+  .rundown-flag { display: inline-block; margin-right: .45em; vertical-align: -.08em; }
+  .rundown-flag svg { display: block; width: 1.05em; height: .7em; border-radius: 2px; box-shadow: 0 0 0 1px var(--border-strong); }
+  .rundown-date { grid-area: date; justify-self: end; color: var(--text-faint); font-size: var(--text-meta); white-space: nowrap; }
+
+  .rundown-preview { position: sticky; top: 6.5rem; min-width: 0; }
+  .rundown-slide { display: none; margin: 0; overflow: hidden; border: 1px solid var(--border); border-radius: var(--radius-md); background: var(--surface); }
+  .rundown-slide.is-active { display: block; animation: rundown-in .32s var(--ease-out); }
+  :global(html.js-cards) .rundown-slide { cursor: pointer; }
+  @keyframes rundown-in { from { opacity: 0; } }
+  .rundown-poster { position: relative; aspect-ratio: 16 / 9; overflow: hidden; background: #0b0e13; }
+  .rundown-poster img { width: 100%; height: 100%; display: block; object-fit: cover; }
+  .rundown-play { position: absolute; left: 1rem; bottom: 1rem; width: 3.25rem; height: 3.25rem; display: grid; place-items: center; border-radius: 50%; color: #0b0e13; background: var(--lime); transition: transform .2s var(--ease-out); }
+  .rundown-play svg { width: 1.15rem; height: 1.15rem; margin-left: 2px; }
+  .rundown-slide:hover .rundown-play { transform: scale(1.06); }
+  .rundown-poster-time { position: absolute; right: .8rem; bottom: .8rem; padding: .15rem .45rem; border-radius: var(--radius-sm); color: #f3f5f7; background: rgba(10, 12, 16, .82); font-size: var(--text-meta); }
+  .rundown-poster-text { aspect-ratio: auto; min-height: 15rem; display: flex; flex-direction: column; justify-content: space-between; gap: 2rem; padding: 1.6rem; color: #f3f5f7; }
+  .rundown-poster-text .mono { color: var(--accent-text-dark, #c3ce4a); font-size: var(--text-meta); text-transform: uppercase; }
+  .rundown-poster-title { font-size: var(--text-sub); font-weight: var(--display-weight); line-height: 1.12; letter-spacing: -.02em; text-wrap: balance; }
+  .rundown-slide figcaption { padding: 1.3rem 1.4rem 1.4rem; }
+  .rundown-slide-title { margin: .6rem 0 0; font-size: var(--text-h3); font-weight: 700; line-height: 1.3; text-wrap: balance; }
+  .rundown-slide-summary { margin: .5rem 0 0; color: var(--text-muted); font-size: var(--text-body-sm); line-height: 1.5; }
+  .rundown-slide-action { display: inline-flex; margin-top: .9rem; color: var(--accent-text); font-size: var(--text-ui); }
+
+  @media (min-width: 901px) {
+    .rundown-row:hover { background: color-mix(in srgb, var(--surface), transparent 50%); }
+    /* Only the active row rounds: its own and its neighbour's rules drop,
+       so no separator ever has to bend around a corner. */
+    .rundown-row.is-active { background: var(--surface); border-top-color: transparent; border-radius: var(--radius); }
+    .rundown-row.is-active + .rundown-row, .rundown-row.is-active:last-child { border-color: transparent; }
+    .rundown-row.is-active .rundown-time::before { background: var(--lime); transform: none; }
+  }
+  @media (max-width: 900px) {
+    .rundown { grid-template-columns: minmax(0, 1fr); }
+    .rundown-preview { display: none; }
+    .rundown-group-head { padding-inline: 0; }
+    .rundown-row { grid-template-columns: clamp(6.5rem, 26vw, 9rem) minmax(0, 1fr); grid-template-areas: "thumb copy" "thumb meta"; gap: .5rem 1rem; align-items: start; padding: 1rem 0; }
+    .rundown-row:not(.has-thumb), .rundown-row[data-mobile-presentation='text-only'] { grid-template-columns: minmax(0, 1fr); grid-template-areas: "copy" "meta"; }
+    .rundown-row[data-mobile-presentation='text-only'] .rundown-thumb { display: none; }
+    .rundown-thumb { grid-area: thumb; display: block; aspect-ratio: 16 / 9; overflow: hidden; border-radius: 8px; background: var(--surface); }
+    .rundown-thumb img { width: 100%; height: 100%; display: block; object-fit: cover; }
+    .rundown-copy h3 { font-size: var(--text-body); }
+    .rundown-meta { grid-area: meta; display: flex; flex-wrap: wrap; align-items: center; gap: .35rem .8rem; }
+    .rundown-time::before { content: none; }
+    .rundown-time:empty { display: none; }
+  }
+
   .media-card-meta { display: flex; flex-wrap: wrap; gap: .45rem 1rem; color: var(--text-faint); font-size: var(--text-meta); }
   /* Separator in CSS: a wrapped meta line never ends in a dangling dot. */
   .media-card-meta time::before { content: '· ' / ''; }
   .section-link-arrow { display: inline-block; margin-left: .35rem; transition: transform .16s var(--ease-out); }
   :global(.section-link:hover) .section-link-arrow { transform: translateX(3px); }
-  .media-index { margin: 1.4rem 0 0; padding: 0; list-style: none; }
-  .media-index-row { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: .35rem 2rem; padding: .95rem 0; border-top: 1px solid var(--border); }
-  .media-index-row:last-child { border-bottom: 1px solid var(--border); }
-  .media-index-title { margin: 0; font-size: var(--text-body); line-height: 1.35; font-weight: 600; }
-  .media-index-title :global(a) { color: var(--text); }
-  .media-index-row:hover .media-index-title :global(a), .media-index-row:focus-within .media-index-title :global(a) { border-bottom-color: var(--lime); }
 
   /* ---- Contact ---- */
   .contact { padding: 7rem 0 2rem; }
@@ -714,9 +917,6 @@ function caseHref(href: string) {
     .feed-body.media-presentation-sidecar { grid-template-columns: 1fr; }
     .featured-story.media-presentation-sidecar :global(.media),
     .feed-body.media-presentation-sidecar :global(.media) { margin-top: 1rem; }
-    .media-featured { grid-template-columns: 1fr; align-items: start; gap: .4rem; padding: 1.4rem 1.5rem 1.5rem; }
-    .media-featured-rail { width: 100%; flex-direction: row; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: .6rem 1rem; }
-    .media-index-row { flex-direction: column; align-items: flex-start; gap: .3rem; }
   }
 
   @media (max-width: 620px) {

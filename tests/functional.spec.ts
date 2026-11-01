@@ -5,9 +5,13 @@ import { test, expect } from '@playwright/test';
 // The interactive pieces behave as intended.
 // ─────────────────────────────────────────────────────────────
 
+// Lightbox tests run on a test-only fixture page (src/pages/test-fixtures/),
+// so they keep a gallery to open as entries age out of the homepage feed.
+const LIGHTBOX_FIXTURE = '/test-fixtures/lightbox/';
+
 test.describe('lightbox', () => {
   test('opens on image click, navigates, and closes with Escape', async ({ page }) => {
-    await page.goto('/');
+    await page.goto(LIGHTBOX_FIXTURE);
     const lightbox = page.locator('#lightbox');
     await expect(lightbox).toBeHidden();
 
@@ -15,7 +19,7 @@ test.describe('lightbox', () => {
     await page.locator('[data-lightbox]').first().click();
     await expect(lightbox).toBeVisible();
 
-    // the hackathon entry has 2 images → next arrow + counter
+    // the fixture gallery has 2+ images → next arrow + counter
     const next = page.locator('.lb-next');
     if (await next.isVisible()) {
       await next.click();
@@ -28,7 +32,7 @@ test.describe('lightbox', () => {
   });
 
   test('closes when clicking the backdrop', async ({ page }) => {
-    await page.goto('/');
+    await page.goto(LIGHTBOX_FIXTURE);
     await page.locator('[data-lightbox]').first().click();
     await expect(page.locator('#lightbox')).toBeVisible();
     await page.locator('.lb-close').click();
@@ -36,7 +40,7 @@ test.describe('lightbox', () => {
   });
 
   test('cycles focus, announces navigation, and restores the trigger', async ({ page }) => {
-    await page.goto('/');
+    await page.goto(LIGHTBOX_FIXTURE);
     const trigger = page.locator('[data-lightbox]').first();
     await trigger.click();
 

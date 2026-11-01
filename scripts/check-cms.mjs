@@ -123,7 +123,7 @@ assertLocalizedObject(appearances, 'summary');
 assertOptions(appearances, 'format', ['video', 'live-recording', 'podcast']);
 assertOptions(appearances, 'platform', ['youtube', 'spotify']);
 assertOptions(appearances, 'role', ['host', 'speaker', 'guest']);
-assertOptions(appearances, 'placements', ['lately', 'library']);
+assertOptions(appearances, 'placements', ['library']);
 assertOptions(appearances, 'mobilePresentation', ['stamp', 'poster', 'text-only']);
 
 const writing = assertCollection(config, 'writing', 'src/content/writing');

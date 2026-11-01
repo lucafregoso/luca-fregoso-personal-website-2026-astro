@@ -38,13 +38,19 @@ export const archiveTypes: ArchiveType[] = [
   'podcast',
 ];
 
+// Everything Luca recorded, whatever the format: the homepage Media
+// "more recordings" link opens the archive with all three selected.
+export const recordingTypes: ArchiveType[] = ['video', 'live-recording', 'podcast'];
+
 export function archivePath(locale: Locale) {
   return locale === 'it' ? '/it/archive/' : '/archive/';
 }
 
-export function archiveHref(locale: Locale, type?: ArchiveType) {
+// Filters combine: `?type=video,podcast` shows entries of either type.
+export function archiveHref(locale: Locale, type?: ArchiveType | ArchiveType[]) {
   const path = archivePath(locale);
-  return withBase(type ? `${path}?type=${encodeURIComponent(type)}` : path);
+  const types = type === undefined ? [] : Array.isArray(type) ? type : [type];
+  return withBase(types.length ? `${path}?type=${types.map(encodeURIComponent).join(',')}` : path);
 }
 
 export function archiveTypeLabel(locale: Locale, type: ArchiveType) {
