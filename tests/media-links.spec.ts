@@ -52,9 +52,13 @@ test.describe("media run of show", () => {
         await expect(row.locator(".rundown-time")).toHaveText(example.duration);
         await expect(row.locator(".rundown-kind")).toHaveText(/watch/i);
         if (example.lang) {
-          await expect(row.locator(".rundown-lang")).toHaveText(example.lang);
+          // a flag before the title, "(in Italian)" in the link's name
+          await expect(row.locator("h3 .rundown-flag svg")).toBeVisible();
+          await expect(row.locator("h3 a.media-card-link")).toHaveAccessibleName(
+            new RegExp(`\\(${example.lang}\\)`),
+          );
         } else {
-          await expect(row.locator(".rundown-lang")).toHaveCount(0);
+          await expect(row.locator(".rundown-flag")).toHaveCount(0);
         }
         await expect(row.locator(".rundown-thumb img")).toHaveAttribute(
           "src",
