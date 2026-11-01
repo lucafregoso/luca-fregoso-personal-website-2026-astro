@@ -1,9 +1,12 @@
-// Regenerates public/cv.pdf from the /cv/ route.
-// Usage: start the dev server (pnpm dev), then:
-//   node scripts/generate-cv-pdf.mjs
+// Renders the /cv/ route to PDF.
+// Usage: start a server for the site (pnpm dev), then:
+//   node scripts/generate-cv-pdf.mjs            → public/cv.pdf (public, no phone)
+//   node scripts/generate-cv-pdf.mjs --private  → cv-private.pdf (gitignored,
+//                                                 with phone, sent on request)
 // Configuration comes from .env.local / .env (see .env.example):
-//   SITE_URL  dev server origin (falls back to the pnpm dev default)
-//   CV_PHONE     injected into the PDF only, never into the page HTML
+//   CV_URL    full URL of the /cv/ page to render (wins over SITE_URL)
+//   SITE_URL  server origin (falls back to the pnpm dev default)
+//   CV_PHONE  personal data: only ever injected into the --private PDF
 import { chromium } from '@playwright/test';
 
 for (const file of ['.env.local', '.env']) {
@@ -14,19 +17,21 @@ for (const file of ['.env.local', '.env']) {
   }
 }
 
+const isPrivate = process.argv.includes('--private');
 const baseUrl = process.env.SITE_URL ?? 'http://localhost:4600';
 const url = process.env.CV_URL ?? `${baseUrl.replace(/\/$/, '')}/cv/`;
 const phone = process.env.CV_PHONE;
-const out = new URL('../public/cv.pdf', import.meta.url).pathname;
+const out = new URL(isPrivate ? '../cv-private.pdf' : '../public/cv.pdf', import.meta.url).pathname;
 
-if (!phone) {
-  console.warn('CV_PHONE is not set: the PDF will ship without a phone number.');
+if (isPrivate && !phone) {
+  console.error('--private needs CV_PHONE (set it in .env.local).');
+  process.exit(1);
 }
 
 const browser = await chromium.launch();
 const page = await browser.newPage();
 await page.goto(url, { waitUntil: 'networkidle' });
-if (phone) {
+if (isPrivate) {
   await page.evaluate((value) => {
     const contact = document.querySelector('[data-cv-contact]');
     if (contact) contact.textContent = `${contact.textContent} · ${value}`;

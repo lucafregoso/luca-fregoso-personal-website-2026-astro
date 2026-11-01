@@ -1,17 +1,51 @@
 import type { APIRoute } from 'astro';
+import { getCollection } from 'astro:content';
 import { site } from '../data/site';
+import { localize } from '../i18n';
 import { withBase } from '../lib/url';
 
 export const prerender = true;
 
 // llms.txt is the file answer engines trust most, so it is generated from
-// the same source of truth as the page (site.ts) instead of living as a
-// static file that drifts after every repositioning. Facts follow the
+// the same sources of truth as the page instead of living as a static file
+// that drifts: identity from site.ts, Talks and Media appearances from the
+// content collections (every recording, not only the homepage picks). Facts follow the
 // verified set in AGENTS.md/CLAUDE.md; the academy employer stays unnamed
 // here, matching the site. Never add personal contact details: a
 // regression test guards this file against them.
-export const GET: APIRoute = ({ site: origin }) => {
+const monthYear = (date: Date) =>
+  date.toLocaleDateString('en-GB', { month: 'long', year: 'numeric', timeZone: 'UTC' });
+const clock = (seconds: number) =>
+  `${Math.floor(seconds / 60)}:${String(seconds % 60).padStart(2, '0')}`;
+const formatLabel = { video: 'video', 'live-recording': 'live recording', podcast: 'podcast' } as const;
+
+export const GET: APIRoute = async ({ site: origin }) => {
   const url = (path: string) => new URL(withBase(path), origin).toString();
+
+  const talks = (await getCollection('talks'))
+    .filter((entry) => entry.data.locales.includes('en'))
+    .sort((a, b) => a.data.order - b.data.order)
+    .map(({ data }) => {
+      const kind = data.tags.includes('panel') ? ' (panel)' : '';
+      const events = data.events.length ? `, ${data.events.join(' and ')}` : '';
+      return `- "${localize(data.title, 'en')}"${kind}${events}`;
+    });
+
+  const appearances = (await getCollection('appearances'))
+    .filter((entry) => entry.data.locales.includes('en'))
+    .sort((a, b) => b.data.date.valueOf() - a.data.date.valueOf())
+    .map(({ data }) => {
+      const role =
+        data.role === 'host' ? `hosted for ${data.publisher}`
+        : data.role === 'guest' ? `guest on ${data.publisher}`
+        : `speaker for ${data.publisher}`;
+      const lang = data.lang === 'it' ? ' (in Italian)' : '';
+      const start = data.startAtSeconds ? `; playback starts at ${clock(data.startAtSeconds)}` : '';
+      return [
+        `- ${localize(data.title, 'en')}, ${role}${lang}, ${monthYear(data.date)},`,
+        `  ${formatLabel[data.format]} (${data.duration}${start}): ${data.externalUrl}`,
+      ].join('\n');
+    });
 
   const body = `# ${site.name}
 
@@ -46,22 +80,12 @@ export const GET: APIRoute = ({ site: origin }) => {
 - Writing (Codemotion Magazine, in Italian): ${site.links.codemotionAuthor}
 
 ## Talks
-- "AI non ti sostituirà (?). Il tuo workflow, però, non sarà più lo stesso!"
-  (panel, in Italian), Codemotion Rome 2026
-- "Tech Career: Should I Stay or Should I Go?", Codemotion Rome 2025 and
-  Milan 2024
-- "New Job Horror Stories from Developers and Recruiters", DevFest Milano
-  2024 and Pescara 2023
-- "Smart Second Brain", GDG DevFest Pisa 2024
+${talks.join('\n')}
 
 ## Media appearances
-- Spotlight #11 - Luca Fregoso (Codemotion), guest on Il Podcast Open
-  Source (in Italian), January 2026, podcast (44:01):
-  https://open.spotify.com/episode/2v0czUX9Pory1EdWmFvCo7
-- Tech Chat - AI & Open Source, hosted for Codemotion (in Italian),
-  February 2024, live recording (1:03:23; playback starts at 17:40):
-  https://www.youtube.com/watch?v=hexh4KEy2Lo&t=1060s
+${appearances.join('\n')}
 - Media & writing: ${url('/#media')}
+- All recordings: ${url('/archive/?type=video,live-recording,podcast')}
 
 ## Contact
 - Contact: ${url('/#contact')}

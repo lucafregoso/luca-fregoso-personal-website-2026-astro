@@ -3,11 +3,15 @@ name: Deploy to GitHub Pages
 on:
   push:
     branches:
-      - develop
+      - master
   workflow_dispatch:
 
-# Deployment starts only after code reaches develop, either by direct commit or
-# by merging a pull request.
+# Git flow: master is production. The site deploys only when a release
+# (develop → master PR) or hotfix lands on master; develop is integration
+# and never goes live by itself.
+#
+# Actions are pinned to commit SHAs (tag in the comment); Dependabot's
+# github-actions updates keep the pins current.
 permissions:
   contents: read
 
@@ -26,15 +30,15 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v7
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
       - name: Set up pnpm
-        uses: pnpm/action-setup@v6
+        uses: pnpm/action-setup@ea17c68df8912ef543352723c149a84f56e3d413 # v6.1.0
         with:
           run_install: false
 
       - name: Set up Node.js
-        uses: actions/setup-node@v7
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
           node-version: 24
           cache: pnpm
@@ -52,14 +56,14 @@ jobs:
         run: pnpm run build
 
       - name: Upload GitHub Pages artifact
-        if: github.ref == 'refs/heads/develop'
-        uses: actions/upload-pages-artifact@v5
+        if: github.ref == 'refs/heads/master'
+        uses: actions/upload-pages-artifact@fc324d3547104276b827a68afc52ff2a11cc49c9 # v5.0.0
         with:
           path: dist
 
   deploy:
     name: Deploy
-    if: github.ref == 'refs/heads/develop'
+    if: github.ref == 'refs/heads/master'
     needs: build
     runs-on: ubuntu-latest
     timeout-minutes: 10
@@ -73,4 +77,4 @@ jobs:
     steps:
       - name: Deploy to GitHub Pages
         id: deployment
-        uses: actions/deploy-pages@v5
+        uses: actions/deploy-pages@368f82528645a54fb793d4d04e342629a3f51346 # v5.0.1

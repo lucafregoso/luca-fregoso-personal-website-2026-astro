@@ -64,7 +64,8 @@ test.describe("regressions", () => {
     expect(response.ok()).toBeTruthy();
     const text = await response.text();
     expect(text).not.toContain("luca.fregoso@gmail.com");
-    expect(text).not.toContain("+39 347 5420915");
+    // any Italian mobile number, never the literal (the repo is public)
+    expect(text).not.toMatch(/\+39[\s.-]?3\d{2}[\s.-]?\d{6,7}/);
     expect(text).toContain("#contact");
   });
 
