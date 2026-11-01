@@ -57,7 +57,7 @@ test.describe("archive", () => {
   test("home labels navigate to filtered archive views", async ({ page }) => {
     await page.goto("/");
     const label = page
-      .locator('#lately .feed-meta a[href*="/archive/"][href*="type="]')
+      .locator('#lately a.meta-badge[href*="/archive/"][href*="type="]')
       .first();
     const href = await label.getAttribute("href");
     expect(href).toContain("/archive/");

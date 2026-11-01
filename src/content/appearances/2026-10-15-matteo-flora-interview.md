@@ -9,11 +9,17 @@ platform: youtube
 role: host
 placements: [lately, library]
 date: 2026-10-15
-duration: "20:33"
+duration: "20:27"
 publisher: Codemotion
-platformId: QtCtAesL5Gk
-externalUrl: https://www.youtube.com/watch?v=QtCtAesL5Gk
+platformId: MVUDWU9qGqw
+externalUrl: https://www.youtube.com/watch?v=MVUDWU9qGqw
 lang: it
 poster: /media/codemotion-interview-matteo-flora.png
 mobilePresentation: poster
+series:
+  en: Codemotion speaker interviews
+guest:
+  name: Matteo Flora
+  context:
+    en: Keynote · security and compliance in the age of AI
 ---

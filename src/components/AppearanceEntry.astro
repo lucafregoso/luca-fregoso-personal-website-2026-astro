@@ -28,7 +28,7 @@ interface Appearance {
 interface Props {
   appearance: Appearance;
   locale: Locale;
-  variant?: 'featured' | 'feed' | 'archive' | 'card';
+  variant?: 'featured' | 'feed' | 'archive';
   anchorId?: string;
 }
 
@@ -37,7 +37,7 @@ const t = translations[locale];
 const title = localize(appearance.title, locale);
 const summary = localize(appearance.summary, locale);
 const dateLocale = locale === 'it' ? 'it-IT' : 'en-GB';
-const dateLabel = appearance.date.toLocaleDateString(dateLocale, variant === 'archive' || variant === 'card'
+const dateLabel = appearance.date.toLocaleDateString(dateLocale, variant === 'archive'
   ? { year: 'numeric', month: 'short' }
   : { day: 'numeric', month: 'long', year: 'numeric' });
 const Tag = variant === 'feed' ? 'li' : 'article';
@@ -49,63 +49,40 @@ const actionLabel = appearance.platform === 'youtube' ? t.appearances.watch : t.
   variant === 'featured' && 'featured-story appearance-featured',
   variant === 'feed' && 'feed-item appearance-feed',
   variant === 'archive' && 'writing-item appearance-archive',
-  variant === 'card' && 'appearance-card',
 ]} data-appearance-entry data-format={appearance.format} data-mobile-presentation={appearance.mobilePresentation} id={anchorId}>
-  {variant === 'card' ? (
-    <>
-      <div class="appearance-thumbnail card-thumb" title={`${actionLabel}: ${title}`} aria-hidden="true">
+  <div class:list={['appearance-copy', variant === 'feed' && 'feed-body']}>
+    <div class:list={['appearance-media', variant === 'archive' && 'appearance-rail']}>
+      <div
+        class="appearance-thumbnail"
+        title={`${actionLabel}: ${title}`}
+        aria-hidden="true"
+      >
         <img src={withBase(appearance.poster)} alt="" width="1200" height="675" loading="lazy" />
       </div>
-      <div class="card-body">
+      {variant === 'archive' && (
         <div class="appearance-meta mono">
-          {/* The poster art already states format and role; the meta line
-              only carries what the art can't: publisher (real text, not
-              aria-hidden pixels), language marker, date. */}
           <span>{appearance.publisher}{appearance.lang && appearance.lang !== locale ? ` · ${t.appearances.inItalian}` : ''}</span>
           <time datetime={appearance.date.toISOString()}>{dateLabel}</time>
-        </div>
-        <h3><ExternalLink class="appearance-title-link" href={appearance.externalUrl}>{title}</ExternalLink></h3>
-        <p class="card-summary">{summary}</p>
-        <ExternalLink class="appearance-action mono" href={appearance.externalUrl}>{actionLabel}</ExternalLink>
-      </div>
-    </>
-  ) : (
-    <>
-      <div class:list={['appearance-copy', variant === 'feed' && 'feed-body']}>
-        <div class:list={['appearance-media', variant === 'archive' && 'appearance-rail']}>
-          <div
-            class="appearance-thumbnail"
-            title={`${actionLabel}: ${title}`}
-            aria-hidden="true"
-          >
-            <img src={withBase(appearance.poster)} alt="" width="1200" height="675" loading="lazy" />
-          </div>
-          {variant === 'archive' && (
-            <div class="appearance-meta mono">
-              <span>{appearance.publisher}{appearance.lang && appearance.lang !== locale ? ` · ${t.appearances.inItalian}` : ''}</span>
-              <time datetime={appearance.date.toISOString()}>{dateLabel}</time>
-            </div>
-          )}
-        </div>
-        <div class="appearance-details">
-          <div class="appearance-badges mono" aria-label={locale === 'it' ? 'Tipo di contenuto e ruolo' : 'Content format and role'}>
-            <a class="meta-badge meta-badge-neutral" href={archiveHref(locale, appearance.format as ArchiveType)}>{t.appearances.formats[appearance.format]}</a>
-            <span class="meta-badge meta-badge-neutral">{t.appearances.roles[appearance.role]}</span>
-          </div>
-          <h3><ExternalLink class="appearance-title-link" href={appearance.externalUrl}>{title}</ExternalLink></h3>
-          <p>{summary}</p>
-          <ExternalLink class="appearance-action mono" href={appearance.externalUrl}>{actionLabel}</ExternalLink>
-        </div>
-      </div>
-
-      {variant !== 'archive' && (
-        <div class:list={['appearance-meta', 'mono', variant === 'feed' && 'feed-meta']}>
-          <span>{appearance.publisher}{appearance.lang && appearance.lang !== locale ? ` · ${t.appearances.inItalian}` : ''}</span>
-          <time datetime={appearance.date.toISOString()}>{dateLabel}</time>
-          <span>{appearance.duration}</span>
         </div>
       )}
-    </>
+    </div>
+    <div class="appearance-details">
+      <div class="appearance-badges mono" aria-label={locale === 'it' ? 'Tipo di contenuto e ruolo' : 'Content format and role'}>
+        <a class="meta-badge meta-badge-neutral" href={archiveHref(locale, appearance.format as ArchiveType)}>{t.appearances.formats[appearance.format]}</a>
+        <span class="meta-badge meta-badge-neutral">{t.appearances.roles[appearance.role]}</span>
+      </div>
+      <h3><ExternalLink class="appearance-title-link" href={appearance.externalUrl}>{title}</ExternalLink></h3>
+      <p>{summary}</p>
+      <ExternalLink class="appearance-action mono" href={appearance.externalUrl}>{actionLabel}</ExternalLink>
+    </div>
+  </div>
+
+  {variant !== 'archive' && (
+    <div class:list={['appearance-meta', 'mono', variant === 'feed' && 'feed-meta']}>
+      <span>{appearance.publisher}{appearance.lang && appearance.lang !== locale ? ` · ${t.appearances.inItalian}` : ''}</span>
+      <time datetime={appearance.date.toISOString()}>{dateLabel}</time>
+      <span>{appearance.duration}</span>
+    </div>
   )}
 </Tag>
 
@@ -150,24 +127,6 @@ const actionLabel = appearance.platform === 'youtube' ? t.appearances.watch : t.
   .appearance-entry:focus-within .appearance-details h3 :global(a) { border-bottom-color: var(--lime); }
   .appearance-details > p { max-width: 66ch; margin: .55rem 0 0; color: var(--text-muted); font-size: var(--text-body-sm); }
 
-  /* ---- Card variant: thumbnail-led, whole card clickable ---- */
-  .appearance-card { display: flex; flex-direction: column; align-items: stretch; overflow: hidden; border: 1px solid var(--border); border-radius: var(--radius-md); background: var(--surface); transition: transform .22s var(--ease-out), border-color .22s var(--ease-out), box-shadow .22s var(--ease-out); }
-  /* Whole-card click is JS-delegated; only promise a pointer when JS ran. */
-  :global(html.js-cards) .appearance-card { cursor: pointer; }
-  .appearance-card h3 :global(a) { color: var(--text); }
-  .appearance-card:hover h3 :global(a),
-  .appearance-card:focus-within h3 :global(a) { border-bottom-color: var(--lime); }
-  /* Separator lives in CSS so a wrapped meta line never ends in a dangling
-     dot — when the date wraps, the dot travels with it. */
-  .appearance-card .appearance-meta time::before { content: '· ' / ''; }
-  .appearance-card::after { content: none; }
-  .appearance-card:hover, .appearance-card:focus-within { transform: translateY(-3px); border-color: color-mix(in srgb, var(--lime), var(--border-strong) 40%); box-shadow: 0 14px 34px color-mix(in srgb, var(--text), transparent 92%); }
-  .appearance-card .card-thumb { border: 0; border-radius: 0; border-bottom: 1px solid var(--border); }
-  .appearance-card .card-body { flex: 1; display: flex; flex-direction: column; align-items: flex-start; padding: 1.2rem 1.4rem 1.4rem; }
-  .appearance-card .appearance-meta { flex-wrap: wrap; }
-  .appearance-card h3 { margin: .8rem 0 0; font-size: var(--text-h3); line-height: 1.3; }
-  .appearance-card .card-summary { display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; line-clamp: 2; overflow: hidden; max-width: none; margin: .6rem 0 0; color: var(--text-muted); font-size: var(--text-body-sm); }
-  .appearance-card :global(.appearance-action) { margin-top: auto; padding-top: .55rem; }
   .appearance-thumbnail { display: block; overflow: hidden; aspect-ratio: 16 / 9; border: 1px solid var(--border); border-radius: 9px; background: var(--surface); cursor: pointer; transition: border-color .18s var(--ease-out); }
   .appearance-thumbnail:hover { border-color: var(--border); border-bottom-color: var(--border); }
   .appearance-thumbnail img { width: 100%; height: 100%; display: block; object-fit: cover; transition: transform .24s var(--ease-out), filter .24s var(--ease-out); }
@@ -218,9 +177,6 @@ const actionLabel = appearance.platform === 'youtube' ? t.appearances.watch : t.
     .appearance-entry[data-mobile-presentation='text-only']:not(.appearance-archive) .appearance-media { display: none; }
     .appearance-entry[data-mobile-presentation='text-only'] .appearance-details { grid-row: 1; }
     .appearance-entry[data-mobile-presentation='text-only'] .appearance-meta { grid-column: 1; grid-row: 2; }
-    /* Cards stay uniform on phones: full-width thumbnail regardless of the
-       stamp/poster presentation hints (text-only may still hide it). */
-    .appearance-entry.appearance-card .appearance-thumbnail { width: 100%; max-height: none; border-radius: 0; }
     .appearance-details h3 { font-size: var(--text-body); }
   }
   @media (prefers-reduced-motion: reduce) {

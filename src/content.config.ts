@@ -132,6 +132,17 @@ const appearances = defineCollection({
     mobilePresentation: z
       .enum(["stamp", "poster", "text-only"])
       .default("stamp"),
+    // The show or event a recording belongs to. The homepage Media
+    // run of show groups library entries into one block per series.
+    series: localizedText.optional(),
+    // Interviews: the run-of-show row leads with the guest, not the
+    // episode title. `context` is the one-line "who · what" under it.
+    guest: z
+      .object({
+        name: z.string().min(1),
+        context: localizedText.optional(),
+      })
+      .optional(),
   }),
 });
 
