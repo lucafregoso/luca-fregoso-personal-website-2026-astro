@@ -7,7 +7,7 @@ locales: [en]
 format: live-recording
 platform: youtube
 role: host
-placements: [lately, library]
+placements: []
 date: 2024-02-29
 duration: "1:03:23"
 publisher: Codemotion

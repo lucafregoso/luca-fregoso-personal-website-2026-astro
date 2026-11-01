@@ -7,7 +7,7 @@ locales: [en]
 format: podcast
 platform: spotify
 role: guest
-placements: [lately, library]
+placements: []
 date: 2026-01-26
 duration: "44:01"
 publisher: Il Podcast Open Source

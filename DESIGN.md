@@ -54,8 +54,8 @@ Hard rule: no new `font-size` literals in components. Adding a size means removi
 - Full-bleed tinted bands via `.tinted::before` (100vw pseudo-element; `html { overflow-x: clip }` absorbs the gutter).
 - **Page rhythm alternates**: light → ink Work band → tinted Lately → slim ink `$ whoami` interlude → light Talks → tinted Media → ink contact panel. The alternation must stay visible in both themes.
 - **Work = three compact intersection cards on the ink band**: each card is axis label (`Business × Engineering`, uppercase mono) → title → one-sentence summary → lime display stat (`600 → 1` + label) → CTA. Lime 3px top rule per card (top border is fine; side stripes are banned). Deliberately terse — one sentence, one stat, no multi-paragraph case prose. Data in `site.intersections`.
-- **Lately = vertical time rail**: `.timeline` with a 2px lime-tinted rail and a lime dot per entry (`::before` on `.featured-story` / `.feed-item`); featured entries get a larger dot only — no background wash, no side-stripes (both banned).
-- **Media & writing = card grid**: `repeat(auto-fit, minmax(280px, 1fr))`; appearances are poster-led cards (AppearanceEntry `card` variant), articles typographic cards; whole card clickable via delegated click on the title link.
+- **Lately = vertical time rail** of what Luca did (`now` entries only — recordings never join it): `.timeline` with a 2px lime-tinted rail and a lime dot per entry (`::before` on `.featured-story` / `.feed-item`); featured entries get a larger dot only — no background wash, no side-stripes (both banned).
+- **Media & writing = run of show**: one flat running order of at most three hand-picked recordings (`library` placement), newest first, closed by a `N more recordings live in the archive →` link to the archive with every recording type selected, then a Writing block. Never group by show or publisher — the section is about Luca. Desktop rows read `duration · kind badge · [flag] guest/title + context · date` — no role column; the recording language is a small flag before the title (sr-only "(in Italian)" in the link name), never a text column; one sticky preview panel (poster, lime play disc, publisher/summary) mirrors the active row and follows pointer/focus. Only the active row gets the lime dot and a surface fill. ≤900px: no preview, rows lead with a small 16:9 thumbnail. The preview is `aria-hidden` — every word and link lives in the list; without JS it shows the newest item. Whole row clickable via delegated click on the title link.
 
 ## Motion
 
@@ -68,7 +68,6 @@ Hard rule: no new `font-size` literals in components. Adding a size means removi
 ## Components
 
 - `SiteHeader` — sticky, blur backdrop, compact on scroll, hover caret egg on the brand.
-- `AppearanceEntry` — variants: `featured`, `feed`, `archive`, `card`.
 - `meta-badge` (global) — pill, mono `--text-meta`, neutral/status/accent variants.
 - `Media`, `Lightbox`, `ContactEmail`, `ExternalLink`, `SocialIcon`, `ThemeToggle`, `LanguageSwitcher`.
 

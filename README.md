@@ -26,7 +26,7 @@ Everything you'll want to change lives in a few predictable places:
 - `src/i18n/index.ts` — typed English and Italian interface and page copy.
 - `src/content/talks/` — one `.md` file per talk. Add a file, it appears on the site. Schema is in `src/content.config.ts`.
 - `src/content/writing/` — one `.md` file per article. Newest shows first automatically.
-- `src/content/appearances/` — one bilingual source per video, live recording or podcast; placements control whether it appears in Lately, Media, or both.
+- `src/content/appearances/` — one bilingual source per video, live recording or podcast; `placements: [library]` hand-picks it for the homepage Media list (max three); every recording lives in the archive, and none appear in Lately.
 - `src/styles/global.css` — design tokens. The lime accent (`--lime: #d0db02`) is used only for borders, prompts and the cursor; readable accent text uses a darker derived green so it passes contrast checks in both themes.
 - `public/cv.pdf` — your CV. Replace this file to update the download.
 
@@ -106,7 +106,7 @@ locales: [en, it]
 format: live-recording # video | live-recording | podcast
 platform: youtube      # youtube | spotify
 role: host             # host | speaker | guest
-placements: [lately, library]
+placements: [library]   # or [] for archive only
 date: 2026-01-15
 duration: "44:01"
 publisher: "Show or publisher"
@@ -115,16 +115,25 @@ externalUrl: "https://..."
 poster: /media/local-poster.png
 startAtSeconds: 1060   # optional, YouTube only
 mobilePresentation: stamp # stamp | poster | text-only
+series:                # optional: the show it belongs to (metadata)
+  en: "Codemotion speaker interviews"
+guest:                 # optional: interview rows lead with the guest
+  name: "Guest Name"
+  context:
+    en: "Keynote · the topic in a few words"
 ---
 ```
 
 The permanent Media archive merges articles and appearances newest-first.
-The home-page Media deck is editorially capped at five cards: it keeps current
-appearances visible for interaction review, then fills the remaining slots with
-the newest articles. Titles, cards and explicit watch/listen actions open the
-original platform in a new tab. On phones, `stamp` keeps the copy dominant and
-uses the poster as a small editorial stamp, `poster` leads with a restrained
-image, and `text-only` hides the thumbnail for dense future entries.
+The home-page Media section is a run of show: up to three hand-picked
+`library` appearances, newest first (Italian recordings get a small flag
+before the title), with a link to the rest in the archive, then the
+`featured` and `library` articles. Archive filters combine:
+`/archive/?type=video,live-recording,podcast` shows every recording. Shows and publishers stay metadata —
+the section is about Luca, not about any one series. On desktop one preview panel follows
+the row under the pointer or keyboard focus; titles and rows open the original
+platform in a new tab. On phones rows carry a small poster thumbnail, and
+`text-only` hides it for dense future entries.
 
 ## Where to extend next
 
