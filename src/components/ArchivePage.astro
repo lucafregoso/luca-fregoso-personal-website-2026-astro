@@ -115,14 +115,24 @@ const navItems = [
       status: (shown: number, total: number) => `${shown} ${document.documentElement.lang === 'it' ? 'di' : 'of'} ${total} ${document.documentElement.lang === 'it' ? 'voci mostrate' : 'entries shown'}`,
     };
 
-    function selectedType() {
-      const value = new URLSearchParams(window.location.search).get('type');
-      return value || 'all';
+    // Filters combine: each pill toggles its type in or out of
+    // `?type=a,b`; an empty selection is "All". Unknown types are ignored.
+    const knownTypes = links.map((link) => link.dataset.type).filter((type): type is string => !!type && type !== 'all');
+    const basePath = window.location.pathname;
+
+    function selectedTypes() {
+      const params = new URLSearchParams(window.location.search).getAll('type');
+      const requested = params.flatMap((value) => value.split(','));
+      return knownTypes.filter((type) => requested.includes(type));
+    }
+
+    function hrefFor(types: string[]) {
+      return types.length ? `${basePath}?type=${types.join(',')}` : basePath;
     }
 
     function apply() {
-      const type = selectedType();
-      const matching = items.filter((item) => type === 'all' || item.dataset.type === type);
+      const selected = selectedTypes();
+      const matching = items.filter((item) => !selected.length || selected.includes(item.dataset.type || ''));
       const totalPages = Math.max(1, Math.ceil(matching.length / pageSize));
       page = Math.min(page, totalPages);
       const first = (page - 1) * pageSize;
@@ -130,8 +140,18 @@ const navItems = [
       items.forEach((item) => { item.hidden = true; });
       matching.forEach((item, index) => { item.hidden = index < first || index >= last; });
       links.forEach((link) => {
-        const active = link.dataset.type === type;
-        if (active) link.setAttribute('aria-current', 'page');
+        const type = link.dataset.type || 'all';
+        if (type === 'all') {
+          link.href = hrefFor([]);
+          if (!selected.length) link.setAttribute('aria-current', 'page');
+          else link.removeAttribute('aria-current');
+          return;
+        }
+        const active = selected.includes(type);
+        const toggled = active ? selected.filter((value) => value !== type) : [...selected, type];
+        // keep the URL in the pills' display order, whatever the click order
+        link.href = hrefFor(knownTypes.filter((value) => toggled.includes(value)));
+        if (active) link.setAttribute('aria-current', 'true');
         else link.removeAttribute('aria-current');
       });
       if (empty) empty.hidden = matching.length > 0;
@@ -174,10 +194,10 @@ const navItems = [
   .archive-heading h1 { max-width: 14ch; margin: 0; font-size: var(--text-h2); line-height: 1.02; letter-spacing: -.03em; }
   .archive-heading p { max-width: 58ch; color: var(--text-muted); }
   .archive-filters { display: flex; flex-wrap: wrap; gap: .45rem; margin-bottom: 1.25rem; }
-  .archive-filters [aria-current='page'] { color: #171715; background: var(--lime); border-color: var(--lime); }
+  .archive-filters [aria-current] { color: #171715; background: var(--lime); border-color: var(--lime); }
   @media (forced-colors: active) {
     /* Backgrounds are stripped in forced colors: keep the active state. */
-    .archive-filters [aria-current='page'] { text-decoration: underline; outline: 2px solid ButtonText; outline-offset: 2px; }
+    .archive-filters [aria-current] { text-decoration: underline; outline: 2px solid ButtonText; outline-offset: 2px; }
   }
   .archive-status { margin: 0 0 .75rem; color: var(--text-faint); font-size: var(--text-meta); }
   .archive-list { margin: 0; padding: 0; list-style: none; border-top: 1px solid var(--border); }

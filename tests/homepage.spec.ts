@@ -222,14 +222,11 @@ test.describe("homepage content contract", () => {
   }) => {
     const groups = page.locator("#media .rundown-group");
     await expect(groups).toHaveCount(2);
-    // one flat block of everything Luca hosted or joined, newest first;
-    // shows and publishers never become block labels
+    // one flat block of at most three hand-picked recordings, newest
+    // first; shows and publishers never become block labels
     const recordings = groups.nth(0);
     await expect(recordings.locator(".rundown-group-head")).toContainText(
       "Recordings",
-    );
-    await expect(recordings.locator(".rundown-group-head")).toContainText(
-      "7 recordings",
     );
     await expect(page.locator("#media")).not.toContainText(
       "Codemotion speaker interviews",
@@ -237,21 +234,26 @@ test.describe("homepage content contract", () => {
     // no role column, no "in Italian" text column: a flag marks language
     await expect(recordings.locator(".rundown-role, .rundown-lang")).toHaveCount(0);
     await expect(recordings.locator(".rundown-copy h3")).toHaveText([
-      /BGV 7/,
       /Andrey Breslav/,
-      /Mario Zechner/,
-      /Matteo Flora/,
       /Katharine Jarmul/,
       /BGE 116/,
-      /Spotlight #11/,
     ]);
+    // the rest of the recordings: archive with every recording type on
+    const recordingsCta = recordings.locator("a.section-link");
+    await expect(recordingsCta).toContainText(/5 more recordings/);
+    await expect(recordingsCta).toHaveAttribute(
+      "href",
+      /\/archive\/\?type=video,live-recording,podcast$/,
+    );
     // the hand-picked essay closes the run of show
     const writing = groups.nth(1);
     await expect(writing.locator(".rundown-group-head")).toContainText("Writing");
     await expect(writing.locator(".rundown-row")).toHaveCount(1);
     await expect(writing).toContainText("Anatomy of a Successful Talk Proposal");
     // the rest of the writing lives behind a confident archive link
-    const archiveCta = page.locator("#media a.section-link");
+    const archiveCta = page
+      .locator("#media a.section-link")
+      .filter({ hasText: /articles/ });
     await expect(archiveCta).toContainText(/4 more articles/);
     await expect(archiveCta).toHaveAttribute(
       "href",

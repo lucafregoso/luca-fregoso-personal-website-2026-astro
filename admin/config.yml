@@ -190,8 +190,8 @@ collections:
         min: 1
         options:
           - { label: Lately, value: lately }
-          - { label: Media library, value: library }
-        default: [library]
+          - { label: Homepage Media (hand-picked, max 3), value: library }
+        default: [lately]
       - label: Date
         name: date
         widget: datetime
