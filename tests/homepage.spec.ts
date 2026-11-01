@@ -49,7 +49,7 @@ test.describe("homepage content contract", () => {
     await expect(page.locator("#work .intersection").first()).toBeVisible();
     await expect(page.locator("#lately article").first()).toBeVisible();
     await expect(page.locator("#talks .talk-card").first()).toBeVisible();
-    await expect(page.locator("#media .media-grid > *").first()).toBeVisible();
+    await expect(page.locator("#media .rundown-row").first()).toBeVisible();
   });
 
   test("frames work as intersections, business-report style, glue first", async ({
@@ -178,7 +178,7 @@ test.describe("homepage content contract", () => {
     await expect(page.locator(".meta-badge").first()).toBeVisible();
     await expect(
       page
-        .locator('#lately .feed-meta a[href*="/archive/"][href*="type="]')
+        .locator('#lately a.meta-badge[href*="/archive/"][href*="type="]')
         .first(),
     ).toBeVisible();
     await expect(
@@ -203,7 +203,7 @@ test.describe("homepage content contract", () => {
     await page
       .locator("html")
       .evaluate((element) => element.setAttribute("data-theme", "dark"));
-    const badge = page.locator("#lately .feed-meta a.meta-badge").first();
+    const badge = page.locator("#lately a.meta-badge").first();
     await expect(badge).toBeVisible();
     const initial = await badge.evaluate(
       (element) => getComputedStyle(element).backgroundColor,
@@ -217,26 +217,53 @@ test.describe("homepage content contract", () => {
     expect(hovered).not.toBe("rgba(0, 0, 0, 0)");
   });
 
-  test("media section is a curated mosaic, not a date dump", async ({
+  test("lately lists what Luca did, never recordings", async ({ page }) => {
+    const lately = page.locator("#lately");
+    await expect(lately.locator("article, li").first()).toBeVisible();
+    // recordings live in Media (hand-picked) and the archive, not here
+    await expect(
+      lately.locator('a[href*="youtube.com"], a[href*="spotify.com"]'),
+    ).toHaveCount(0);
+    await expect(lately).not.toContainText(/Andrey Breslav|Spotlight #11|BGE 116/);
+  });
+
+  test("media section is one run of show about Luca, writing last", async ({
     page,
   }) => {
-    // exactly one hand-picked featured essay leads the section
-    const featured = page.locator("#media .media-featured");
-    await expect(featured).toHaveCount(1);
-    await expect(featured).toContainText("Anatomy of a Successful Talk Proposal");
-    // the two recordings sit as a paired poster row, no orphan cells
-    await expect(
-      page.locator("#media .media-grid [data-appearance-entry]"),
-    ).toHaveCount(2);
-    // scripts render in place in Astro 5 and are display:none — they never
-    // create grid cells; only rendered boxes count as mosaic tiles
-    await expect(
-      page.locator("#media .media-grid > :not(script)"),
-    ).toHaveCount(2);
-    // the uniform article-card grid is gone for good
-    await expect(page.locator("#media .media-card-article")).toHaveCount(0);
+    const groups = page.locator("#media .rundown-group");
+    await expect(groups).toHaveCount(2);
+    // one flat block of at most three hand-picked recordings, newest
+    // first; shows and publishers never become block labels
+    const recordings = groups.nth(0);
+    await expect(recordings.locator(".rundown-group-head")).toContainText(
+      "Recordings",
+    );
+    await expect(page.locator("#media")).not.toContainText(
+      "Codemotion speaker interviews",
+    );
+    // no role column, no "in Italian" text column: a flag marks language
+    await expect(recordings.locator(".rundown-role, .rundown-lang")).toHaveCount(0);
+    await expect(recordings.locator(".rundown-copy h3")).toHaveText([
+      /Andrey Breslav/,
+      /Katharine Jarmul/,
+      /BGE 116/,
+    ]);
+    // the rest of the recordings: archive with every recording type on
+    const recordingsCta = recordings.locator("a.section-link");
+    await expect(recordingsCta).toContainText(/5 more recordings/);
+    await expect(recordingsCta).toHaveAttribute(
+      "href",
+      /\/archive\/\?type=video,live-recording,podcast$/,
+    );
+    // the hand-picked essay closes the run of show
+    const writing = groups.nth(1);
+    await expect(writing.locator(".rundown-group-head")).toContainText("Writing");
+    await expect(writing.locator(".rundown-row")).toHaveCount(1);
+    await expect(writing).toContainText("Anatomy of a Successful Talk Proposal");
     // the rest of the writing lives behind a confident archive link
-    const archiveCta = page.locator("#media a.section-link");
+    const archiveCta = page
+      .locator("#media a.section-link")
+      .filter({ hasText: /articles/ });
     await expect(archiveCta).toContainText(/4 more articles/);
     await expect(archiveCta).toHaveAttribute(
       "href",
@@ -250,7 +277,7 @@ test.describe("homepage content contract", () => {
     await page
       .locator("html")
       .evaluate((element) => element.setAttribute("data-theme", "dark"));
-    const linked = page.locator("#media a.meta-badge").first();
+    const linked = page.locator("#lately a.meta-badge").first();
     await expect(linked).toBeVisible();
     const border = await linked.evaluate((element) => {
       const computed = getComputedStyle(element);
