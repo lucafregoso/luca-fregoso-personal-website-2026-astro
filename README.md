@@ -26,7 +26,7 @@ Everything you'll want to change lives in a few predictable places:
 - `src/i18n/index.ts` — typed English and Italian interface and page copy.
 - `src/content/talks/` — one `.md` file per talk. Add a file, it appears on the site. Schema is in `src/content.config.ts`.
 - `src/content/writing/` — one `.md` file per article. Newest shows first automatically.
-- `src/content/appearances/` — one bilingual source per video, live recording or podcast; placements control whether it appears in Lately, Media, or both.
+- `src/content/appearances/` — one bilingual source per video, live recording or podcast; `placements: [library]` hand-picks it for the homepage Media list (max three); every recording lives in the archive, and none appear in Lately.
 - `src/styles/global.css` — design tokens. The lime accent (`--lime: #d0db02`) is used only for borders, prompts and the cursor; readable accent text uses a darker derived green so it passes contrast checks in both themes.
 - `public/cv.pdf` — your CV. Replace this file to update the download.
 
@@ -106,7 +106,7 @@ locales: [en, it]
 format: live-recording # video | live-recording | podcast
 platform: youtube      # youtube | spotify
 role: host             # host | speaker | guest
-placements: [lately, library]
+placements: [library]   # or [] for archive only
 date: 2026-01-15
 duration: "44:01"
 publisher: "Show or publisher"

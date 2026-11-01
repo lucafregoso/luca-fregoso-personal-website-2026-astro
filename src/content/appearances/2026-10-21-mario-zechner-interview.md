@@ -7,7 +7,7 @@ locales: [en]
 format: video
 platform: youtube
 role: host
-placements: [lately]
+placements: []
 date: 2026-10-21
 duration: "9:40"
 publisher: Codemotion

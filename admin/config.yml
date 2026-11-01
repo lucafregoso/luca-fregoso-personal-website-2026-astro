@@ -187,11 +187,11 @@ collections:
         name: placements
         widget: select
         multiple: true
-        min: 1
+        required: false
+        hint: "Empty: archive only. Recordings never appear in Lately."
         options:
-          - { label: Lately, value: lately }
           - { label: Homepage Media (hand-picked, max 3), value: library }
-        default: [lately]
+        default: []
       - label: Date
         name: date
         widget: datetime
