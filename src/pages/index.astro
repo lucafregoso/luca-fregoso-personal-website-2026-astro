@@ -7,7 +7,6 @@ import Lightbox from '../components/Lightbox.astro';
 import ContactEmail from '../components/ContactEmail.astro';
 import SocialIcon from '../components/SocialIcon.astro';
 import ExternalLink from '../components/ExternalLink.astro';
-import AppearanceEntry from '../components/AppearanceEntry.astro';
 import { site } from '../data/site';
 import { archiveHref, recordingTypes, type ArchiveType } from '../lib/archive';
 import { withBase } from '../lib/url';
@@ -23,12 +22,10 @@ const allNow = (await getCollection('now')).filter((entry) => entry.data.locales
 const appearances = (await getCollection('appearances'))
   .filter((entry) => entry.data.locales.includes(locale))
   .sort((a, b) => b.data.date.valueOf() - a.data.date.valueOf());
-const latelyAppearances = appearances.filter((entry) => entry.data.placements.includes('lately'));
 
-const timeline = [
-  ...allNow.map((entry) => ({ type: 'update' as const, date: entry.data.date, entry })),
-  ...latelyAppearances.map((entry) => ({ type: 'appearance' as const, date: entry.data.date, entry })),
-].sort((a, b) => b.date.valueOf() - a.date.valueOf());
+// Lately is what Luca did: `now` entries only. Recordings live in the
+// Media section (hand-picked) and the archive (all of them).
+const timeline = allNow.map((entry) => ({ type: 'update' as const, date: entry.data.date, entry }));
 const todayMs = Date.now();
 const upcoming = allNow
   .filter((entry) => entry.data.date.valueOf() > todayMs)
@@ -347,10 +344,9 @@ function caseHref(href: string) {
               <Media locale={locale} media={heroEntry.entry.data.media} presentation={heroEntry.entry.data.mediaPresentation} galleryId={`g-${heroEntry.entry.id}`} />
             </article>
           )}
-          {heroEntry?.type === 'appearance' && <AppearanceEntry appearance={heroEntry.entry.data} {locale} variant="featured" />}
 
           <ol class="feed">
-            {recentEntries.map((item) => item.type === 'update' ? (
+            {recentEntries.map((item) => (
               <li data-reveal class={`feed-item ${item.entry.data.featured ? 'is-featured' : ''}`}>
                 <div class="feed-meta mono">
                   <time datetime={item.date.toISOString()}>{dayMonth(item.date)}</time>
@@ -370,7 +366,7 @@ function caseHref(href: string) {
                   <Media locale={locale} media={item.entry.data.media} presentation={item.entry.data.mediaPresentation} galleryId={`g-${item.entry.id}`} />
                 </div>
               </li>
-            ) : <AppearanceEntry appearance={item.entry.data} {locale} variant="feed" />)}
+            ))}
           </ol>
         </div>
 
@@ -537,8 +533,7 @@ function caseHref(href: string) {
   <Lightbox locale={locale} />
 
   <script>
-    // Article cards: whole card clicks through to the title link,
-    // mirroring the AppearanceEntry pattern. Plain left-clicks only:
+    // Media rows: the whole row clicks through to the title link. Plain left-clicks only:
     // text selections and modified clicks (new tab, etc.) pass through.
     // js-cards on <html> unlocks the pointer cursor the delegation earns.
     document.documentElement.classList.add('js-cards');
@@ -745,9 +740,6 @@ function caseHref(href: string) {
       box-shadow: 0 0 0 6px color-mix(in srgb, var(--lime), transparent 70%);
     }
   }
-  /* AppearanceEntry's own hover bar (its ::after) is redundant next to the
-     rail dots — the dot handles the hover affordance inside the timeline. */
-  .timeline :global(.appearance-entry)::after { content: none; }
 
   .featured-story { padding: 2.5rem 0 3rem; border-bottom: 1px solid var(--border); }
   /* Featured entries are marked by the larger rail dot alone — no

@@ -7,7 +7,7 @@ locales: [en]
 format: video
 platform: youtube
 role: guest
-placements: [lately]
+placements: []
 date: 2026-10-28
 duration: "4:32"
 publisher: La Brigata dei Geek Estinti

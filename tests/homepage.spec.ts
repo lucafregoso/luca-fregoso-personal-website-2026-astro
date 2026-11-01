@@ -217,6 +217,16 @@ test.describe("homepage content contract", () => {
     expect(hovered).not.toBe("rgba(0, 0, 0, 0)");
   });
 
+  test("lately lists what Luca did, never recordings", async ({ page }) => {
+    const lately = page.locator("#lately");
+    await expect(lately.locator("article, li").first()).toBeVisible();
+    // recordings live in Media (hand-picked) and the archive, not here
+    await expect(
+      lately.locator('a[href*="youtube.com"], a[href*="spotify.com"]'),
+    ).toHaveCount(0);
+    await expect(lately).not.toContainText(/Andrey Breslav|Spotlight #11|BGE 116/);
+  });
+
   test("media section is one run of show about Luca, writing last", async ({
     page,
   }) => {
