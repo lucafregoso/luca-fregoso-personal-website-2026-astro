@@ -234,6 +234,8 @@ test.describe("homepage content contract", () => {
     await expect(page.locator("#media")).not.toContainText(
       "Codemotion speaker interviews",
     );
+    // no role column, no "in Italian" text column: a flag marks language
+    await expect(recordings.locator(".rundown-role, .rundown-lang")).toHaveCount(0);
     await expect(recordings.locator(".rundown-copy h3")).toHaveText([
       /BGV 7/,
       /Andrey Breslav/,
@@ -242,10 +244,6 @@ test.describe("homepage content contract", () => {
       /Katharine Jarmul/,
       /BGE 116/,
       /Spotlight #11/,
-    ]);
-    // every recording row says what Luca did in it
-    await expect(recordings.locator(".rundown-role")).toHaveText([
-      "guest", "host", "host", "host", "host", "guest", "guest",
     ]);
     // the hand-picked essay closes the run of show
     const writing = groups.nth(1);
