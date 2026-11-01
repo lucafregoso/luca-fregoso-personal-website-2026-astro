@@ -107,9 +107,8 @@ test.describe("media run of show", () => {
     await expect(preview.locator(".rundown-slide:visible")).toHaveCount(1);
     await expect(media.locator(".rundown-thumb").first()).toBeHidden();
     await expect(preview.locator(".rundown-slide:visible")).toContainText(
-      "Andrey Breslav",
+      "BGV 7",
     );
-    await expect(preview.locator(".rundown-slide:visible")).toContainText("EP 04");
 
     await rowFor(media, "Katharine Jarmul").hover();
     await expect(preview.locator(".rundown-slide:visible")).toContainText(
@@ -149,7 +148,7 @@ test.describe("media run of show", () => {
     await page.goto("/");
     const slide = page.locator("#media .rundown-slide:visible");
     await expect(slide).toHaveCount(1);
-    await expect(slide).toContainText("Andrey Breslav");
+    await expect(slide).toContainText("BGV 7");
     await context.close();
   });
 

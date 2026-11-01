@@ -111,14 +111,12 @@ const en = {
     inItalian: "in Italian",
     archiveCta: (count: number) =>
       `${count} more articles live in the archive`,
-    // Media run of show: row badges, block labels, episode markers.
+    // Media run of show: row badges and block labels.
     kinds: { watch: "watch", listen: "listen", read: "read" },
     recordings: "Recordings",
     writingGroup: "Writing",
-    episodes: (count: number) => `${count} episodes`,
     recordingsCount: (count: number) =>
       `${count} ${count === 1 ? "recording" : "recordings"}`,
-    episode: (index: number) => `EP ${String(index).padStart(2, "0")}`,
   },
   archive: {
     title: "Archive.",

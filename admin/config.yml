@@ -216,7 +216,7 @@ collections:
         name: series
         widget: object
         required: false
-        hint: "Groups recordings into one run-of-show block on the homepage"
+        hint: "The show this recording belongs to (metadata only)"
         fields:
           - { label: English, name: en, widget: string }
           - { label: Italian, name: it, widget: string, required: false }

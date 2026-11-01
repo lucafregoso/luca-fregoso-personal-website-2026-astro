@@ -36,7 +36,7 @@ for (const locale of [
     await page.keyboard.press('Escape');
 
     await expect(page.locator('iframe')).toHaveCount(0);
-    await expect(page.locator('#media [data-appearance-entry]')).toHaveCount(4);
+    await expect(page.locator('#media [data-appearance-entry]')).toHaveCount(7);
     await page.waitForTimeout(500);
 
     expect(issues, 'runtime issue provenance').toEqual([]);

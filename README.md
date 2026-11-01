@@ -115,7 +115,7 @@ externalUrl: "https://..."
 poster: /media/local-poster.png
 startAtSeconds: 1060   # optional, YouTube only
 mobilePresentation: stamp # stamp | poster | text-only
-series:                # optional: one run-of-show block per series
+series:                # optional: the show it belongs to (metadata)
   en: "Codemotion speaker interviews"
 guest:                 # optional: interview rows lead with the guest
   name: "Guest Name"
@@ -125,9 +125,10 @@ guest:                 # optional: interview rows lead with the guest
 ```
 
 The permanent Media archive merges articles and appearances newest-first.
-The home-page Media section is a run of show: `library` appearances grouped
-into one block per `series` (newest first, episodes numbered from the first),
-then the `featured` and `library` articles. On desktop one preview panel follows
+The home-page Media section is a run of show: every `library` appearance in
+one block, newest first, each row tagged with Luca's role (host/guest), then
+the `featured` and `library` articles. Shows and publishers stay metadata —
+the section is about Luca, not about any one series. On desktop one preview panel follows
 the row under the pointer or keyboard focus; titles and rows open the original
 platform in a new tab. On phones rows carry a small poster thumbnail, and
 `text-only` hides it for dense future entries.
