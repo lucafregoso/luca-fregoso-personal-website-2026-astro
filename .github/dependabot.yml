@@ -16,6 +16,11 @@ updates:
       - "dependencies"
       - "javascript"
     open-pull-requests-limit: 5
+    ignore:
+      # astro check refuses TypeScript 7 ("install TypeScript 6 instead").
+      # Drop this once Astro's type-checker supports TS 7.
+      - dependency-name: "typescript"
+        update-types: ["version-update:semver-major"]
     groups:
       npm-dependencies:
         patterns:
