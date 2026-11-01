@@ -1,6 +1,26 @@
 import { defineConfig } from 'astro/config';
 import sitemap from '@astrojs/sitemap';
 import { loadEnv } from 'vite';
+import { readdirSync, readFileSync } from 'node:fs';
+
+// Sitemap lastmod must be a real content date: a build date that changes on
+// every deploy is a signal crawlers learn to ignore. The homepage and the
+// archive change when dated content is published, so their lastmod is the
+// newest past-dated entry; the CV page carries none rather than a fake one.
+function newestContentDate() {
+  const now = Date.now();
+  let newest = 0;
+  for (const dir of ['now', 'appearances', 'writing']) {
+    const folder = new URL(`./src/content/${dir}/`, import.meta.url);
+    for (const file of readdirSync(folder).filter((name) => name.endsWith('.md'))) {
+      const match = readFileSync(new URL(file, folder), 'utf8').match(/^date:\s*["']?(\d{4}-\d{2}-\d{2})/m);
+      const time = match ? Date.parse(match[1]) : NaN;
+      if (time <= now && time > newest) newest = time;
+    }
+  }
+  return newest ? new Date(newest).toISOString() : undefined;
+}
+const contentLastmod = newestContentDate();
 
 // ─────────────────────────────────────────────────────────────
 // DEPLOY CONFIG — read this before publishing.
@@ -43,11 +63,10 @@ export default defineConfig({
     },
   },
   integrations: [sitemap({
-    // /cv/ is noindex on purpose: listing it in the sitemap would send
-    // a contradictory signal ("index me" + "don't").
-    filter: (page) => !page.includes('/cv/'),
-    // Freshness signal, aligned with the site's "Updated {build date}".
-    lastmod: new Date(),
+    serialize(item) {
+      if (!item.url.includes('/cv/') && contentLastmod) item.lastmod = contentLastmod;
+      return item;
+    },
     i18n: {
       defaultLocale: 'en',
       locales: { en: 'en-US', it: 'it-IT' },
