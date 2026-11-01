@@ -65,6 +65,30 @@ for (const locale of [{ path: '/', name: 'English' }] as const) {
   }
 }
 
+// The other indexable pages: the archive (with a combined filter on, so
+// the pressed toggles are audited too) and the CV. The CV is a standalone
+// white sheet with no theme script: data-theme is never set there, so it
+// only ever renders light — forcing dark would audit a state no visitor
+// can reach.
+for (const page of [
+  { path: '/archive/?type=video,live-recording,podcast', name: 'archive', themes: ['light', 'dark'] },
+  { path: '/cv/', name: 'CV', themes: ['light'] },
+] as const) {
+  for (const theme of page.themes) {
+    test(`${page.name} has no WCAG 2.2 AA violations — ${theme} theme`, async ({ page: browserPage }) => {
+      await settlePage(browserPage, page.path, theme);
+      const results = await runAxe(browserPage);
+      if (results.violations.length) {
+        for (const v of results.violations) {
+          console.log(`  [${v.impact}] ${v.id}: ${v.help}`);
+          for (const node of v.nodes) console.log(`     → ${node.target}`);
+        }
+      }
+      expect(results.violations).toEqual([]);
+    });
+  }
+}
+
 for (const locale of [
   { path: '/', name: 'English', language: /Choose language/i },
   // /it/ temporarily disabled — restore with src/pages/it/:
