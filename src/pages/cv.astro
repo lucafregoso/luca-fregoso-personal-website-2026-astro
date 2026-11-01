@@ -3,9 +3,9 @@
 // Same design system as the site: Schibsted display, Fragment Mono meta,
 // lime as structure only. Regenerate the PDF with:
 //   node scripts/generate-cv-pdf.mjs   (dev server running; see .env.example)
-// The phone number is NOT in this page's HTML: the generator injects it
-// into the PDF at render time. noindex stays on: the homepage is the
-// front door, this page is the document.
+// The phone number is never on this page or in the public PDF: only the
+// private PDF (`--private`, sent on request) carries it. The page is
+// indexable: a recruiter searching "Luca Fregoso CV" should land here.
 import '../styles/global.css';
 import { site } from '../data/site';
 import { withBase } from '../lib/url';
@@ -84,8 +84,9 @@ const cv = {
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="robots" content="noindex, nofollow" />
     <title>Luca Fregoso - CV</title>
+    <meta name="description" content={`CV of ${site.name}: ${site.tagline}. 15 years building software, 7 Codemotion editions, 5,000+ talk proposals evaluated.`} />
+    <link rel="canonical" href={new URL(withBase('/cv/'), Astro.site).toString()} />
   </head>
   <body class="cv">
     <a class="cv-back mono" href={withBase('/')}><span aria-hidden="true">←</span> luca-fregoso.me</a>

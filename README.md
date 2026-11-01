@@ -39,7 +39,20 @@ the static site. The CMS configuration mirrors the Astro Content Collections in
 
 If you want to use the CMS locally, serve the `admin/` folder with a local static
 server or connect it to the configured GitHub backend. Publishing remains
-Git-based: CMS edit → Git commit on `master` → Astro build → static deploy.
+Git-based: CMS edit → Git commit on `develop` → release PR `develop` → `master`
+→ Astro build → static deploy. CMS edits go live with the next release, not
+on save.
+
+## Branches and deploy (git flow)
+
+- `master` is production: a push to it (a merged release or hotfix PR) builds
+  and deploys GitHub Pages. A ruleset requires a PR with the
+  `Build and test` check green; no direct pushes, force-pushes or deletion.
+- `develop` is integration: feature PRs, Dependabot PRs and CMS commits land
+  here and never deploy by themselves. It is protected from force-pushes and
+  deletion; it can't require PRs because the CMS commits to it directly.
+- CI (`Build and test`: check + build + Playwright/axe) runs on every PR into
+  either branch. Workflow actions are pinned to commit SHAs.
 
 ```bash
 pnpm run cms:serve
