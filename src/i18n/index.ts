@@ -108,10 +108,17 @@ const en = {
     title: "Media & writing",
     intro:
       "Recordings and writing about developer careers, technology and the decisions behind good programs.",
-    article: "article",
     inItalian: "in Italian",
     archiveCta: (count: number) =>
       `${count} more articles live in the archive`,
+    // Media run of show: row badges, block labels, episode markers.
+    kinds: { watch: "watch", listen: "listen", read: "read" },
+    recordings: "Recordings",
+    writingGroup: "Writing",
+    episodes: (count: number) => `${count} episodes`,
+    recordingsCount: (count: number) =>
+      `${count} ${count === 1 ? "recording" : "recordings"}`,
+    episode: (index: number) => `EP ${String(index).padStart(2, "0")}`,
   },
   archive: {
     title: "Archive.",

@@ -115,16 +115,22 @@ externalUrl: "https://..."
 poster: /media/local-poster.png
 startAtSeconds: 1060   # optional, YouTube only
 mobilePresentation: stamp # stamp | poster | text-only
+series:                # optional: one run-of-show block per series
+  en: "Codemotion speaker interviews"
+guest:                 # optional: interview rows lead with the guest
+  name: "Guest Name"
+  context:
+    en: "Keynote · the topic in a few words"
 ---
 ```
 
 The permanent Media archive merges articles and appearances newest-first.
-The home-page Media deck is editorially capped at five cards: it keeps current
-appearances visible for interaction review, then fills the remaining slots with
-the newest articles. Titles, cards and explicit watch/listen actions open the
-original platform in a new tab. On phones, `stamp` keeps the copy dominant and
-uses the poster as a small editorial stamp, `poster` leads with a restrained
-image, and `text-only` hides the thumbnail for dense future entries.
+The home-page Media section is a run of show: `library` appearances grouped
+into one block per `series` (newest first, episodes numbered from the first),
+then the `featured` and `library` articles. On desktop one preview panel follows
+the row under the pointer or keyboard focus; titles and rows open the original
+platform in a new tab. On phones rows carry a small poster thumbnail, and
+`text-only` hides it for dense future entries.
 
 ## Where to extend next
 

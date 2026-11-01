@@ -212,6 +212,28 @@ collections:
           - { label: Stamp, value: stamp }
           - { label: Poster, value: poster }
           - { label: Text only, value: text-only }
+      - label: Series
+        name: series
+        widget: object
+        required: false
+        hint: "Groups recordings into one run-of-show block on the homepage"
+        fields:
+          - { label: English, name: en, widget: string }
+          - { label: Italian, name: it, widget: string, required: false }
+      - label: Guest
+        name: guest
+        widget: object
+        required: false
+        hint: "Interviews: the homepage row leads with the guest's name"
+        fields:
+          - { label: Name, name: name, widget: string }
+          - label: Context
+            name: context
+            widget: object
+            required: false
+            fields:
+              - { label: English, name: en, widget: string }
+              - { label: Italian, name: it, widget: string, required: false }
 
   - name: writing
     label: Articles

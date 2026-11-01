@@ -49,7 +49,7 @@ test.describe("homepage content contract", () => {
     await expect(page.locator("#work .intersection").first()).toBeVisible();
     await expect(page.locator("#lately article").first()).toBeVisible();
     await expect(page.locator("#talks .talk-card").first()).toBeVisible();
-    await expect(page.locator("#media .media-grid > *").first()).toBeVisible();
+    await expect(page.locator("#media .rundown-row").first()).toBeVisible();
   });
 
   test("frames work as intersections, business-report style, glue first", async ({
@@ -178,7 +178,7 @@ test.describe("homepage content contract", () => {
     await expect(page.locator(".meta-badge").first()).toBeVisible();
     await expect(
       page
-        .locator('#lately .feed-meta a[href*="/archive/"][href*="type="]')
+        .locator('#lately a.meta-badge[href*="/archive/"][href*="type="]')
         .first(),
     ).toBeVisible();
     await expect(
@@ -203,7 +203,7 @@ test.describe("homepage content contract", () => {
     await page
       .locator("html")
       .evaluate((element) => element.setAttribute("data-theme", "dark"));
-    const badge = page.locator("#lately .feed-meta a.meta-badge").first();
+    const badge = page.locator("#lately a.meta-badge").first();
     await expect(badge).toBeVisible();
     const initial = await badge.evaluate(
       (element) => getComputedStyle(element).backgroundColor,
@@ -217,24 +217,29 @@ test.describe("homepage content contract", () => {
     expect(hovered).not.toBe("rgba(0, 0, 0, 0)");
   });
 
-  test("media section is a curated mosaic, not a date dump", async ({
+  test("media section is a run of show grouped by series, writing last", async ({
     page,
   }) => {
-    // exactly one hand-picked featured essay leads the section
-    const featured = page.locator("#media .media-featured");
-    await expect(featured).toHaveCount(1);
-    await expect(featured).toContainText("Anatomy of a Successful Talk Proposal");
-    // the two recordings sit as a paired poster row, no orphan cells
-    await expect(
-      page.locator("#media .media-grid [data-appearance-entry]"),
-    ).toHaveCount(2);
-    // scripts render in place in Astro 5 and are display:none — they never
-    // create grid cells; only rendered boxes count as mosaic tiles
-    await expect(
-      page.locator("#media .media-grid > :not(script)"),
-    ).toHaveCount(2);
-    // the uniform article-card grid is gone for good
-    await expect(page.locator("#media .media-card-article")).toHaveCount(0);
+    const groups = page.locator("#media .rundown-group");
+    await expect(groups).toHaveCount(2);
+    // one block per series, newest episode first, guest names lead the rows
+    const interviews = groups.nth(0);
+    await expect(interviews.locator(".rundown-group-head")).toContainText(
+      "Codemotion speaker interviews",
+    );
+    await expect(interviews.locator(".rundown-group-head")).toContainText(
+      "3 episodes · host",
+    );
+    await expect(interviews.locator(".rundown-copy h3")).toHaveText([
+      /Mario Zechner/,
+      /Matteo Flora/,
+      /Katharine Jarmul/,
+    ]);
+    // the hand-picked essay closes the run of show
+    const writing = groups.nth(1);
+    await expect(writing.locator(".rundown-group-head")).toContainText("Writing");
+    await expect(writing.locator(".rundown-row")).toHaveCount(1);
+    await expect(writing).toContainText("Anatomy of a Successful Talk Proposal");
     // the rest of the writing lives behind a confident archive link
     const archiveCta = page.locator("#media a.section-link");
     await expect(archiveCta).toContainText(/4 more articles/);
@@ -250,7 +255,7 @@ test.describe("homepage content contract", () => {
     await page
       .locator("html")
       .evaluate((element) => element.setAttribute("data-theme", "dark"));
-    const linked = page.locator("#media a.meta-badge").first();
+    const linked = page.locator("#lately a.meta-badge").first();
     await expect(linked).toBeVisible();
     const border = await linked.evaluate((element) => {
       const computed = getComputedStyle(element);
