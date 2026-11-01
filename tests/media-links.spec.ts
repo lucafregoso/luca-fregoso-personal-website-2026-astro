@@ -22,6 +22,12 @@ const examples = [
     platformId: "uQ46eTUZrLo",
     lang: null,
   },
+  {
+    guest: "Andrey Breslav",
+    duration: "15:16",
+    platformId: "BaBDYY5PG-Y",
+    lang: null,
+  },
 ] as const;
 // typed wide so the it-locale branches keep compiling while disabled
 const locales: ReadonlyArray<{ path: string; lang: "en" | "it" }> = [
@@ -101,9 +107,9 @@ test.describe("media run of show", () => {
     await expect(preview.locator(".rundown-slide:visible")).toHaveCount(1);
     await expect(media.locator(".rundown-thumb").first()).toBeHidden();
     await expect(preview.locator(".rundown-slide:visible")).toContainText(
-      "Mario Zechner",
+      "Andrey Breslav",
     );
-    await expect(preview.locator(".rundown-slide:visible")).toContainText("EP 03");
+    await expect(preview.locator(".rundown-slide:visible")).toContainText("EP 04");
 
     await rowFor(media, "Katharine Jarmul").hover();
     await expect(preview.locator(".rundown-slide:visible")).toContainText(
@@ -143,7 +149,7 @@ test.describe("media run of show", () => {
     await page.goto("/");
     const slide = page.locator("#media .rundown-slide:visible");
     await expect(slide).toHaveCount(1);
-    await expect(slide).toContainText("Mario Zechner");
+    await expect(slide).toContainText("Andrey Breslav");
     await context.close();
   });
 

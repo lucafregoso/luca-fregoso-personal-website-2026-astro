@@ -228,9 +228,10 @@ test.describe("homepage content contract", () => {
       "Codemotion speaker interviews",
     );
     await expect(interviews.locator(".rundown-group-head")).toContainText(
-      "3 episodes · host",
+      "4 episodes · host",
     );
     await expect(interviews.locator(".rundown-copy h3")).toHaveText([
+      /Andrey Breslav/,
       /Mario Zechner/,
       /Matteo Flora/,
       /Katharine Jarmul/,
