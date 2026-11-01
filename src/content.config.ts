@@ -132,8 +132,8 @@ const appearances = defineCollection({
     mobilePresentation: z
       .enum(["stamp", "poster", "text-only"])
       .default("stamp"),
-    // The show or event a recording belongs to. The homepage Media
-    // run of show groups library entries into one block per series.
+    // The show or event a recording belongs to — metadata only: the
+    // homepage Media run of show is one flat list about Luca.
     series: localizedText.optional(),
     // Interviews: the run-of-show row leads with the guest, not the
     // episode title. `context` is the one-line "who · what" under it.

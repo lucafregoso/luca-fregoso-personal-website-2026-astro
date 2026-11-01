@@ -46,10 +46,11 @@ const talks = (await getCollection('talks'))
 const writing = (await getCollection('writing')).filter((entry) => entry.data.locales.includes(locale)).sort(
   (a, b) => b.data.date.valueOf() - a.data.date.valueOf()
 );
-// The Media section is a run of show, not a date dump: one block per
-// series (newest first), recordings without a series in one shared
-// block, then the hand-picked writing. Everything else lives behind the
-// archive link. One preview panel follows the active row on desktop.
+// The Media section is Luca's run of show: every recording he hosted or
+// joined, newest first, each row tagged with his role, then the
+// hand-picked writing. Shows and publishers stay metadata, never block
+// labels. Everything else lives behind the archive link. One preview
+// panel follows the active row on desktop.
 const featuredEssay = writing.find((entry) => entry.data.placement === 'featured') ?? null;
 const indexArticles = writing.filter((entry) => entry.data.placement === 'library');
 const libraryAppearances = appearances
@@ -70,53 +71,40 @@ type RundownItem = {
   action: string;
   publisher: string;
   date: Date;
+  role?: 'host' | 'speaker' | 'guest';
   duration?: string;
   lang?: 'en' | 'it';
   poster?: string;
-  episode?: string;
   anchorId?: string;
   mobilePresentation?: 'stamp' | 'poster' | 'text-only';
 };
 type RundownGroup = { id: string; label: string; meta?: string; items: RundownItem[] };
 
-const seriesBlocks = new Map<string, typeof libraryAppearances>();
-for (const entry of libraryAppearances) {
-  const key = entry.data.series ? localize(entry.data.series, locale) : '';
-  seriesBlocks.set(key, [...(seriesBlocks.get(key) ?? []), entry]);
-}
-const rundownGroups: RundownGroup[] = [...seriesBlocks].map(([series, entries], index) => {
-  // Episodes count up from the first recording of the series.
-  const chronological = [...entries].reverse();
-  const roles = new Set(entries.map((entry) => entry.data.role));
-  const count = series ? t.writing.episodes(entries.length) : t.writing.recordingsCount(entries.length);
+const recordingItems: RundownItem[] = libraryAppearances.map((entry) => {
+  const data = entry.data;
+  const title = localize(data.title, locale);
   return {
-    id: `rundown-${index}`,
-    label: series || t.writing.recordings,
-    meta: roles.size === 1 ? `${count} · ${t.appearances.roles[entries[0].data.role]}` : count,
-    items: entries.map((entry) => {
-      const data = entry.data;
-      const title = localize(data.title, locale);
-      return {
-        id: entry.id,
-        kind: data.platform === 'spotify' ? 'listen' : 'watch',
-        title: data.guest?.name ?? title,
-        context: data.guest?.context ? localize(data.guest.context, locale) : localize(data.summary, locale),
-        fullTitle: title,
-        summary: localize(data.summary, locale),
-        href: data.externalUrl,
-        action: data.platform === 'spotify' ? t.appearances.listen : t.appearances.watch,
-        publisher: data.publisher,
-        date: data.date,
-        duration: data.duration,
-        lang: data.lang,
-        poster: data.poster,
-        episode: series && entries.length > 1 ? t.writing.episode(chronological.indexOf(entry) + 1) : undefined,
-        anchorId: appearanceAnchor(entry.id),
-        mobilePresentation: data.mobilePresentation,
-      };
-    }),
+    id: entry.id,
+    kind: data.platform === 'spotify' ? 'listen' : 'watch',
+    title: data.guest?.name ?? title,
+    context: data.guest?.context ? localize(data.guest.context, locale) : localize(data.summary, locale),
+    fullTitle: title,
+    summary: localize(data.summary, locale),
+    href: data.externalUrl,
+    action: data.platform === 'spotify' ? t.appearances.listen : t.appearances.watch,
+    publisher: data.publisher,
+    date: data.date,
+    role: data.role,
+    duration: data.duration,
+    lang: data.lang,
+    poster: data.poster,
+    anchorId: appearanceAnchor(entry.id),
+    mobilePresentation: data.mobilePresentation,
   };
 });
+const rundownGroups: RundownGroup[] = recordingItems.length
+  ? [{ id: 'rundown-0', label: t.writing.recordings, meta: t.writing.recordingsCount(recordingItems.length), items: recordingItems }]
+  : [];
 const readItems: RundownItem[] = [...(featuredEssay ? [featuredEssay] : []), ...indexArticles].map((entry) => ({
   id: entry.id,
   kind: 'read',
@@ -450,6 +438,7 @@ function caseHref(href: string) {
                       <div class="rundown-meta mono">
                         <span class="rundown-time">{item.duration && <time datetime={isoDuration(item.duration)}>{item.duration}</time>}</span>
                         <span class="rundown-kind meta-badge meta-badge-neutral">{t.writing.kinds[item.kind]}</span>
+                        <span class="rundown-role">{item.role && t.appearances.roles[item.role]}</span>
                         {item.lang && item.lang !== locale && <span class="rundown-lang">{t.writing.inItalian}</span>}
                         <time class="rundown-date" datetime={item.date.toISOString()}>{monthYear(item.date)}</time>
                       </div>
@@ -484,7 +473,6 @@ function caseHref(href: string) {
                 )}
                 <figcaption>
                   <div class="media-card-meta mono">
-                    {item.episode && <span class="rundown-episode">{item.episode}</span>}
                     <span>{item.publisher}{item.lang && item.lang !== locale ? ` · ${t.writing.inItalian}` : ''}</span>
                     <time datetime={item.date.toISOString()}>{monthYear(item.date)}</time>
                   </div>
@@ -775,7 +763,7 @@ function caseHref(href: string) {
   :global(.section-link) { min-height: 44px; margin-top: 1.5rem; display: inline-flex; align-items: center; }
 
   /* ---- Media & writing: run of show ----
-     A running order per series (duration · kind · who · date) beside one
+     One running order of recordings (duration · kind · role · who · date) beside one
      preview panel that follows the active row. Rows reuse the Lately
      grammar: the active one gets the lime dot, nothing else gets color. */
   .rundown { display: grid; grid-template-columns: minmax(0, 7fr) minmax(0, 4.4fr); gap: clamp(2rem, 4vw, 3.5rem); align-items: start; }
@@ -784,7 +772,7 @@ function caseHref(href: string) {
   .rundown-group-head { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: baseline; gap: .3rem 1.5rem; padding: 0 .9rem .7rem; color: var(--text-faint); font-size: var(--text-meta); text-transform: uppercase; }
   .rundown-group-head p { margin: 0; color: var(--text); }
   .rundown-rows { margin: 0; padding: 0; list-style: none; }
-  .rundown-row { display: grid; grid-template-columns: 4.6rem 5.4rem minmax(0, 1fr) auto 5.6rem; grid-template-areas: "time kind copy lang date"; column-gap: 1rem; align-items: baseline; padding: 1rem .9rem; border-top: 1px solid var(--border-strong); transition: background-color .18s var(--ease-out), border-color .18s var(--ease-out); }
+  .rundown-row { display: grid; grid-template-columns: 4.6rem 5.4rem 3.6rem minmax(0, 1fr) auto 5.6rem; grid-template-areas: "time kind role copy lang date"; column-gap: 1rem; align-items: baseline; padding: 1rem .9rem; border-top: 1px solid var(--border-strong); transition: background-color .18s var(--ease-out), border-color .18s var(--ease-out); }
   .rundown-row:last-child { border-bottom: 1px solid var(--border-strong); }
   /* Whole-row click is JS-delegated; only promise a pointer when JS ran. */
   :global(html.js-cards) .rundown-row { cursor: pointer; }
@@ -798,6 +786,7 @@ function caseHref(href: string) {
   .rundown-time { grid-area: time; display: inline-flex; align-items: center; gap: .55rem; color: var(--text); font-size: var(--text-meta); font-variant-numeric: tabular-nums; }
   .rundown-time::before { content: ''; flex: none; width: 8px; height: 8px; border-radius: 50%; background: transparent; transform: scale(.4); transition: background-color .18s var(--ease-out), transform .18s var(--ease-out); }
   .rundown-kind { grid-area: kind; }
+  .rundown-role { grid-area: role; color: var(--text-muted); font-size: var(--text-meta); white-space: nowrap; }
   .rundown-lang { grid-area: lang; color: var(--text-muted); font-size: var(--text-meta); white-space: nowrap; }
   .rundown-date { grid-area: date; justify-self: end; color: var(--text-faint); font-size: var(--text-meta); white-space: nowrap; }
 
@@ -816,7 +805,6 @@ function caseHref(href: string) {
   .rundown-poster-text .mono { color: var(--accent-text-dark, #c3ce4a); font-size: var(--text-meta); text-transform: uppercase; }
   .rundown-poster-title { font-size: var(--text-sub); font-weight: var(--display-weight); line-height: 1.12; letter-spacing: -.02em; text-wrap: balance; }
   .rundown-slide figcaption { padding: 1.3rem 1.4rem 1.4rem; }
-  .rundown-episode { color: var(--text); }
   .rundown-slide-title { margin: .6rem 0 0; font-size: var(--text-h3); font-weight: 700; line-height: 1.3; text-wrap: balance; }
   .rundown-slide-summary { margin: .5rem 0 0; color: var(--text-muted); font-size: var(--text-body-sm); line-height: 1.5; }
   .rundown-slide-action { display: inline-flex; margin-top: .9rem; color: var(--accent-text); font-size: var(--text-ui); }
@@ -841,7 +829,7 @@ function caseHref(href: string) {
     .rundown-copy h3 { font-size: var(--text-body); }
     .rundown-meta { grid-area: meta; display: flex; flex-wrap: wrap; align-items: center; gap: .35rem .8rem; }
     .rundown-time::before { content: none; }
-    .rundown-time:empty { display: none; }
+    .rundown-time:empty, .rundown-role:empty { display: none; }
   }
 
   .media-card-meta { display: flex; flex-wrap: wrap; gap: .45rem 1rem; color: var(--text-faint); font-size: var(--text-meta); }

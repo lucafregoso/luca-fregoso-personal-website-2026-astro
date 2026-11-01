@@ -217,24 +217,35 @@ test.describe("homepage content contract", () => {
     expect(hovered).not.toBe("rgba(0, 0, 0, 0)");
   });
 
-  test("media section is a run of show grouped by series, writing last", async ({
+  test("media section is one run of show about Luca, writing last", async ({
     page,
   }) => {
     const groups = page.locator("#media .rundown-group");
     await expect(groups).toHaveCount(2);
-    // one block per series, newest episode first, guest names lead the rows
-    const interviews = groups.nth(0);
-    await expect(interviews.locator(".rundown-group-head")).toContainText(
+    // one flat block of everything Luca hosted or joined, newest first;
+    // shows and publishers never become block labels
+    const recordings = groups.nth(0);
+    await expect(recordings.locator(".rundown-group-head")).toContainText(
+      "Recordings",
+    );
+    await expect(recordings.locator(".rundown-group-head")).toContainText(
+      "7 recordings",
+    );
+    await expect(page.locator("#media")).not.toContainText(
       "Codemotion speaker interviews",
     );
-    await expect(interviews.locator(".rundown-group-head")).toContainText(
-      "4 episodes · host",
-    );
-    await expect(interviews.locator(".rundown-copy h3")).toHaveText([
+    await expect(recordings.locator(".rundown-copy h3")).toHaveText([
+      /BGV 7/,
       /Andrey Breslav/,
       /Mario Zechner/,
       /Matteo Flora/,
       /Katharine Jarmul/,
+      /BGE 116/,
+      /Spotlight #11/,
+    ]);
+    // every recording row says what Luca did in it
+    await expect(recordings.locator(".rundown-role")).toHaveText([
+      "guest", "host", "host", "host", "host", "guest", "guest",
     ]);
     // the hand-picked essay closes the run of show
     const writing = groups.nth(1);

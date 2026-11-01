@@ -7,7 +7,7 @@ locales: [en]
 format: live-recording
 platform: youtube
 role: guest
-placements: [lately]
+placements: [lately, library]
 date: 2026-09-07
 duration: "2:15:21"
 publisher: La Brigata dei Geek Estinti
