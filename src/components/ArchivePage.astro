@@ -43,14 +43,18 @@ const navItems = [
         <p>{t.archive.intro}</p>
       </div>
 
-      <nav class="archive-filters" aria-label={t.archive.filterLabel}>
-        <a class="meta-badge meta-badge-accent" href={archiveHref(locale)} data-filter-link data-type="all">{t.archive.all}</a>
+      {/* Filters are toggle buttons (aria-pressed): several can be on at
+          once and the URL (?type=a,b) mirrors the selection. They only do
+          something with JS, so they stay hidden until the script runs;
+          without JS every entry is already listed. */}
+      <div class="archive-filters" role="group" aria-label={t.archive.filterLabel} data-archive-filters hidden>
+        <button type="button" class="meta-badge meta-badge-accent" data-filter data-type="all" aria-pressed="true">{t.archive.all}</button>
         {presentTypes.map((type) => (
-          <a class="meta-badge meta-badge-neutral" href={archiveHref(locale, type)} data-filter-link data-type={type}>
+          <button type="button" class="meta-badge meta-badge-neutral" data-filter data-type={type} aria-pressed="false">
             {t.archive.filters[type]}
-          </a>
+          </button>
         ))}
-      </nav>
+      </div>
 
       <p class="archive-status mono" data-archive-status aria-live="polite">
         {t.archive.pageStatus(Math.min(items.length, pageSize), items.length)}
@@ -102,7 +106,8 @@ const navItems = [
     const list = document.querySelector('[data-archive-list]') as HTMLElement | null;
     if (!list) return;
     const items = Array.from(list.querySelectorAll('[data-archive-item]')) as HTMLElement[];
-    const links = Array.from(document.querySelectorAll('[data-filter-link]')) as HTMLAnchorElement[];
+    const filters = document.querySelector('[data-archive-filters]') as HTMLElement | null;
+    const buttons = Array.from(document.querySelectorAll('[data-filter]')) as HTMLButtonElement[];
     const empty = document.querySelector('[data-archive-empty]') as HTMLElement | null;
     const status = document.querySelector('[data-archive-status]') as HTMLElement | null;
     const pagination = document.querySelector('[data-archive-pagination]') as HTMLElement | null;
@@ -115,9 +120,9 @@ const navItems = [
       status: (shown: number, total: number) => `${shown} ${document.documentElement.lang === 'it' ? 'di' : 'of'} ${total} ${document.documentElement.lang === 'it' ? 'voci mostrate' : 'entries shown'}`,
     };
 
-    // Filters combine: each pill toggles its type in or out of
-    // `?type=a,b`; an empty selection is "All". Unknown types are ignored.
-    const knownTypes = links.map((link) => link.dataset.type).filter((type): type is string => !!type && type !== 'all');
+    // Filters combine: each toggle adds or removes its type in `?type=a,b`;
+    // an empty selection is "All". Unknown types in the URL are ignored.
+    const knownTypes = buttons.map((button) => button.dataset.type).filter((type): type is string => !!type && type !== 'all');
     const basePath = window.location.pathname;
 
     function selectedTypes() {
@@ -139,20 +144,10 @@ const navItems = [
       const last = first + pageSize;
       items.forEach((item) => { item.hidden = true; });
       matching.forEach((item, index) => { item.hidden = index < first || index >= last; });
-      links.forEach((link) => {
-        const type = link.dataset.type || 'all';
-        if (type === 'all') {
-          link.href = hrefFor([]);
-          if (!selected.length) link.setAttribute('aria-current', 'page');
-          else link.removeAttribute('aria-current');
-          return;
-        }
-        const active = selected.includes(type);
-        const toggled = active ? selected.filter((value) => value !== type) : [...selected, type];
-        // keep the URL in the pills' display order, whatever the click order
-        link.href = hrefFor(knownTypes.filter((value) => toggled.includes(value)));
-        if (active) link.setAttribute('aria-current', 'true');
-        else link.removeAttribute('aria-current');
+      buttons.forEach((button) => {
+        const type = button.dataset.type || 'all';
+        const pressed = type === 'all' ? !selected.length : selected.includes(type);
+        button.setAttribute('aria-pressed', String(pressed));
       });
       if (empty) empty.hidden = matching.length > 0;
       if (status) status.textContent = labels.status(Math.min(matching.length, pageSize), matching.length);
@@ -169,13 +164,18 @@ const navItems = [
       if (current) current.textContent = String(page);
     }
 
-    links.forEach((link) => link.addEventListener('click', (event) => {
-      event.preventDefault();
-      const url = new URL(link.href);
-      history.pushState(null, '', `${url.pathname}${url.search}`);
+    buttons.forEach((button) => button.addEventListener('click', () => {
+      const type = button.dataset.type || 'all';
+      const selected = selectedTypes();
+      const next = type === 'all'
+        ? []
+        : selected.includes(type) ? selected.filter((value) => value !== type) : [...selected, type];
+      // keep the URL in the toggles' display order, whatever the click order
+      history.pushState(null, '', hrefFor(knownTypes.filter((value) => next.includes(value))));
       page = 1;
       apply();
     }));
+    if (filters) filters.hidden = false;
     previous?.addEventListener('click', () => { page -= 1; apply(); });
     next?.addEventListener('click', () => { page += 1; apply(); });
     window.addEventListener('popstate', () => { page = 1; apply(); });
@@ -194,10 +194,13 @@ const navItems = [
   .archive-heading h1 { max-width: 14ch; margin: 0; font-size: var(--text-h2); line-height: 1.02; letter-spacing: -.03em; }
   .archive-heading p { max-width: 58ch; color: var(--text-muted); }
   .archive-filters { display: flex; flex-wrap: wrap; gap: .45rem; margin-bottom: 1.25rem; }
-  .archive-filters [aria-current] { color: #171715; background: var(--lime); border-color: var(--lime); }
+  .archive-filters[hidden] { display: none; }
+  .archive-filters button { cursor: pointer; transition: transform .15s var(--ease-out); }
+  .archive-filters button:hover, .archive-filters button:focus-visible { color: #171715; border-color: var(--lime); background: var(--lime); transform: translateY(-1px); }
+  .archive-filters [aria-pressed='true'] { color: #171715; background: var(--lime); border-color: var(--lime); }
   @media (forced-colors: active) {
     /* Backgrounds are stripped in forced colors: keep the active state. */
-    .archive-filters [aria-current] { text-decoration: underline; outline: 2px solid ButtonText; outline-offset: 2px; }
+    .archive-filters [aria-pressed='true'] { text-decoration: underline; outline: 2px solid ButtonText; outline-offset: 2px; }
   }
   .archive-status { margin: 0 0 .75rem; color: var(--text-faint); font-size: var(--text-meta); }
   .archive-list { margin: 0; padding: 0; list-style: none; border-top: 1px solid var(--border); }

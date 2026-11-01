@@ -7,3 +7,6 @@ playwright-report/
 test-results/
 .env*
 !.env.example
+
+# CV with phone number: sent on request, never published
+cv-private.pdf
