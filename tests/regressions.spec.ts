@@ -38,7 +38,7 @@ test.describe("regressions", () => {
       "1",
     );
 
-    const writing = page.locator("#media .media-grid > *").first();
+    const writing = page.locator("#media .rundown-row").first();
     await expect(writing).toBeVisible();
     expect(await writing.evaluate((el) => getComputedStyle(el).opacity)).toBe(
       "1",

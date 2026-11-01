@@ -119,7 +119,9 @@ const appearances = defineCollection({
     format: z.enum(["video", "live-recording", "podcast"]),
     platform: z.enum(["youtube", "spotify"]),
     role: z.enum(["host", "speaker", "guest"]),
-    placements: z.array(z.enum(["lately", "library"])).min(1),
+    // `library`: one of the (max three) hand-picked homepage Media
+    // recordings. Empty: archive only. Recordings never join Lately.
+    placements: z.array(z.enum(["library"])).default([]),
     date: z.coerce.date(),
     duration: z.string().regex(/^\d{1,2}:\d{2}(?::\d{2})?$/),
     publisher: z.string().min(1),
@@ -132,6 +134,17 @@ const appearances = defineCollection({
     mobilePresentation: z
       .enum(["stamp", "poster", "text-only"])
       .default("stamp"),
+    // The show or event a recording belongs to — metadata only: the
+    // homepage Media run of show is one flat list about Luca.
+    series: localizedText.optional(),
+    // Interviews: the run-of-show row leads with the guest, not the
+    // episode title. `context` is the one-line "who · what" under it.
+    guest: z
+      .object({
+        name: z.string().min(1),
+        context: localizedText.optional(),
+      })
+      .optional(),
   }),
 });
 
